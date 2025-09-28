@@ -1,0 +1,65 @@
+[package]
+name = "aion-marketplace"
+version = "0.1.0"
+edition = "2021"
+authors = ["AION Team <dev@aion.dev>"]
+description = "Marketplace foundation for AION templates, plugins, and autonomous software components"
+license = "MIT"
+repository = "https://github.com/aion-labs/ectus-r"
+keywords = ["marketplace", "templates", "plugins", "autonomous", "software-engineering"]
+categories = ["development-tools", "web-programming", "api-bindings"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "json"] }
+reqwest = { version = "0.11", features = ["json", "stream", "multipart"] }
+tokio-util = { version = "0.7", features = ["codec"] }
+futures-util = "0.3"
+semver = { version = "1.0", features = ["serde"] }
+sha2 = "0.10"
+sha3 = "0.10"
+ed25519-dalek = { version = "2.0", features = ["serde"] }
+ring = "0.17"
+base64 = "0.21"
+tar = "0.4"
+flate2 = "1.0"
+walkdir = "2.4"
+tempfile = "3.8"
+regex = "1.10"
+url = { version = "2.5", features = ["serde"] }
+mime = "0.3"
+mime_guess = "2.0"
+bytes = "1.5"
+dashmap = "5.5"
+async-trait = "0.1"
+tower = { version = "0.4", features = ["full"] }
+tower-http = { version = "0.4", features = ["full"] }
+axum = { version = "0.7", features = ["multipart", "json", "query"] }
+axum-extra = { version = "0.8", features = ["typed-header"] }
+hyper = { version = "1.0", features = ["full"] }
+clap = { version = "4.4", features = ["derive", "env"] }
+config = "0.13"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+validator = { version = "0.16", features = ["derive"] }
+jsonwebtoken = "9.2"
+oauth2 = "4.4"
+stripe-rust = { version = "0.25", default-features = false, features = ["async", "webhook-events"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockito = "1.0"
+testcontainers = "0.15"
+
+[features]
+default = ["postgres", "stripe-payments"]
+postgres = []
+stripe-payments = ["stripe-rust"]
+github-integration = []
+docker-support = []
