@@ -1,0 +1,110 @@
+[package]
+name = "aion-docs"
+version = "0.1.0"
+edition = "2021"
+authors = ["AION Team <team@aion.dev>"]
+description = "Comprehensive API documentation portal and interactive documentation system for AION"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+async-trait = "0.1"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Web server and API
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace", "fs"] }
+hyper = "1.0"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# Template engines and rendering
+tera = "1.19"
+handlebars = "4.5"
+markdown = "1.0"
+pulldown-cmark = { version = "0.9", features = ["html"] }
+syntect = "5.1"
+
+# OpenAPI and documentation generation
+utoipa = { version = "4.1", features = ["axum_extras", "chrono", "uuid"] }
+utoipa-swagger-ui = { version = "4.0", features = ["axum"] }
+utoipa-rapidoc = { version = "0.1", features = ["axum"] }
+utoipa-redoc = { version = "0.1", features = ["axum"] }
+openapi-generator = "1.0"
+
+# Schema parsing and validation
+json-schema = "0.4"
+jsonschema = "0.17"
+schemars = { version = "0.8", features = ["uuid1", "chrono"] }
+
+# Code analysis and parsing
+syn = { version = "2.0", features = ["full", "extra-traits"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+regex = "1.10"
+
+# File system operations
+walkdir = "2.4"
+ignore = "0.4"
+notify = "6.1"
+
+# Database and caching
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "json", "uuid", "chrono"] }
+redis = { version = "0.24", features = ["tokio-comp", "json"] }
+
+# Search functionality
+tantivy = "0.21"
+elasticsearch = "8.5"
+
+# Static site generation
+mdbook = "0.4"
+zola = "0.17"
+
+# Configuration
+config = "0.14"
+clap = { version = "4.4", features = ["derive"] }
+
+# Authentication and security
+jsonwebtoken = "9.2"
+bcrypt = "0.15"
+
+# Monitoring and metrics
+prometheus = "0.13"
+metrics = "0.21"
+
+# Version control integration
+git2 = "0.18"
+octocrab = "0.32"
+
+# Parallel processing
+rayon = "1.8"
+
+# Image processing for diagrams
+image = "0.24"
+resvg = "0.35"
+
+[dev-dependencies]
+tokio-test = "0.4"
+wiremock = "0.5"
+tempfile = "3.8"
+
+[features]
+default = ["full"]
+full = ["openapi", "search", "git-integration", "analytics", "export"]
+openapi = ["utoipa", "utoipa-swagger-ui", "utoipa-rapidoc", "utoipa-redoc"]
+search = ["tantivy", "elasticsearch"]
+git-integration = ["git2", "octocrab"]
+analytics = ["prometheus", "metrics"]
+export = ["mdbook", "zola"]
+diagrams = ["image", "resvg"]
+
+[[bin]]
+name = "aion-docs"
+path = "src/bin/main.rs"
