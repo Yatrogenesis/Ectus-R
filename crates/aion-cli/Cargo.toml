@@ -1,13 +1,13 @@
 [package]
-name = "aion-cli"
+name = "ectus-cli"
 version = "1.0.0"
 edition = "2021"
-description = "AION-R Enterprise Platform CLI"
-authors = ["AION-R Team"]
+description = "Ectus-R Autonomous Software Engineer CLI"
+authors = ["Yatrogenesis Team"]
 license = "MIT"
 
 [[bin]]
-name = "aion"
+name = "ectus-r"
 path = "src/main.rs"
 
 [dependencies]

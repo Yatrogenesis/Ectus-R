@@ -14,12 +14,12 @@ mod utils;
 use client::AionClient;
 use config::CliConfig;
 
-/// AION-R Enterprise Platform CLI
+/// Ectus-R Autonomous Software Engineer CLI
 #[derive(Parser)]
-#[command(name = "aion")]
-#[command(about = "AION-R Enterprise Platform CLI - AI-powered code generation and analysis")]
+#[command(name = "ectus-r")]
+#[command(about = "Ectus-R - The Autonomous Software Engineer. From business logic to production code in minutes.")]
 #[command(version = env!("CARGO_PKG_VERSION"))]
-#[command(author = "AION-R Team")]
+#[command(author = "Yatrogenesis Team")]
 struct Cli {
     /// Configuration file path
     #[arg(short, long, global = true)]
@@ -47,6 +47,15 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Start interactive autonomous project creation
+    New {
+        /// Project name (optional, will prompt if not provided)
+        #[arg(short, long)]
+        name: Option<String>,
+        /// Skip interactive prompts and use defaults
+        #[arg(short, long)]
+        quick: bool,
+    },
     /// Authentication commands
     Auth {
         #[command(subcommand)]
@@ -454,6 +463,9 @@ async fn main() -> anyhow::Result<()> {
 
     // Execute command
     match cli.command {
+        Commands::New { name, quick } => {
+            commands::new::handle_new_command(name, quick, &client, &output_format).await?;
+        }
         Commands::Auth { command } => {
             commands::auth::handle_auth_command(command, &client, &output_format).await?;
         }
