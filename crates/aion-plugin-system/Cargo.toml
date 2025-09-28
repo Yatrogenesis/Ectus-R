@@ -1,0 +1,45 @@
+[package]
+name = "aion-plugin-system"
+version = "0.1.0"
+edition = "2021"
+authors = ["AION Team <dev@aion.dev>"]
+description = "Extensible plugin architecture for AION autonomous software engineering platform"
+license = "MIT"
+repository = "https://github.com/aion-labs/ectus-r"
+keywords = ["plugin", "extensibility", "architecture", "autonomous", "ai"]
+categories = ["development-tools", "api-bindings"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+async-trait = "0.1"
+libloading = "0.8"
+wasmtime = { version = "14.0", optional = true }
+wasmtime-wasi = { version = "14.0", optional = true }
+dashmap = "5.5"
+semver = { version = "1.0", features = ["serde"] }
+regex = "1.10"
+config = "0.13"
+notify = "6.1"
+walkdir = "2.4"
+sha2 = "0.10"
+tar = "0.4"
+flate2 = "1.0"
+reqwest = { version = "0.11", features = ["json", "stream"] }
+futures-util = "0.3"
+tempfile = "3.8"
+
+[features]
+default = ["native-plugins"]
+native-plugins = []
+wasm-plugins = ["wasmtime", "wasmtime-wasi"]
+all-plugins = ["native-plugins", "wasm-plugins"]
+
+[dev-dependencies]
+tokio-test = "0.4"
