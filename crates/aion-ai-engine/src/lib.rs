@@ -25,6 +25,9 @@ pub mod errors;
 pub mod code_generation;
 pub mod requirements_analyzer;
 pub mod autonomous_qa;
+pub mod template_engine;
+pub mod project_scaffolding;
+pub mod progress_tracking;
 
 pub use inference::*;
 pub use models::*;
@@ -38,6 +41,8 @@ pub use errors::*;
 pub use code_generation::*;
 pub use requirements_analyzer::*;
 pub use autonomous_qa::*;
+pub use template_engine::*;
+pub use project_scaffolding::*;
 
 /// AI Engine configuration
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]

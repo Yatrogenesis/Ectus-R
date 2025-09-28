@@ -1,0 +1,177 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aion-sdk"
+dynamic = ["version"]
+description = "Python SDK for AION autonomous software engineering platform"
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = ["ai", "autonomous", "software-engineering", "api", "sdk"]
+authors = [
+  { name = "AION Team", email = "dev@aion.dev" },
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Software Development :: Code Generators",
+  "Topic :: Software Development :: Testing",
+]
+dependencies = [
+  "httpx>=0.24.0",
+  "pydantic>=2.0.0",
+  "websockets>=11.0.0",
+  "typing-extensions>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0.0",
+  "pytest-asyncio>=0.21.0",
+  "pytest-mock>=3.10.0",
+  "black>=23.0.0",
+  "isort>=5.12.0",
+  "flake8>=6.0.0",
+  "mypy>=1.0.0",
+  "coverage>=7.0.0",
+]
+
+[project.urls]
+Documentation = "https://docs.aion.dev"
+Issues = "https://github.com/aion-labs/ectus-r/issues"
+Source = "https://github.com/aion-labs/ectus-r"
+
+[tool.hatch.version]
+path = "src/aion_sdk/__about__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "coverage[toml]>=6.5",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-mock",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = [
+  "- coverage combine",
+  "coverage report",
+]
+cov-html = [
+  "cov-report",
+  "coverage html",
+]
+
+[tool.hatch.envs.lint]
+detached = true
+dependencies = [
+  "black>=23.1.0",
+  "mypy>=1.0.0",
+  "ruff>=0.0.243",
+]
+
+[tool.hatch.envs.lint.scripts]
+typing = "mypy --install-types --non-interactive {args:src/aion_sdk tests}"
+style = [
+  "ruff {args:.}",
+  "black --check --diff {args:.}",
+]
+fmt = [
+  "black {args:.}",
+  "ruff --fix {args:.}",
+  "style",
+]
+all = [
+  "style",
+  "typing",
+]
+
+[tool.black]
+target-version = ["py38"]
+line-length = 120
+skip-string-normalization = true
+
+[tool.ruff]
+target-version = "py38"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+  "A",
+  "ARG",
+  "B",
+  "C",
+  "DTZ",
+  "E",
+  "EM",
+  "F",
+  "FBT",
+  "I",
+  "ICN",
+  "ISC",
+  "N",
+  "PLC",
+  "PLE",
+  "PLR",
+  "PLW",
+  "Q",
+  "RUF",
+  "S",
+  "T",
+  "TID",
+  "UP",
+  "W",
+  "YTT",
+]
+ignore = [
+  "FBT001",
+  "FBT002",
+  "FBT003",
+  "PLR0913",
+  "S105",
+  "S106",
+  "S107",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["aion_sdk"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*" = ["PLR2004", "S101", "TID252"]
+
+[tool.coverage.run]
+source_pkgs = ["aion_sdk", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/aion_sdk/__about__.py",
+]
+
+[tool.coverage.paths]
+aion_sdk = ["src/aion_sdk", "*/aion-sdk/src/aion_sdk"]
+tests = ["tests", "*/aion-sdk/tests"]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]
