@@ -1,0 +1,248 @@
+# AION-R Enterprise Platform - Development Configuration
+# Copy this file to development.toml and customize for your environment
+
+[server]
+# Server binding configuration
+host = "0.0.0.0"
+port = 8080
+workers = 4  # Number of worker threads (recommended: number of CPU cores)
+keep_alive = 75  # TCP keep-alive timeout in seconds
+max_connections = 1000  # Maximum concurrent connections
+
+# Request handling
+max_request_size = "10MB"  # Maximum request body size
+request_timeout = "30s"  # Request timeout
+
+[database]
+# PostgreSQL connection configuration
+url = "postgresql://aion_user:dev_password@localhost:5432/aion_dev"
+
+# Connection pool settings
+max_connections = 20  # Maximum database connections
+min_connections = 5   # Minimum database connections
+connect_timeout = "5s"  # Connection timeout
+idle_timeout = "10m"    # Idle connection timeout
+max_lifetime = "1h"     # Maximum connection lifetime
+
+# Query settings
+statement_timeout = "30s"  # SQL statement timeout
+lock_timeout = "10s"       # Lock acquisition timeout
+
+[redis]
+# Redis connection configuration
+url = "redis://localhost:6379"
+password = ""  # Redis password (if required)
+
+# Connection pool settings
+max_connections = 20
+connection_timeout = "3s"
+read_timeout = "3s"
+write_timeout = "3s"
+
+# Redis database selection
+database = 0  # Redis database number (0-15)
+
+[ai_engine]
+# AI/ML engine configuration
+default_backend = "candle"  # Default ML backend: candle, pytorch, tensorflow, onnx
+model_cache_size = "2GB"    # Maximum memory for model caching
+max_concurrent_inferences = 8  # Maximum concurrent AI operations
+
+# Model loading
+model_download_timeout = "300s"  # Timeout for model downloads
+model_load_timeout = "60s"       # Timeout for model loading
+
+# Inference settings
+inference_timeout = "30s"     # Timeout for individual inferences
+batch_size = 32               # Default batch size for batch processing
+enable_gpu = false            # Enable GPU acceleration (if available)
+
+# Model paths
+model_cache_dir = "./data/models"      # Local model cache directory
+custom_models_dir = "./data/custom"    # Custom models directory
+
+[auth]
+# Authentication configuration
+jwt_secret = "your_development_jwt_secret_key_here"  # JWT signing secret (change this!)
+jwt_algorithm = "HS256"  # JWT algorithm
+
+# Token expiration
+access_token_expiry = "1h"      # Access token expiration
+refresh_token_expiry = "7d"     # Refresh token expiration
+password_reset_expiry = "1h"    # Password reset token expiration
+
+# Security settings
+max_failed_attempts = 5      # Maximum failed login attempts
+lockout_duration = "15m"     # Account lockout duration
+min_password_length = 8      # Minimum password length
+require_special_chars = true # Require special characters in passwords
+
+# Session management
+session_timeout = "24h"      # Session timeout
+enable_concurrent_sessions = true  # Allow multiple concurrent sessions
+
+[rate_limiting]
+# Rate limiting configuration
+enabled = true
+requests_per_minute = 100    # Requests per minute per IP
+burst_size = 20              # Burst capacity
+window_size = "1m"           # Rate limiting window
+
+# Per-endpoint limits
+api_requests_per_minute = 60      # API requests per minute
+ai_requests_per_minute = 20       # AI operations per minute
+auth_requests_per_minute = 10     # Authentication requests per minute
+
+[cors]
+# Cross-Origin Resource Sharing
+enabled = true
+origins = ["http://localhost:3000", "http://127.0.0.1:3000"]  # Allowed origins
+methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]         # Allowed methods
+headers = ["Content-Type", "Authorization", "X-Requested-With"]  # Allowed headers
+expose_headers = ["X-Total-Count", "X-Request-ID"]           # Exposed headers
+credentials = true          # Allow credentials
+max_age = 3600             # Preflight cache duration in seconds
+
+[logging]
+# Logging configuration
+level = "debug"             # Log level: trace, debug, info, warn, error
+format = "pretty"           # Log format: json, pretty
+target = "file"             # Log target: stdout, stderr, file
+
+# File logging settings
+log_dir = "./logs"          # Log directory
+max_file_size = "10MB"      # Maximum log file size
+max_files = 10              # Maximum number of log files
+rotate_daily = true         # Rotate logs daily
+
+# Component-specific log levels
+[logging.components]
+database = "info"           # Database operations
+redis = "info"              # Redis operations
+ai_engine = "debug"         # AI engine operations
+auth = "info"               # Authentication operations
+http = "info"               # HTTP requests
+
+[monitoring]
+# Monitoring and metrics
+prometheus_enabled = true   # Enable Prometheus metrics
+metrics_port = 9090        # Metrics endpoint port
+metrics_path = "/metrics"  # Metrics endpoint path
+
+# Health checks
+health_check_interval = "30s"  # Health check interval
+health_check_timeout = "5s"    # Health check timeout
+
+# Tracing
+jaeger_enabled = false      # Enable Jaeger tracing
+jaeger_endpoint = "http://localhost:14268/api/traces"
+trace_sample_rate = 0.1     # Trace sampling rate (0.0 to 1.0)
+
+[security]
+# Security configuration
+enable_https_redirect = false  # Redirect HTTP to HTTPS (set to true in production)
+hsts_max_age = 31536000       # HSTS max age in seconds
+content_type_nosniff = true   # Enable X-Content-Type-Options: nosniff
+frame_deny = true             # Enable X-Frame-Options: DENY
+xss_protection = true         # Enable X-XSS-Protection
+
+# API security
+api_key_header = "X-API-Key"  # API key header name
+enable_api_versioning = true  # Enable API versioning
+api_version = "v1"            # Default API version
+
+[features]
+# Feature flags for development
+enable_admin_panel = true     # Enable admin panel
+enable_swagger_ui = true      # Enable Swagger UI
+enable_debug_endpoints = true # Enable debug endpoints
+enable_metrics_ui = true      # Enable metrics UI
+enable_profiling = false      # Enable profiling endpoints
+
+# AI features
+enable_text_analysis = true   # Enable text analysis
+enable_image_analysis = true  # Enable image analysis
+enable_audio_analysis = true  # Enable audio analysis
+enable_multimodal = true      # Enable multimodal analysis
+
+[development]
+# Development-specific settings
+auto_reload = true            # Auto-reload on code changes
+debug_mode = true            # Enable debug mode
+mock_external_apis = false   # Mock external API calls
+seed_database = true         # Seed database with test data
+
+# Performance profiling
+enable_query_logging = true  # Log all database queries
+log_slow_queries = true      # Log slow queries
+slow_query_threshold = "1s"  # Slow query threshold
+
+[cache]
+# Caching configuration
+enabled = true
+default_ttl = "1h"           # Default cache TTL
+
+# Cache backends
+primary_backend = "redis"    # Primary cache backend
+fallback_backend = "memory"  # Fallback cache backend
+
+# Cache prefixes
+key_prefix = "aion:dev:"     # Cache key prefix
+version = "1"                # Cache version
+
+[storage]
+# File storage configuration
+default_provider = "local"   # Storage provider: local, s3, gcs, azure
+local_path = "./data/storage" # Local storage path
+
+# Upload limits
+max_file_size = "50MB"       # Maximum file upload size
+allowed_extensions = ["jpg", "jpeg", "png", "gif", "pdf", "txt", "wav", "mp3", "mp4"]
+
+[notifications]
+# Notification configuration
+email_enabled = false        # Enable email notifications
+sms_enabled = false         # Enable SMS notifications
+webhook_enabled = true      # Enable webhook notifications
+
+# Email settings (if enabled)
+smtp_host = "localhost"
+smtp_port = 587
+smtp_username = ""
+smtp_password = ""
+from_email = "noreply@aion-r.local"
+
+[testing]
+# Testing configuration
+test_database_url = "postgresql://aion_user:test_password@localhost:5432/aion_test"
+test_redis_url = "redis://localhost:6379/1"
+parallel_tests = true        # Run tests in parallel
+test_timeout = "30s"        # Test timeout
+
+# Test data
+use_fixtures = true         # Use test fixtures
+fixture_path = "./tests/fixtures"
+seed_test_data = true       # Seed test database
+
+[external_apis]
+# External API configuration
+openai_api_key = ""         # OpenAI API key (optional)
+huggingface_api_key = ""    # Hugging Face API key (optional)
+anthropic_api_key = ""      # Anthropic API key (optional)
+
+# API timeouts
+default_timeout = "30s"     # Default API timeout
+openai_timeout = "60s"      # OpenAI API timeout
+huggingface_timeout = "45s" # Hugging Face API timeout
+
+[environment]
+# Environment-specific settings
+name = "development"        # Environment name
+debug = true               # Enable debug mode
+version = "1.0.0"          # Application version
+commit_hash = "dev"        # Git commit hash
+
+# Paths
+config_dir = "./config"     # Configuration directory
+data_dir = "./data"         # Data directory
+temp_dir = "./tmp"          # Temporary directory

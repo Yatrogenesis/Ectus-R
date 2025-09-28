@@ -1,0 +1,52 @@
+[package]
+name = "aion-cli"
+version = "1.0.0"
+edition = "2021"
+description = "AION-R Enterprise Platform CLI"
+authors = ["AION-R Team"]
+license = "MIT"
+
+[[bin]]
+name = "aion"
+path = "src/main.rs"
+
+[dependencies]
+# Core dependencies
+aion-core = { path = "../aion-core" }
+aion-ai-engine = { path = "../aion-ai-engine" }
+
+# CLI framework
+clap = { version = "4.4", features = ["derive", "color"] }
+dialoguer = { version = "0.11", features = ["password"] }
+indicatif = { version = "0.17", features = ["improved_unicode"] }
+console = "0.15"
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json", "multipart", "stream"] }
+tokio = { version = "1.35", features = ["full"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+
+# File handling
+tokio-util = { version = "0.7", features = ["codec"] }
+futures = "0.3"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Utilities
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5.0"
+colored = "2.1"
+
+# Configuration
+config = "0.14"
+
+# Terminal utilities
+tabled = "0.15"
+syntect = "5.1"

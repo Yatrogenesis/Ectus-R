@@ -1,0 +1,53 @@
+[package]
+name = "aion-auth"
+version = "1.0.0"
+edition = "2021"
+description = "Enterprise authentication and authorization for AION-R"
+
+[dependencies]
+# Core dependencies
+aion-core = { path = "../aion-core" }
+
+# Web framework
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["auth"] }
+
+# Authentication and security
+jsonwebtoken = "9.0"
+argon2 = "0.5"
+oauth2 = "4.4"
+openidconnect = "3.4"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+
+# Async
+tokio = { version = "1.0", features = ["full"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Time and UUID
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Cryptography
+rand = "0.8"
+sha2 = "0.10"
+hmac = "0.12"
+
+# HTTP
+reqwest = { version = "0.11", features = ["json"] }
+
+# Configuration
+config = "0.14"
+
+# Logging
+tracing = "0.1"

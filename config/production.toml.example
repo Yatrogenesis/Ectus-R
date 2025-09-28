@@ -1,0 +1,385 @@
+# AION-R Enterprise Platform - Production Configuration Template
+# Copy this file to production.toml and customize for your production environment
+# IMPORTANT: Replace all placeholder values with secure, production-ready settings
+
+[server]
+# Production server configuration
+host = "0.0.0.0"
+port = 8080
+workers = 16  # Recommended: 2x number of CPU cores
+keep_alive = 75
+max_connections = 2000  # Tune based on expected load
+
+# Request handling
+max_request_size = "50MB"  # Adjust based on your use case
+request_timeout = "60s"    # Longer timeout for production workloads
+
+# Security headers
+security_headers = true
+hsts_max_age = 31536000
+
+[database]
+# Production PostgreSQL configuration
+# Use environment variable substitution for sensitive data
+url = "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
+
+# Production connection pool settings
+max_connections = 100      # Tune based on database capacity
+min_connections = 20       # Maintain minimum connections
+connect_timeout = "10s"    # Longer timeout for production
+idle_timeout = "30m"       # Connection idle timeout
+max_lifetime = "2h"        # Maximum connection lifetime
+
+# Production query settings
+statement_timeout = "60s"   # Allow longer queries in production
+lock_timeout = "30s"        # Lock acquisition timeout
+
+# High availability
+enable_read_replicas = true
+read_replica_urls = [
+    "postgresql://readonly_user:${READ_PASSWORD}@${READ_HOST_1}:5432/${DB_NAME}",
+    "postgresql://readonly_user:${READ_PASSWORD}@${READ_HOST_2}:5432/${DB_NAME}"
+]
+
+[redis]
+# Production Redis configuration
+url = "redis://:${REDIS_PASSWORD}@${REDIS_HOST}:${REDIS_PORT}"
+
+# Production connection settings
+max_connections = 100
+connection_timeout = "5s"
+read_timeout = "5s"
+write_timeout = "5s"
+
+# Redis clustering (if using Redis Cluster)
+cluster_enabled = false
+cluster_nodes = []
+
+# Persistence and reliability
+enable_persistence = true
+database = 0
+
+[ai_engine]
+# Production AI/ML configuration
+default_backend = "candle"
+model_cache_size = "16GB"     # Allocate significant memory for models
+max_concurrent_inferences = 64 # Scale based on hardware
+
+# Production model settings
+model_download_timeout = "600s"  # Allow time for large model downloads
+model_load_timeout = "120s"      # Allow time for model loading
+inference_timeout = "120s"       # Allow longer inference time
+
+# Performance optimizations
+batch_size = 64               # Larger batch sizes for efficiency
+enable_gpu = true             # Enable GPU in production if available
+gpu_memory_fraction = 0.8     # Reserve GPU memory
+
+# Model storage
+model_cache_dir = "/app/data/models"
+custom_models_dir = "/app/data/custom"
+s3_model_bucket = "${MODEL_S3_BUCKET}"  # S3 bucket for model storage
+
+[auth]
+# Production authentication - use environment variables for secrets
+jwt_secret = "${JWT_SECRET}"  # Strong, randomly generated secret
+jwt_algorithm = "RS256"       # Use RSA for production
+
+# Production token settings
+access_token_expiry = "15m"    # Shorter expiry for security
+refresh_token_expiry = "7d"    # Reasonable refresh window
+password_reset_expiry = "30m"  # Shorter reset window
+
+# Enhanced security settings
+max_failed_attempts = 3        # Stricter failed attempt limit
+lockout_duration = "30m"       # Longer lockout duration
+min_password_length = 12       # Stronger password requirements
+require_special_chars = true
+require_uppercase = true
+require_numbers = true
+
+# Multi-factor authentication
+mfa_enabled = true
+mfa_required_roles = ["admin", "operator"]
+mfa_backup_codes = 10
+
+# Session security
+session_timeout = "8h"         # Work day session
+enable_concurrent_sessions = false  # Prevent session sharing
+secure_cookies = true
+same_site = "strict"
+
+[rate_limiting]
+# Production rate limiting
+enabled = true
+requests_per_minute = 1000     # Higher limits for production
+burst_size = 100               # Larger burst capacity
+window_size = "1m"
+
+# Tiered rate limiting
+api_requests_per_minute = 500
+ai_requests_per_minute = 100
+auth_requests_per_minute = 20
+admin_requests_per_minute = 50
+
+# Rate limiting storage
+storage_backend = "redis"
+storage_prefix = "rate_limit:"
+
+[cors]
+# Production CORS configuration
+enabled = true
+origins = ["https://${FRONTEND_DOMAIN}", "https://${ADMIN_DOMAIN}"]
+methods = ["GET", "POST", "PUT", "DELETE"]
+headers = ["Content-Type", "Authorization"]
+expose_headers = ["X-Total-Count", "X-Request-ID"]
+credentials = true
+max_age = 86400  # 24 hours
+
+[logging]
+# Production logging
+level = "info"              # Info level for production
+format = "json"             # Structured logging
+target = "file"             # File-based logging
+
+# Production log settings
+log_dir = "/app/logs"
+max_file_size = "100MB"     # Larger log files
+max_files = 30              # Keep 30 days of logs
+rotate_daily = true
+compress_rotated = true
+
+# Component logging levels
+[logging.components]
+database = "warn"           # Reduce database noise
+redis = "warn"
+ai_engine = "info"
+auth = "info"
+http = "warn"
+
+# Audit logging
+audit_enabled = true
+audit_log_file = "/app/logs/audit.log"
+audit_events = ["login", "logout", "admin_action", "data_access"]
+
+[monitoring]
+# Production monitoring
+prometheus_enabled = true
+metrics_port = 9090
+metrics_path = "/metrics"
+
+# Health monitoring
+health_check_interval = "15s"  # More frequent checks
+health_check_timeout = "10s"
+health_endpoints = ["/health", "/ready"]
+
+# Distributed tracing
+jaeger_enabled = true
+jaeger_endpoint = "${JAEGER_ENDPOINT}"
+trace_sample_rate = 0.01    # 1% sampling for production
+
+# Alerting
+alert_manager_url = "${ALERT_MANAGER_URL}"
+notification_webhook = "${NOTIFICATION_WEBHOOK}"
+
+[security]
+# Production security settings
+enable_https_redirect = true
+hsts_max_age = 31536000
+hsts_include_subdomains = true
+content_type_nosniff = true
+frame_deny = true
+xss_protection = true
+
+# API security
+api_key_header = "X-API-Key"
+enable_api_versioning = true
+api_version = "v1"
+
+# Content Security Policy
+csp_enabled = true
+csp_policy = "default-src 'self'; script-src 'self' 'unsafe-inline'"
+
+# Additional security headers
+referrer_policy = "strict-origin-when-cross-origin"
+permissions_policy = "geolocation=(), microphone=(), camera=()"
+
+[features]
+# Production feature flags
+enable_admin_panel = true
+enable_swagger_ui = false     # Disable in production
+enable_debug_endpoints = false # Disable in production
+enable_metrics_ui = true
+
+# AI feature gates
+enable_text_analysis = true
+enable_image_analysis = true
+enable_audio_analysis = true
+enable_multimodal = true
+
+# Enterprise features
+enable_multi_tenancy = true
+enable_audit_logging = true
+enable_data_encryption = true
+
+[performance]
+# Production performance settings
+thread_pool_size = 32         # Large thread pool
+async_runtime_threads = 16    # Async runtime threads
+blocking_thread_pool = 64     # Blocking operations pool
+
+# Memory management
+heap_size = "8GB"             # JVM heap size (if applicable)
+gc_strategy = "g1"            # Garbage collection strategy
+
+# Connection pooling
+database_pool_size = 100
+redis_pool_size = 50
+http_client_pool_size = 100
+
+[cache]
+# Production caching
+enabled = true
+default_ttl = "1h"
+max_memory = "4GB"
+
+# Cache hierarchy
+l1_cache = "memory"           # In-memory L1 cache
+l2_cache = "redis"            # Redis L2 cache
+l3_cache = "database"         # Database L3 cache
+
+# Cache warming
+warm_cache_on_startup = true
+cache_warming_concurrency = 10
+
+[storage]
+# Production storage
+default_provider = "s3"       # Use S3 for production
+s3_bucket = "${STORAGE_S3_BUCKET}"
+s3_region = "${AWS_REGION}"
+s3_access_key = "${AWS_ACCESS_KEY_ID}"
+s3_secret_key = "${AWS_SECRET_ACCESS_KEY}"
+
+# Backup storage
+backup_provider = "s3"
+backup_bucket = "${BACKUP_S3_BUCKET}"
+backup_retention_days = 90
+
+# File upload settings
+max_file_size = "100MB"
+allowed_extensions = [
+    "jpg", "jpeg", "png", "gif", "webp",
+    "pdf", "doc", "docx", "txt", "csv",
+    "wav", "mp3", "mp4", "avi", "mov"
+]
+
+[notifications]
+# Production notifications
+email_enabled = true
+sms_enabled = true
+webhook_enabled = true
+
+# Email configuration
+smtp_host = "${SMTP_HOST}"
+smtp_port = 587
+smtp_username = "${SMTP_USERNAME}"
+smtp_password = "${SMTP_PASSWORD}"
+smtp_tls = true
+from_email = "noreply@${DOMAIN}"
+
+# SMS configuration
+sms_provider = "twilio"
+twilio_account_sid = "${TWILIO_ACCOUNT_SID}"
+twilio_auth_token = "${TWILIO_AUTH_TOKEN}"
+twilio_phone_number = "${TWILIO_PHONE_NUMBER}"
+
+[backup]
+# Production backup configuration
+enabled = true
+schedule = "0 2 * * *"        # Daily at 2 AM
+retention_days = 30
+compression = true
+
+# Backup targets
+database_backup = true
+file_backup = true
+config_backup = true
+
+# Backup storage
+backup_location = "s3://${BACKUP_S3_BUCKET}/aion-r-backups"
+encryption_enabled = true
+encryption_key = "${BACKUP_ENCRYPTION_KEY}"
+
+[compliance]
+# Compliance and governance
+gdpr_enabled = true
+data_retention_days = 2555    # 7 years
+audit_retention_years = 7
+anonymization_enabled = true
+
+# Data classification
+classify_sensitive_data = true
+encrypt_pii = true
+mask_logs = true
+
+[scaling]
+# Auto-scaling configuration
+horizontal_scaling = true
+min_replicas = 3
+max_replicas = 20
+scale_up_threshold = 70       # CPU percentage
+scale_down_threshold = 30
+
+# Vertical scaling
+memory_scale_threshold = 80   # Memory percentage
+storage_scale_threshold = 85  # Storage percentage
+
+[external_apis]
+# Production external API configuration
+openai_api_key = "${OPENAI_API_KEY}"
+huggingface_api_key = "${HUGGINGFACE_API_KEY}"
+anthropic_api_key = "${ANTHROPIC_API_KEY}"
+
+# API timeouts and retries
+default_timeout = "60s"
+max_retries = 3
+retry_backoff = "exponential"
+
+# Circuit breaker
+circuit_breaker_enabled = true
+failure_threshold = 5
+reset_timeout = "60s"
+
+[environment]
+# Production environment
+name = "production"
+debug = false
+version = "${APP_VERSION}"
+commit_hash = "${GIT_COMMIT_HASH}"
+build_date = "${BUILD_DATE}"
+
+# Paths
+config_dir = "/app/config"
+data_dir = "/app/data"
+temp_dir = "/tmp"
+log_dir = "/app/logs"
+
+# Resource limits
+max_memory = "32GB"
+max_cpu_cores = 16
+max_disk_space = "1TB"
+
+[disaster_recovery]
+# Disaster recovery settings
+enabled = true
+backup_frequency = "hourly"
+replication_enabled = true
+failover_timeout = "300s"
+
+# Recovery targets
+rto = "1h"                    # Recovery Time Objective
+rpo = "15m"                   # Recovery Point Objective
+
+# Geographic distribution
+primary_region = "${PRIMARY_REGION}"
+secondary_region = "${SECONDARY_REGION}"

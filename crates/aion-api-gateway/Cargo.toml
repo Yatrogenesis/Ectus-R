@@ -1,0 +1,59 @@
+[package]
+name = "aion-api-gateway"
+version = "1.0.0"
+edition = "2021"
+description = "Enterprise API Gateway with load balancing and routing for AION-R"
+
+[dependencies]
+# Core dependencies
+aion-core = { path = "../aion-core" }
+aion-auth = { path = "../aion-auth" }
+
+# Web framework
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["full"] }
+hyper = "1.0"
+
+# Load balancing and routing
+# tower-load-shed = "0.3"
+# tower-limit = "0.2"
+# tower-timeout = "0.3"
+
+# Async
+tokio = { version = "1.0", features = ["full"] }
+futures = "0.3"
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Time and UUID
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json"] }
+
+# Rate limiting and caching
+governor = "0.6"
+moka = { version = "0.12", features = ["future"] }
+
+# Configuration
+config = "0.14"
+
+# Logging and metrics
+tracing = "0.1"
+metrics = "0.22"
+
+# Networking
+socket2 = "0.5"
+
+# Enterprise features
+dashmap = "5.5"
+fastrand = "2.0"
