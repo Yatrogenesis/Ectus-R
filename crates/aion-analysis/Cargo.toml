@@ -1,0 +1,91 @@
+[package]
+name = "aion-analysis"
+version = "0.1.0"
+edition = "2021"
+authors = ["AION Team <team@aion.dev>"]
+description = "Advanced code analysis and refactoring engine for AION"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-trait = "0.1"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+anyhow = "1.0"
+thiserror = "1.0"
+regex = "1.10"
+
+# Language parsing and analysis
+tree-sitter = "0.20"
+tree-sitter-rust = "0.20"
+tree-sitter-javascript = "0.20"
+tree-sitter-typescript = "0.20"
+tree-sitter-python = "0.20"
+tree-sitter-go = "0.20"
+tree-sitter-java = "0.20"
+tree-sitter-cpp = "0.20"
+tree-sitter-c = "0.20"
+tree-sitter-c-sharp = "0.20"
+
+# AST analysis
+syn = { version = "2.0", features = ["full", "extra-traits"] }
+quote = "1.0"
+proc-macro2 = "1.0"
+
+# File system operations
+walkdir = "2.4"
+ignore = "0.4"
+gitignore = "1.0"
+
+# Parallel processing
+rayon = "1.8"
+
+# Configuration
+toml = "0.8"
+yaml-rust = "0.4"
+
+# AI/ML for code analysis
+candle-core = "0.3"
+candle-nn = "0.3"
+candle-transformers = "0.3"
+
+# Code formatting
+rustfmt-nightly = { version = "1.6", optional = true }
+prettier = { version = "0.1", optional = true }
+
+# Linting
+clippy = { version = "0.1", optional = true }
+eslint = { version = "0.1", optional = true }
+
+# Testing
+tempfile = "3.8"
+
+[dev-dependencies]
+tokio-test = "0.4"
+criterion = "0.5"
+
+[features]
+default = ["all-languages"]
+all-languages = ["rust", "javascript", "typescript", "python", "go", "java", "cpp", "csharp"]
+rust = ["syn", "quote", "proc-macro2"]
+javascript = ["tree-sitter-javascript"]
+typescript = ["tree-sitter-typescript"]
+python = ["tree-sitter-python"]
+go = ["tree-sitter-go"]
+java = ["tree-sitter-java"]
+cpp = ["tree-sitter-cpp", "tree-sitter-c"]
+csharp = ["tree-sitter-c-sharp"]
+ai-analysis = ["candle-core", "candle-nn", "candle-transformers"]
+formatting = ["rustfmt-nightly", "prettier"]
+linting = ["clippy", "eslint"]
+
+[[bin]]
+name = "aion-analyzer"
+path = "src/bin/main.rs"
+
+[[bench]]
+name = "analysis_benchmark"
+harness = false
