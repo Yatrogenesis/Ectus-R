@@ -1,0 +1,52 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+import path from 'path'
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    port: 3000,
+    host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api'),
+      },
+      '/ws': {
+        target: 'ws://localhost:8080',
+        ws: true,
+        changeOrigin: true,
+      },
+    },
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['@headlessui/react', '@heroicons/react'],
+          charts: ['recharts'],
+          forms: ['react-hook-form', '@hookform/resolvers', 'zod'],
+          editor: ['monaco-editor', '@monaco-editor/react'],
+        },
+      },
+    },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
+})
