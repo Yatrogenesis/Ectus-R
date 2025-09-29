@@ -467,8 +467,8 @@ router.get('/health', async (request, env) => {
   return new Response(JSON.stringify({
     status: 'healthy',
     timestamp: Date.now(),
-    version: '3.0.0-huggingface-hybrid',
-    ai_model: 'openai/gpt-oss-120b',
+    version: '3.1.0-cloudflare-hybrid',
+    ai_model: '@cf/meta/llama-3.1-8b-instruct',
     fallback_enabled: true
   }), {
     headers: { 'Content-Type': 'application/json' },
@@ -494,83 +494,76 @@ router.post('/api/v1/deployments/magic-loop', async (request, env) => {
 
     const deploymentId = `deploy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Step 1: Try HuggingFace AI first
+    // Step 1: Try Cloudflare AI first with enhanced prompts
     let generatedCode = null;
     let generationMethod = 'template';
 
     try {
-      console.log('Attempting AI generation with HuggingFace GPT-OSS-120B...');
+      console.log('Attempting AI generation with Cloudflare AI...');
 
-      const optimizedPrompt = `Create a complete, functional web application for: "${prompt}"
+      const enhancedPrompt = `You are an expert web developer. Create a complete, fully functional web application.
+
+REQUEST: "${prompt}"
 
 CRITICAL REQUIREMENTS:
-- Generate ONLY pure HTML code that starts with <!DOCTYPE html>
-- Include complete inline CSS with modern styling
-- Include complete JavaScript functionality
-- NO markdown, NO code blocks, NO explanations
-- Make it fully functional and professional
-- Use modern design with gradients and animations
+1. Generate ONLY pure HTML code starting with <!DOCTYPE html>
+2. Include complete inline CSS with modern, beautiful styling
+3. Include complete JavaScript with full functionality
+4. NO markdown formatting, NO code blocks, NO explanations
+5. Make it completely functional and professional
+6. Use modern design: gradients, shadows, hover effects, rounded corners
+7. Ensure responsive design
 
-For calculators: Include ALL numbers 0-9 and operations +, -, *, /, =, clear
-For todo apps: Include add, delete, edit, mark complete functionality
-For timers: Include start, stop, reset with time input
-For other apps: Make them interactive and functional
+SPECIFIC REQUIREMENTS:
+- For calculators: Include ALL numbers 0-9, all operations (+, -, *, /, =), clear, backspace
+- For todo apps: Add, delete, edit, mark complete, local storage persistence
+- For timers: Start, stop, reset, custom time input, visual countdown
+- For weather: City search, mock weather data display, beautiful icons
+- For color pickers: RGB/HEX display, copy to clipboard, live preview
+- For other apps: Make them interactive, useful, and visually appealing
 
-Return ONLY the HTML code, nothing else.`;
+DESIGN STYLE:
+- Modern glassmorphism effect with backdrop-blur
+- Beautiful gradient backgrounds
+- Smooth animations and transitions
+- Professional typography
+- Intuitive user interface
+- Mobile-responsive design
 
-      const hfResponse = await fetch('https://api-inference.huggingface.co/models/openai/gpt-oss-120b', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          inputs: `System: You are an expert web developer. Generate ONLY clean HTML with inline CSS and JavaScript. No markdown, no explanations, just pure HTML starting with <!DOCTYPE html>.
+Return ONLY the complete HTML code, nothing else.`;
 
-User: ${optimizedPrompt}`,
-          parameters: {
-            max_new_tokens: 2000,
-            temperature: 0.7,
-            top_p: 0.9,
-            repetition_penalty: 1.1
-          }
-        })
+      const aiResponse = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+        messages: [
+          { role: 'system', content: 'You are an expert web developer who creates beautiful, functional web applications. Generate only clean HTML with inline CSS and JavaScript. Never use markdown or explanations.' },
+          { role: 'user', content: enhancedPrompt }
+        ],
+        max_tokens: 3000,
+        temperature: 0.3,
+        top_p: 0.9
       });
 
-      if (hfResponse.ok) {
-        const hfData = await hfResponse.json();
-        let aiCode = '';
+      let aiCode = aiResponse.response || '';
 
-        if (Array.isArray(hfData) && hfData[0] && hfData[0].generated_text) {
-          aiCode = hfData[0].generated_text;
-        } else if (hfData.generated_text) {
-          aiCode = hfData.generated_text;
-        } else {
-          throw new Error('Invalid HuggingFace response format');
-        }
+      // Clean the AI response
+      aiCode = aiCode.replace(/```html/g, '').replace(/```/g, '').trim();
 
-        // Clean the AI response
-        aiCode = aiCode.replace(/```html/g, '').replace(/```/g, '').trim();
+      // Extract HTML if it exists
+      const htmlMatch = aiCode.match(/<!DOCTYPE html[\s\S]*?<\/html>/i);
+      if (htmlMatch) {
+        aiCode = htmlMatch[0];
+      }
 
-        // Extract HTML if it starts with system prompt echo
-        const htmlMatch = aiCode.match(/<!DOCTYPE html[\s\S]*?<\/html>/i);
-        if (htmlMatch) {
-          aiCode = htmlMatch[0];
-        }
-
-        // Validate that we have proper HTML
-        if (aiCode.includes('<!DOCTYPE html') && aiCode.includes('</html>')) {
-          generatedCode = aiCode;
-          generationMethod = 'huggingface-ai';
-          console.log('✅ HuggingFace AI generation successful');
-        } else {
-          throw new Error('Generated code is not valid HTML');
-        }
+      // Validate that we have proper HTML
+      if (aiCode.includes('<!DOCTYPE html') && aiCode.includes('</html>') && aiCode.length > 500) {
+        generatedCode = aiCode;
+        generationMethod = 'cloudflare-ai';
+        console.log('✅ Cloudflare AI generation successful');
       } else {
-        throw new Error(`HuggingFace API error: ${hfResponse.status}`);
+        throw new Error('Generated code is not valid HTML or too short');
       }
 
     } catch (aiError) {
-      console.log('❌ HuggingFace AI generation failed:', aiError.message);
+      console.log('❌ Cloudflare AI generation failed:', aiError.message);
       console.log('🔄 Falling back to perfect template...');
     }
 
