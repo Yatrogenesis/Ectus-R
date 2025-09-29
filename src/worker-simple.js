@@ -328,7 +328,11 @@ router.all('*', () => {
 
 // Add CORS headers to all responses
 function addCorsHeaders(response) {
-  const newResponse = new Response(response.body, response);
+  const newResponse = new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers
+  });
   newResponse.headers.set('Access-Control-Allow-Origin', '*');
   newResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   newResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
