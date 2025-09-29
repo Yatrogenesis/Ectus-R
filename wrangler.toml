@@ -6,7 +6,6 @@ account_id = "b11ab3fe6c1a3625b65cb22d170793b6"
 
 [env.production]
 name = "ectus-r-saas-prod"
-route = "api.ectus.ai/*"
 
 [env.staging]
 name = "ectus-r-saas-staging"

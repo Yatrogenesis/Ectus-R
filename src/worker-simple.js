@@ -1,7 +1,49 @@
-// Simple Ectus-R SaaS API Worker for testing
+// Ectus-R SaaS API Worker with Domain Proxy
 import { Router } from 'itty-router';
 
 const router = Router();
+
+// Handle domain proxying for custom domains
+async function handleDomainProxy(request) {
+  const url = new URL(request.url);
+  const hostname = url.hostname;
+
+  const customDomains = [
+    'creator.avermex.com',
+    'demo.avermex.com',
+    'ectus.avermex.com',
+    'app.avermex.com',
+    'saas.avermex.com'
+  ];
+
+  if (customDomains.includes(hostname)) {
+    try {
+      const githubResponse = await fetch('https://yatrogenesis.github.io/Ectus-R/');
+      return new Response(githubResponse.body, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'public, max-age=300',
+          'X-Served-By': 'Ectus-R-SaaS'
+        }
+      });
+    } catch (error) {
+      return new Response(`
+        <!DOCTYPE html>
+        <html><head><title>Ectus-R SaaS</title></head>
+        <body style="font-family:system-ui;padding:40px;background:#0a0e27;color:white;text-align:center">
+          <h1 style="color:#00d9ff">Ectus-R SaaS Platform</h1>
+          <p>AI-Powered Development & Deployment Platform</p>
+          <p><a href="https://yatrogenesis.github.io/Ectus-R/" style="color:#00d9ff">View Full Demo</a></p>
+        </body></html>
+      `, {
+        status: 200,
+        headers: { 'Content-Type': 'text/html; charset=utf-8' }
+      });
+    }
+  }
+  return null;
+}
 
 // Health check endpoint
 router.get('/health', async (request, env) => {
@@ -85,6 +127,13 @@ router.all('*', () => {
 export default {
   async fetch(request, env, ctx) {
     try {
+      // First check if this is a domain proxy request
+      const proxyResponse = await handleDomainProxy(request);
+      if (proxyResponse) {
+        return proxyResponse;
+      }
+
+      // Otherwise handle as API
       return await router.handle(request, env, ctx);
     } catch (error) {
       return new Response(JSON.stringify({

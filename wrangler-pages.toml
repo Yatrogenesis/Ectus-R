@@ -1,0 +1,13 @@
+name = "ectus-pages-proxy"
+main = "src/pages-redirect.js"
+compatibility_date = "2024-01-01"
+account_id = "b11ab3fe6c1a3625b65cb22d170793b6"
+
+[env.production]
+name = "ectus-pages-proxy"
+routes = [
+  "demo.avermex.com/*",
+  "ectus.avermex.com/*",
+  "app.avermex.com/*",
+  "saas.avermex.com/*"
+]
