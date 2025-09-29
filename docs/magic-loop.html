@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ectus-R Magic Loop - AI-Powered App Generation</title>
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #0052a3;
+            --secondary: #00c851;
+            --accent: #ff3d00;
+            --text: #333;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg) 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .magic-loop-form {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .result .deployment-info {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .result .deployment-info strong {
+            color: var(--text);
+        }
+
+        .result .actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .result .actions a {
+            padding: 0.75rem 1.5rem;
+            background: var(--secondary);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+
+        .result .actions a:hover {
+            background: #00a844;
+        }
+
+        .examples {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .examples h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .example-item {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .example-item:hover {
+            background: var(--border);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+
+        .loading .spinner {
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .recent-deployments {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .deployment-list {
+            list-style: none;
+        }
+
+        .deployment-item {
+            background: var(--bg-light);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .deployment-item .info {
+            flex: 1;
+        }
+
+        .deployment-item .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .deployment-item .actions a {
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Magic Loop</h1>
+            <p>Transform your ideas into live applications using AI. Just describe what you want to build, and watch Ectus-R create it in seconds.</p>
+        </div>
+
+        <div class="examples">
+            <h3>Quick Examples (Click to Try)</h3>
+            <div class="example-item" onclick="fillPrompt('Create a simple calculator app with buttons for basic math operations')">
+                🧮 Simple Calculator App
+            </div>
+            <div class="example-item" onclick="fillPrompt('Create a todo list app with add, delete, and mark complete functionality')">
+                ✅ Todo List Manager
+            </div>
+            <div class="example-item" onclick="fillPrompt('Create a weather dashboard with current conditions display')">
+                🌤️ Weather Dashboard
+            </div>
+            <div class="example-item" onclick="fillPrompt('Create a simple timer app with start, stop, and reset buttons')">
+                ⏱️ Timer Application
+            </div>
+            <div class="example-item" onclick="fillPrompt('Create a color picker tool with RGB and HEX values')">
+                🎨 Color Picker Tool
+            </div>
+        </div>
+
+        <form class="magic-loop-form" id="magicLoopForm">
+            <div class="form-group">
+                <label for="prompt">Describe your application:</label>
+                <textarea
+                    id="prompt"
+                    name="prompt"
+                    placeholder="Example: Create a simple calculator app with buttons for basic math operations..."
+                    required
+                ></textarea>
+            </div>
+            <button type="submit" class="btn" id="generateBtn">
+                🚀 Generate Application
+            </button>
+        </form>
+
+        <div class="result" id="result">
+            <h3>✨ Application Generated Successfully!</h3>
+            <div class="deployment-info" id="deploymentInfo">
+                <!-- Deployment info will be inserted here -->
+            </div>
+            <div class="actions">
+                <a href="#" id="previewLink" target="_blank">👀 View Application</a>
+                <a href="#" id="apiLink" target="_blank">🔗 API Details</a>
+            </div>
+        </div>
+
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Generating your application with AI...</p>
+        </div>
+
+        <div class="recent-deployments">
+            <h3>Recent Deployments</h3>
+            <ul class="deployment-list" id="deploymentList">
+                <li>Loading recent deployments...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://ectus-r-saas.pako-molina.workers.dev/api/v1';
+
+        // Fill prompt from examples
+        function fillPrompt(text) {
+            document.getElementById('prompt').value = text;
+        }
+
+        // Load recent deployments
+        async function loadRecentDeployments() {
+            try {
+                const response = await fetch(`${API_BASE}/deployments`);
+                const data = await response.json();
+
+                const deploymentList = document.getElementById('deploymentList');
+
+                if (data.deployments && data.deployments.length > 0) {
+                    deploymentList.innerHTML = data.deployments.map(deployment => `
+                        <li class="deployment-item">
+                            <div class="info">
+                                <strong>${deployment.prompt.substring(0, 60)}${deployment.prompt.length > 60 ? '...' : ''}</strong><br>
+                                <small>ID: ${deployment.id} | Created: ${new Date(deployment.created_at).toLocaleString()}</small>
+                            </div>
+                            <div class="actions">
+                                <a href="${deployment.url}" target="_blank">View</a>
+                            </div>
+                        </li>
+                    `).join('');
+                } else {
+                    deploymentList.innerHTML = '<li>No deployments yet. Create your first application above!</li>';
+                }
+            } catch (error) {
+                console.error('Error loading deployments:', error);
+                document.getElementById('deploymentList').innerHTML = '<li>Error loading deployments</li>';
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('magicLoopForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const prompt = document.getElementById('prompt').value;
+            const generateBtn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+
+            if (!prompt.trim()) {
+                alert('Please enter a description for your application');
+                return;
+            }
+
+            // Show loading state
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+            loading.style.display = 'block';
+            result.classList.remove('show');
+
+            try {
+                const response = await fetch(`${API_BASE}/deployments/magic-loop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show result
+                    document.getElementById('deploymentInfo').innerHTML = `
+                        <p><strong>Deployment ID:</strong> ${data.deployment_id}</p>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                        <p><strong>Prompt:</strong> ${data.prompt}</p>
+                        <p><strong>Message:</strong> ${data.message}</p>
+                    `;
+
+                    document.getElementById('previewLink').href = data.preview_url;
+                    document.getElementById('apiLink').href = `${API_BASE}/deployments/${data.deployment_id}`;
+
+                    result.classList.add('show');
+
+                    // Reload recent deployments
+                    loadRecentDeployments();
+                } else {
+                    alert('Error generating application: ' + (data.message || 'Unknown error'));
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error generating application. Please try again.');
+            } finally {
+                // Reset form state
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🚀 Generate Application';
+                loading.style.display = 'none';
+            }
+        });
+
+        // Load recent deployments on page load
+        document.addEventListener('DOMContentLoaded', loadRecentDeployments);
+
+        // Auto-refresh deployments every 30 seconds
+        setInterval(loadRecentDeployments, 30000);
+    </script>
+</body>
+</html>
