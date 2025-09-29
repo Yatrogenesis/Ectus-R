@@ -8,31 +8,31 @@ description = "AI/ML engine for AION-R"
 aion-core = { path = "../aion-core" }
 
 # AI/ML frameworks
-candle-core = "0.3"
-candle-nn = "0.3"
-candle-transformers = "0.3"
-torch = { version = "0.13", optional = true }
+candle-core = { version = "0.3", optional = true }
+candle-nn = { version = "0.3", optional = true }
+candle-transformers = { version = "0.3", optional = true }
+torch = { version = "0.1", optional = true }
 tensorflow = { version = "0.21", optional = true }
 ort = { version = "1.16", features = ["copy-dylibs"], optional = true }  # ONNX Runtime
 
 # Machine Learning utilities
 nalgebra = "0.32"
 ndarray = "0.15"
-linfa = "0.7"
-linfa-clustering = "0.7"
-linfa-linear = "0.7"
-linfa-trees = "0.7"
-smartcore = "0.3"
+linfa = { version = "0.7", optional = true }
+linfa-clustering = { version = "0.7", optional = true }
+linfa-linear = { version = "0.7", optional = true }
+linfa-trees = { version = "0.7", optional = true }
+smartcore = { version = "0.3", optional = true }
 
 # Text processing and NLP
-tokenizers = "0.15"
-hf-hub = "0.3"
+tokenizers = { version = "0.15", optional = true }
+hf-hub = { version = "0.3", optional = true }
 regex = "1.10"
 unicode-normalization = "0.1"
 
 # Image processing
-image = "0.24"
-imageproc = "0.23"
+image = { version = "0.24", optional = true }
+imageproc = { version = "0.23", optional = true }
 
 # Audio processing
 rodio = { version = "0.17", optional = true }
@@ -76,12 +76,12 @@ flate2 = "1.0"
 tar = "0.4"
 
 [features]
-default = ["candle", "nlp", "vision"]
-candle = ["candle-core", "candle-nn", "candle-transformers"]
+default = []
+candle = ["dep:candle-core", "dep:candle-nn", "dep:candle-transformers"]
 torch = ["dep:torch"]
 tensorflow = ["dep:tensorflow"]
 onnx = ["dep:ort"]
-nlp = ["tokenizers", "hf-hub"]
-vision = ["image", "imageproc"]
+nlp = ["dep:tokenizers", "dep:hf-hub"]
+vision = ["dep:image", "dep:imageproc"]
 audio = ["dep:rodio", "dep:whisper-rs"]
-training = ["linfa", "smartcore"]
+training = ["dep:linfa", "dep:smartcore", "dep:linfa-clustering", "dep:linfa-linear", "dep:linfa-trees"]

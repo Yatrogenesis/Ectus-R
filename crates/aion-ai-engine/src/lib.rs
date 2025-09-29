@@ -28,6 +28,11 @@ pub mod autonomous_qa;
 pub mod template_engine;
 pub mod project_scaffolding;
 pub mod progress_tracking;
+pub mod bug_prediction;
+pub mod vulnerability_scanner;
+pub mod refactoring_engine;
+pub mod advanced_ai_assistant;
+pub mod ai_providers;
 
 pub use inference::*;
 pub use models::*;
