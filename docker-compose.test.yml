@@ -1,0 +1,136 @@
+# Docker Compose for Testing Environment
+version: '3.8'
+
+services:
+  # PostgreSQL Test Database
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: ectus-r-postgres-test
+    environment:
+      POSTGRES_DB: ectus_r_test
+      POSTGRES_USER: ectus_test
+      POSTGRES_PASSWORD: test_password_123
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ectus_test -d ectus_r_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ectus-test-network
+
+  # Redis for Caching (Test)
+  redis-test:
+    image: redis:7-alpine
+    container_name: ectus-r-redis-test
+    ports:
+      - "6380:6379"
+    command: redis-server --requirepass test_redis_password
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ectus-test-network
+
+  # AI Engine Test Service
+  ectus-ai-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai-engine
+      target: test
+    container_name: ectus-r-ai-test
+    environment:
+      - RUST_LOG=debug
+      - ECTUS_TEST_MODE=true
+      - DATABASE_URL=postgresql://ectus_test:test_password_123@postgres-test:5432/ectus_r_test
+      - REDIS_URL=redis://:test_redis_password@redis-test:6379
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    volumes:
+      - ./test-data:/app/test-data
+      - ./logs:/app/logs
+    networks:
+      - ectus-test-network
+    command: cargo test --release --all-features
+
+  # Web API Test Service
+  ectus-api-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.web-api
+      target: test
+    container_name: ectus-r-api-test
+    environment:
+      - RUST_LOG=debug
+      - ECTUS_TEST_MODE=true
+      - DATABASE_URL=postgresql://ectus_test:test_password_123@postgres-test:5432/ectus_r_test
+      - REDIS_URL=redis://:test_redis_password@redis-test:6379
+      - JWT_SECRET=test-jwt-secret-key-32-characters-long-for-testing
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      ectus-ai-test:
+        condition: service_completed_successfully
+    volumes:
+      - ./test-data:/app/test-data
+      - ./logs:/app/logs
+    networks:
+      - ectus-test-network
+    command: cargo test --release --all-features
+
+  # Load Testing with K6
+  load-test:
+    image: grafana/k6:latest
+    container_name: ectus-r-load-test
+    volumes:
+      - ./tests/load:/scripts
+    environment:
+      - K6_OUT=json=results.json
+    depends_on:
+      - ectus-api-test
+    networks:
+      - ectus-test-network
+    command: run --vus 10 --duration 30s /scripts/api-load-test.js
+
+  # Integration Test Runner
+  integration-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.integration-tests
+    container_name: ectus-r-integration-test
+    environment:
+      - API_BASE_URL=http://ectus-api-test:8080
+      - DATABASE_URL=postgresql://ectus_test:test_password_123@postgres-test:5432/ectus_r_test
+      - REDIS_URL=redis://:test_redis_password@redis-test:6379
+    depends_on:
+      - ectus-api-test
+    volumes:
+      - ./test-results:/app/results
+    networks:
+      - ectus-test-network
+    command: npm test
+
+volumes:
+  postgres_test_data:
+    driver: local
+
+networks:
+  ectus-test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
