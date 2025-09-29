@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ectus-R Creator | Autonomous Software Engineering</title>
+    <link rel="icon" href="https://api.iconify.design/logos:rust.svg" type="image/svg+xml">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            color: white;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo img {
+            width: 60px;
+            height: 60px;
+        }
+
+        .logo h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #666;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .magic-loop {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .prompt-input {
+            width: 100%;
+            max-width: 600px;
+            padding: 1rem;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .deploy-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .deploy-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .deploy-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            padding: 1.5rem;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .deployments-list {
+            list-style: none;
+        }
+
+        .deployment-item {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .deployment-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .api-section {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+        }
+
+        .endpoint {
+            background: white;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+        }
+
+        .method {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .method.get { background: #d4edda; color: #155724; }
+        .method.post { background: #cce5ff; color: #0066cc; }
+        .method.put { background: #fff3cd; color: #856404; }
+        .method.delete { background: #f8d7da; color: #721c24; }
+
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: white;
+            opacity: 0.8;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <img src="https://api.iconify.design/logos:rust.svg" alt="Ectus-R">
+                <h1>Ectus-R Creator</h1>
+            </div>
+            <p class="tagline">Autonomous Software Engineering Platform</p>
+            <div class="status">
+                <div class="status-dot"></div>
+                <span id="status-text">System Operational</span>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <nav class="nav-tabs">
+                <button class="tab active" onclick="showTab('magic-loop')">Magic Loop</button>
+                <button class="tab" onclick="showTab('deployments')">Deployments</button>
+                <button class="tab" onclick="showTab('api')">API Reference</button>
+                <button class="tab" onclick="showTab('settings')">Settings</button>
+            </nav>
+
+            <div id="magic-loop" class="tab-content active">
+                <div class="magic-loop">
+                    <h2>Magic Loop Deployment</h2>
+                    <p>Describe what you want to build, and Ectus-R will generate, deploy, and deliver a production-ready application.</p>
+
+                    <form onsubmit="deployFromPrompt(event)">
+                        <textarea
+                            class="prompt-input"
+                            id="prompt-input"
+                            placeholder="Describe your application idea...&#10;&#10;Examples:&#10;• Create a REST API for a blog with posts and comments&#10;• Build a real-time chat application with WebSocket support&#10;• Develop a task management system with user authentication"
+                            required
+                        ></textarea>
+                        <br>
+                        <button type="submit" class="deploy-btn" id="deploy-btn">
+                            Deploy Now
+                        </button>
+                    </form>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Lightning Fast</h3>
+                        <p>From prompt to production URL in under 5 minutes with global edge deployment.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3>AI-Powered</h3>
+                        <p>Advanced AI understands your requirements and generates optimized, production-ready code.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Enterprise Ready</h3>
+                        <p>Built-in security, compliance frameworks, and enterprise-grade infrastructure.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="deployments" class="tab-content">
+                <h2>Recent Deployments</h2>
+                <ul class="deployments-list" id="deployments-list">
+                    <li class="deployment-item">
+                        <div>
+                            <strong>Blog API System</strong>
+                            <div style="font-size: 0.9rem; color: #666;">2 hours ago</div>
+                        </div>
+                        <span class="deployment-status status-completed">Completed</span>
+                    </li>
+                    <li class="deployment-item">
+                        <div>
+                            <strong>Task Management App</strong>
+                            <div style="font-size: 0.9rem; color: #666;">5 hours ago</div>
+                        </div>
+                        <span class="deployment-status status-completed">Completed</span>
+                    </li>
+                    <li class="deployment-item">
+                        <div>
+                            <strong>Chat Application</strong>
+                            <div style="font-size: 0.9rem; color: #666;">1 day ago</div>
+                        </div>
+                        <span class="deployment-status status-pending">Deploying</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="api" class="tab-content">
+                <h2>API Reference</h2>
+                <div class="api-section">
+                    <h3>Authentication</h3>
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <span>/auth/register</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <span>/auth/login</span>
+                    </div>
+
+                    <h3>Magic Loop</h3>
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <span>/api/v1/deployments/magic-loop</span>
+                    </div>
+
+                    <h3>System</h3>
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <span>/health</span>
+                    </div>
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <span>/status</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings" class="tab-content">
+                <h2>Settings</h2>
+                <div class="api-section">
+                    <h3>API Configuration</h3>
+                    <p><strong>Base URL:</strong> https://ectus-r-saas.pako-molina.workers.dev</p>
+                    <p><strong>Custom Domain:</strong> creator.avermex.com</p>
+                    <p><strong>Environment:</strong> Production</p>
+                    <p><strong>Version:</strong> 1.0.0</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Powered by Ectus-R | Cloudflare Workers | Rust + WebAssembly</p>
+        </footer>
+    </div>
+
+    <script>
+        const API_BASE = 'https://ectus-r-saas.pako-molina.workers.dev';
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        async function deployFromPrompt(event) {
+            event.preventDefault();
+
+            const promptInput = document.getElementById('prompt-input');
+            const deployBtn = document.getElementById('deploy-btn');
+            const prompt = promptInput.value.trim();
+
+            if (!prompt) return;
+
+            // Update button state
+            deployBtn.disabled = true;
+            deployBtn.innerHTML = '<span class="loading"></span> Deploying...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/deployments/magic-loop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        options: {
+                            environment: 'production',
+                            auto_scaling: true,
+                            enable_monitoring: true
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(`Deployment started successfully!\nDeployment ID: ${result.deployment_id}\nTrack progress in the Deployments tab.`);
+                    promptInput.value = '';
+                    loadDeployments();
+                } else {
+                    alert(`Deployment failed: ${result.error || 'Unknown error'}`);
+                }
+            } catch (error) {
+                alert(`Network error: ${error.message}`);
+            } finally {
+                deployBtn.disabled = false;
+                deployBtn.innerHTML = 'Deploy Now';
+            }
+        }
+
+        async function loadDeployments() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/deployments`);
+                const deployments = await response.json();
+
+                // Update deployments list
+                // This would populate real deployment data
+                console.log('Deployments loaded:', deployments);
+            } catch (error) {
+                console.error('Failed to load deployments:', error);
+            }
+        }
+
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const status = await response.json();
+
+                const statusText = document.getElementById('status-text');
+                if (response.ok && status.status === 'healthy') {
+                    statusText.textContent = 'System Operational';
+                } else {
+                    statusText.textContent = 'System Issues Detected';
+                }
+            } catch (error) {
+                document.getElementById('status-text').textContent = 'Connection Error';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            loadDeployments();
+
+            // Check status every 30 seconds
+            setInterval(checkSystemStatus, 30000);
+        });
+    </script>
+</body>
+</html>

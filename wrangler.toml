@@ -49,19 +49,19 @@ database_id = "4bf3d0a1-cff9-4fc2-9b4a-9ff85bdd3de3"
 # bucket_name = "ectus-r-storage"
 # R2 bucket creation requires enabling R2 in Cloudflare Dashboard first
 
-# Durable Objects for real-time features
-[[durable_objects.bindings]]
-name = "DEPLOYMENT_TRACKER"
-class_name = "DeploymentTracker"
+# Durable Objects for real-time features (commented until implemented)
+# [[durable_objects.bindings]]
+# name = "DEPLOYMENT_TRACKER"
+# class_name = "DeploymentTracker"
 
-[[durable_objects.bindings]]
-name = "WEBSOCKET_MANAGER"
-class_name = "WebSocketManager"
+# [[durable_objects.bindings]]
+# name = "WEBSOCKET_MANAGER"
+# class_name = "WebSocketManager"
 
-# Durable Object migrations
-[[migrations]]
-tag = "v1"
-new_classes = ["DeploymentTracker", "WebSocketManager"]
+# Durable Object migrations (commented until implemented)
+# [[migrations]]
+# tag = "v1"
+# new_classes = ["DeploymentTracker", "WebSocketManager"]
 
 # Queue for background processing (commented until queue is created)
 # [[queues]]

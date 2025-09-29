@@ -6,6 +6,17 @@ on:
     tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+        - development
   schedule:
     # Run daily at 2 AM UTC for security scans
     - cron: '0 2 * * *'
