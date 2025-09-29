@@ -14,6 +14,61 @@ use crate::inference::{InferenceEngine, InferenceRequest, InferenceResult};
 use crate::nlp::NLPProcessor;
 use crate::models::{ModelMetadata, ModelCapability};
 
+// String helper traits for code generation
+trait StringExtensions {
+    fn to_pascal_case(&self) -> String;
+    fn to_camel_case(&self) -> String;
+    fn to_snake_case(&self) -> String;
+    fn to_title_case(&self) -> String;
+}
+
+impl StringExtensions for str {
+    fn to_pascal_case(&self) -> String {
+        self.split('_')
+            .map(|word| {
+                let mut chars = word.chars();
+                match chars.next() {
+                    None => String::new(),
+                    Some(first) => first.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase(),
+                }
+            })
+            .collect()
+    }
+
+    fn to_camel_case(&self) -> String {
+        let pascal = self.to_pascal_case();
+        let mut chars = pascal.chars();
+        match chars.next() {
+            None => String::new(),
+            Some(first) => first.to_lowercase().collect::<String>() + chars.as_str(),
+        }
+    }
+
+    fn to_snake_case(&self) -> String {
+        let mut result = String::new();
+        for (i, ch) in self.char_indices() {
+            if ch.is_uppercase() && i > 0 {
+                result.push('_');
+            }
+            result.push(ch.to_lowercase().next().unwrap_or(ch));
+        }
+        result.replace(" ", "_")
+    }
+
+    fn to_title_case(&self) -> String {
+        self.split_whitespace()
+            .map(|word| {
+                let mut chars = word.chars();
+                match chars.next() {
+                    None => String::new(),
+                    Some(first) => first.to_uppercase().collect::<String>() + &chars.as_str().to_lowercase(),
+                }
+            })
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+}
+
 /// Main code generation engine that analyzes requirements and generates code
 pub struct CodeGenerationEngine {
     inference_engine: Arc<InferenceEngine>,
@@ -590,10 +645,93 @@ impl CodeGenerationEngine {
 
     fn parse_architecture_design(&self, result: InferenceResult) -> Result<SystemArchitecture> {
         // Parse AI response into architecture
+        let response_text = match result.output {
+            crate::inference::InferenceOutput::Text(text) => text,
+            _ => return Err(AIEngineError::InvalidOutput("Expected text output".to_string())),
+        };
+
+        // Simple pattern-based parsing for architecture components
+        let mut components = Vec::new();
+        let mut connections = Vec::new();
+        let mut layers = Vec::new();
+
+        // Parse components from response (looking for structured patterns)
+        if response_text.contains("API Gateway") {
+            components.push(Component {
+                name: "api_gateway".to_string(),
+                component_type: "gateway".to_string(),
+                responsibilities: vec!["Route requests".to_string(), "Authentication".to_string()],
+                dependencies: vec!["auth_service".to_string()],
+            });
+        }
+
+        if response_text.contains("Database") {
+            components.push(Component {
+                name: "database".to_string(),
+                component_type: "storage".to_string(),
+                responsibilities: vec!["Data persistence".to_string(), "CRUD operations".to_string()],
+                dependencies: vec![],
+            });
+        }
+
+        if response_text.contains("Authentication") || response_text.contains("Auth") {
+            components.push(Component {
+                name: "auth_service".to_string(),
+                component_type: "service".to_string(),
+                responsibilities: vec!["User authentication".to_string(), "Token validation".to_string()],
+                dependencies: vec!["database".to_string()],
+            });
+        }
+
+        if response_text.contains("Business Logic") || response_text.contains("Core Service") {
+            components.push(Component {
+                name: "core_service".to_string(),
+                component_type: "service".to_string(),
+                responsibilities: vec!["Business logic".to_string(), "Data processing".to_string()],
+                dependencies: vec!["database".to_string(), "auth_service".to_string()],
+            });
+        }
+
+        // Generate connections based on dependencies
+        for component in &components {
+            for dep in &component.dependencies {
+                connections.push(Connection {
+                    from: component.name.clone(),
+                    to: dep.clone(),
+                    protocol: "HTTP".to_string(),
+                });
+            }
+        }
+
+        // Create standard layers
+        layers.push(Layer {
+            name: "presentation".to_string(),
+            components: components.iter()
+                .filter(|c| c.component_type == "gateway" || c.component_type == "controller")
+                .map(|c| c.name.clone())
+                .collect(),
+        });
+
+        layers.push(Layer {
+            name: "business".to_string(),
+            components: components.iter()
+                .filter(|c| c.component_type == "service")
+                .map(|c| c.name.clone())
+                .collect(),
+        });
+
+        layers.push(Layer {
+            name: "data".to_string(),
+            components: components.iter()
+                .filter(|c| c.component_type == "storage")
+                .map(|c| c.name.clone())
+                .collect(),
+        });
+
         Ok(SystemArchitecture {
-            components: vec![],
-            connections: vec![],
-            layers: vec![],
+            components,
+            connections,
+            layers,
         })
     }
 
@@ -602,8 +740,464 @@ impl CodeGenerationEngine {
     }
 
     fn parse_generated_code(&self, result: InferenceResult, component: &Component, language: &ProgrammingLanguage) -> Result<Vec<GeneratedFile>> {
-        // Parse AI-generated code
-        Ok(vec![])
+        let mut generated_files = Vec::new();
+
+        // Extract the AI-generated content
+        let ai_content = match result.output {
+            crate::inference::InferenceOutput::Text(text) => text,
+            _ => return Err(AIEngineError::InvalidOutput("Expected text output".to_string())),
+        };
+
+        // Generate code based on component type and language
+        match (component.component_type.as_str(), language) {
+            ("service", ProgrammingLanguage::Rust) => {
+                self.generate_rust_service(component, &ai_content, &mut generated_files)?;
+            }
+            ("service", ProgrammingLanguage::TypeScript) => {
+                self.generate_typescript_service(component, &ai_content, &mut generated_files)?;
+            }
+            ("service", ProgrammingLanguage::Python) => {
+                self.generate_python_service(component, &ai_content, &mut generated_files)?;
+            }
+            ("gateway", _) => {
+                self.generate_gateway_code(component, language, &ai_content, &mut generated_files)?;
+            }
+            ("storage", _) => {
+                self.generate_storage_code(component, language, &ai_content, &mut generated_files)?;
+            }
+            _ => {
+                self.generate_generic_code(component, language, &ai_content, &mut generated_files)?;
+            }
+        }
+
+        Ok(generated_files)
+    }
+
+    fn generate_rust_service(&self, component: &Component, ai_content: &str, files: &mut Vec<GeneratedFile>) -> Result<()> {
+        use std::path::PathBuf;
+
+        // Generate main service file
+        let main_content = format!(
+            r#"//! {} Service
+//!
+//! This service handles: {}
+//!
+//! Generated by AION-R AI Engine
+
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use serde::{{Serialize, Deserialize}};
+use uuid::Uuid;
+use anyhow::Result;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct {}Service {{
+    id: Uuid,
+    state: Arc<RwLock<{}State>>,
+}}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct {}State {{
+    pub initialized: bool,
+    pub metadata: std::collections::HashMap<String, String>,
+}}
+
+impl {}Service {{
+    pub fn new() -> Self {{
+        Self {{
+            id: Uuid::new_v4(),
+            state: Arc::new(RwLock::new({}State {{
+                initialized: false,
+                metadata: std::collections::HashMap::new(),
+            }})),
+        }}
+    }}
+
+    pub async fn initialize(&self) -> Result<()> {{
+        let mut state = self.state.write().await;
+        state.initialized = true;
+        tracing::info!("{} service initialized with ID: {{}}", self.id);
+        Ok(())
+    }}
+
+    {}
+}}
+
+impl Default for {}Service {{
+    fn default() -> Self {{
+        Self::new()
+    }}
+}}
+
+#[cfg(test)]
+mod tests {{
+    use super::*;
+
+    #[tokio::test]
+    async fn test_{}_creation() {{
+        let service = {}Service::new();
+        assert!(!service.state.read().await.initialized);
+    }}
+
+    #[tokio::test]
+    async fn test_{}_initialization() {{
+        let service = {}Service::new();
+        service.initialize().await.unwrap();
+        assert!(service.state.read().await.initialized);
+    }}
+}}
+"#,
+            component.name.replace("_", " ").to_title_case(),
+            component.responsibilities.join(", "),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            self.generate_service_methods(component),
+            component.name.to_pascal_case(),
+            component.name.to_snake_case(),
+            component.name.to_pascal_case(),
+            component.name.to_snake_case(),
+            component.name.to_pascal_case(),
+        );
+
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{}.rs", component.name)),
+            content: main_content,
+            language: *language,
+            purpose: format!("{} service implementation", component.name),
+            dependencies: self.extract_rust_dependencies(),
+            exports: vec![format!("{}Service", component.name.to_pascal_case())],
+        });
+
+        // Generate configuration file
+        let config_content = format!(
+            r#"//! Configuration for {} service
+
+use serde::{{Serialize, Deserialize}};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct {}Config {{
+    pub host: String,
+    pub port: u16,
+    pub max_connections: usize,
+    pub timeout_ms: u64,
+}}
+
+impl Default for {}Config {{
+    fn default() -> Self {{
+        Self {{
+            host: "0.0.0.0".to_string(),
+            port: 8080,
+            max_connections: 100,
+            timeout_ms: 30000,
+        }}
+    }}
+}}
+"#,
+            component.name,
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+        );
+
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{}_config.rs", component.name)),
+            content: config_content,
+            language: *language,
+            purpose: format!("{} service configuration", component.name),
+            dependencies: vec!["serde".to_string()],
+            exports: vec![format!("{}Config", component.name.to_pascal_case())],
+        });
+
+        Ok(())
+    }
+
+    fn generate_typescript_service(&self, component: &Component, ai_content: &str, files: &mut Vec<GeneratedFile>) -> Result<()> {
+        use std::path::PathBuf;
+
+        let service_content = format!(
+            r#"/**
+ * {} Service
+ *
+ * This service handles: {}
+ *
+ * Generated by AION-R AI Engine
+ */
+
+import {{ v4 as uuidv4 }} from 'uuid';
+import {{ EventEmitter }} from 'events';
+
+export interface {}Config {{
+  host: string;
+  port: number;
+  maxConnections: number;
+  timeoutMs: number;
+}}
+
+export interface {}State {{
+  initialized: boolean;
+  metadata: Map<string, string>;
+}}
+
+export class {}Service extends EventEmitter {{
+  private readonly id: string;
+  private state: {}State;
+  private config: {}Config;
+
+  constructor(config: Partial<{}Config> = {{}}) {{
+    super();
+    this.id = uuidv4();
+    this.config = {{
+      host: '0.0.0.0',
+      port: 8080,
+      maxConnections: 100,
+      timeoutMs: 30000,
+      ...config
+    }};
+
+    this.state = {{
+      initialized: false,
+      metadata: new Map(),
+    }};
+  }}
+
+  async initialize(): Promise<void> {{
+    this.state.initialized = true;
+    console.log(`{} service initialized with ID: ${{this.id}}`);
+    this.emit('initialized', {{ id: this.id }});
+  }}
+
+  getId(): string {{
+    return this.id;
+  }}
+
+  getState(): {}State {{
+    return {{ ...this.state }};
+  }}
+
+  isInitialized(): boolean {{
+    return this.state.initialized;
+  }}
+
+  {}
+}}
+
+export default {}Service;
+"#,
+            component.name.replace("_", " ").to_title_case(),
+            component.responsibilities.join(", "),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            self.generate_typescript_methods(component),
+            component.name.to_pascal_case(),
+        );
+
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{}.ts", component.name.replace("_", "-"))),
+            content: service_content,
+            language: *language,
+            purpose: format!("{} service implementation", component.name),
+            dependencies: vec!["uuid".to_string(), "events".to_string()],
+            exports: vec![format!("{}Service", component.name.to_pascal_case())],
+        });
+
+        Ok(())
+    }
+
+    fn generate_python_service(&self, component: &Component, ai_content: &str, files: &mut Vec<GeneratedFile>) -> Result<()> {
+        use std::path::PathBuf;
+
+        let service_content = format!(
+            r#""""
+{} Service
+
+This service handles: {}
+
+Generated by AION-R AI Engine
+"""
+
+import uuid
+import asyncio
+from typing import Dict, Optional, Any
+from dataclasses import dataclass, field
+from abc import ABC, abstractmethod
+
+@dataclass
+class {}Config:
+    host: str = "0.0.0.0"
+    port: int = 8080
+    max_connections: int = 100
+    timeout_ms: int = 30000
+
+@dataclass
+class {}State:
+    initialized: bool = False
+    metadata: Dict[str, str] = field(default_factory=dict)
+
+class {}Service:
+    """Main {} service implementation."""
+
+    def __init__(self, config: Optional[{}Config] = None):
+        self.id = str(uuid.uuid4())
+        self.config = config or {}Config()
+        self.state = {}State()
+
+    async def initialize(self) -> None:
+        """Initialize the service."""
+        self.state.initialized = True
+        print(f"{} service initialized with ID: {{self.id}}")
+
+    @property
+    def is_initialized(self) -> bool:
+        """Check if service is initialized."""
+        return self.state.initialized
+
+    def get_id(self) -> str:
+        """Get service ID."""
+        return self.id
+
+    def get_state(self) -> {}State:
+        """Get current service state."""
+        return self.state
+
+    {}
+
+if __name__ == "__main__":
+    # Example usage
+    async def main():
+        service = {}Service()
+        await service.initialize()
+        print(f"Service initialized: {{service.is_initialized}}")
+
+    asyncio.run(main())
+"#,
+            component.name.replace("_", " ").title(),
+            component.responsibilities.join(", "),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.replace("_", " ").title(),
+            component.name.to_pascal_case(),
+            component.name.to_pascal_case(),
+            component.name.replace("_", " ").title(),
+            component.name.to_pascal_case(),
+            self.generate_python_methods(component),
+            component.name.to_pascal_case(),
+        );
+
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{}.py", component.name)),
+            content: service_content,
+            language: *language,
+            purpose: format!("{} service implementation", component.name),
+            dependencies: vec!["uuid".to_string(), "asyncio".to_string(), "typing".to_string(), "dataclasses".to_string()],
+            exports: vec![format!("{}Service", component.name.to_pascal_case())],
+        });
+
+        Ok(())
+    }
+
+    fn generate_gateway_code(&self, component: &Component, language: &ProgrammingLanguage, ai_content: &str, files: &mut Vec<GeneratedFile>) -> Result<()> {
+        // Gateway-specific code generation
+        Ok(())
+    }
+
+    fn generate_storage_code(&self, component: &Component, language: &ProgrammingLanguage, ai_content: &str, files: &mut Vec<GeneratedFile>) -> Result<()> {
+        // Storage-specific code generation
+        Ok(())
+    }
+
+    fn generate_generic_code(&self, component: &Component, language: &ProgrammingLanguage, ai_content: &str, files: &mut Vec<GeneratedFile>) -> Result<()> {
+        // Generic code generation
+        Ok(())
+    }
+
+    fn generate_service_methods(&self, component: &Component) -> String {
+        let mut methods = String::new();
+
+        for responsibility in &component.responsibilities {
+            let method_name = responsibility.to_snake_case().replace(" ", "_");
+            methods.push_str(&format!(
+                r#"
+    /// {}
+    pub async fn {}(&self) -> Result<()> {{
+        let _state = self.state.read().await;
+        // TODO: Implement {}
+        tracing::info!("Executing: {}", "{}");
+        Ok(())
+    }}"#,
+                responsibility,
+                method_name,
+                responsibility.to_lowercase(),
+                responsibility
+            ));
+        }
+
+        methods
+    }
+
+    fn generate_typescript_methods(&self, component: &Component) -> String {
+        let mut methods = String::new();
+
+        for responsibility in &component.responsibilities {
+            let method_name = responsibility.to_camel_case();
+            methods.push_str(&format!(
+                r#"
+  /**
+   * {}
+   */
+  async {}(): Promise<void> {{
+    // TODO: Implement {}
+    console.log('Executing: {}');
+  }}"#,
+                responsibility,
+                method_name,
+                responsibility.to_lowercase(),
+                responsibility
+            ));
+        }
+
+        methods
+    }
+
+    fn generate_python_methods(&self, component: &Component) -> String {
+        let mut methods = String::new();
+
+        for responsibility in &component.responsibilities {
+            let method_name = responsibility.to_snake_case().replace(" ", "_");
+            methods.push_str(&format!(
+                r#"
+    async def {}(self) -> None:
+        """{}"""
+        # TODO: Implement {}
+        print(f"Executing: {}")
+"#,
+                method_name,
+                responsibility,
+                responsibility.to_lowercase(),
+                responsibility
+            ));
+        }
+
+        methods
+    }
+
+    fn extract_rust_dependencies(&self) -> Vec<String> {
+        vec![
+            "tokio".to_string(),
+            "serde".to_string(),
+            "uuid".to_string(),
+            "anyhow".to_string(),
+            "tracing".to_string(),
+        ]
     }
 
     async fn generate_file_tests(&self, file: &GeneratedFile, language: &ProgrammingLanguage) -> Result<Vec<GeneratedTest>> {

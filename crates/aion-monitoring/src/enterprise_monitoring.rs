@@ -8,6 +8,8 @@ use uuid::Uuid;
 use chrono::{DateTime, Utc};
 use tokio::sync::RwLock;
 use std::sync::Arc;
+use crate::real_time_monitor::{RealTimeMonitor, MetricUpdate};
+use crate::websocket_service::WebSocketService;
 
 /// Enterprise monitoring orchestrator
 pub struct EnterpriseMonitoringSystem {
@@ -21,6 +23,8 @@ pub struct EnterpriseMonitoringSystem {
     compliance_monitor: Arc<ComplianceMonitor>,
     synthetic_monitor: Arc<SyntheticMonitor>,
     anomaly_detector: Arc<AnomalyDetector>,
+    real_time_monitor: Arc<RealTimeMonitor>,
+    websocket_service: Arc<WebSocketService>,
     config: MonitoringConfig,
 }
 
@@ -502,6 +506,9 @@ impl AnomalyDetector {
 
 impl EnterpriseMonitoringSystem {
     pub fn new(config: MonitoringConfig) -> Self {
+        let real_time_monitor = Arc::new(RealTimeMonitor::new());
+        let websocket_service = Arc::new(WebSocketService::new(Arc::clone(&real_time_monitor)));
+
         Self {
             metrics_collectors: Arc::new(RwLock::new(HashMap::new())),
             log_aggregators: Arc::new(RwLock::new(HashMap::new())),
@@ -513,6 +520,8 @@ impl EnterpriseMonitoringSystem {
             compliance_monitor: Arc::new(ComplianceMonitor::new(config.compliance_config.clone())),
             synthetic_monitor: Arc::new(SyntheticMonitor::new(config.synthetic_config.clone())),
             anomaly_detector: Arc::new(AnomalyDetector::new(config.anomaly_config.clone())),
+            real_time_monitor,
+            websocket_service,
             config,
         }
     }
@@ -594,8 +603,24 @@ impl EnterpriseMonitoringSystem {
         Ok(health_report)
     }
 
-    async fn setup_resource_monitoring(&self, _resource: &CloudResource) -> Result<()> {
-        // Implementation would set up monitoring for specific resource
+    async fn setup_resource_monitoring(&self, resource: &CloudResource) -> Result<()> {
+        // Start real-time monitoring for the resource
+        self.real_time_monitor.start_background_monitoring().await?;
+
+        // Record initial resource metrics
+        let metric_update = MetricUpdate {
+            name: format!("{}.setup", resource.name),
+            value: 1.0,
+            timestamp: chrono::Utc::now(),
+            tags: vec![
+                ("resource_type".to_string(), resource.resource_type.clone()),
+                ("region".to_string(), resource.region.clone()),
+                ("provider".to_string(), resource.provider.to_string()),
+            ],
+            metadata: std::collections::HashMap::new(),
+        };
+
+        self.real_time_monitor.record_metric(metric_update).await?;
         Ok(())
     }
 
@@ -637,6 +662,54 @@ impl EnterpriseMonitoringSystem {
             last_check: Utc::now(),
             details: HashMap::new(),
         })
+    }
+
+    /// Get access to the real-time monitor
+    pub fn get_real_time_monitor(&self) -> Arc<RealTimeMonitor> {
+        Arc::clone(&self.real_time_monitor)
+    }
+
+    /// Get access to the websocket service
+    pub fn get_websocket_service(&self) -> Arc<WebSocketService> {
+        Arc::clone(&self.websocket_service)
+    }
+
+    /// Record a metric through the real-time monitoring system
+    pub async fn record_metric(&self, metric: MetricUpdate) -> Result<()> {
+        self.real_time_monitor.record_metric(metric).await
+    }
+
+    /// Start real-time monitoring for this deployment
+    pub async fn start_real_time_monitoring(&self) -> Result<()> {
+        self.real_time_monitor.start_background_monitoring().await
+    }
+
+    /// Get current system metrics
+    pub async fn get_system_metrics(&self) -> Result<Vec<MetricUpdate>> {
+        let metrics = vec![
+            "system.cpu.usage_percent".to_string(),
+            "system.memory.usage_percent".to_string(),
+            "system.disk.usage_percent".to_string(),
+        ];
+
+        let time_range = Some(std::time::Duration::from_secs(60)); // Last minute
+        let metric_data = self.real_time_monitor.get_metrics(&metrics, time_range).await?;
+
+        // Convert metric data to MetricUpdates
+        let mut updates = Vec::new();
+        for (name, data_points) in metric_data {
+            if let Some(latest_point) = data_points.last() {
+                updates.push(MetricUpdate {
+                    name,
+                    value: latest_point.value,
+                    timestamp: latest_point.timestamp,
+                    tags: vec![],
+                    metadata: std::collections::HashMap::new(),
+                });
+            }
+        }
+
+        Ok(updates)
     }
 }
 

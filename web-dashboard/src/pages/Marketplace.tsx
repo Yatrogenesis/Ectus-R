@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import {
   MagnifyingGlassIcon,
   StarIcon,
@@ -12,48 +12,11 @@ import {
   ShieldCheckIcon,
   CurrencyDollarIcon,
   PlusIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { cn, formatNumber, formatRelativeTime } from '@/lib/utils'
-
-interface MarketplaceItem {
-  id: string
-  name: string
-  description: string
-  shortDescription: string
-  category: string
-  type: 'plugin' | 'template' | 'component' | 'tool'
-  author: {
-    name: string
-    avatar?: string
-    verified: boolean
-    followers: number
-  }
-  pricing: {
-    type: 'free' | 'paid' | 'freemium'
-    price?: number
-    currency?: string
-  }
-  stats: {
-    downloads: number
-    stars: number
-    reviews: number
-    rating: number
-    favorites: number
-  }
-  metadata: {
-    version: string
-    size: string
-    lastUpdated: string
-    license: string
-    compatibility: string[]
-  }
-  tags: string[]
-  images: string[]
-  featured: boolean
-  trending: boolean
-  sponsored: boolean
-}
+import { useMarketplace, type MarketplaceItem, type SearchFilters } from '@/hooks/useMarketplace'
 
 const mockItems: MarketplaceItem[] = [
   {
@@ -258,64 +221,61 @@ const pricing = ['All Pricing', 'free', 'paid', 'freemium']
 const sortOptions = ['Featured', 'Most Popular', 'Highest Rated', 'Newest', 'Price: Low to High', 'Price: High to Low']
 
 export default function Marketplace() {
+  const {
+    items,
+    loading,
+    error,
+    categories,
+    stats,
+    searchItems,
+    installItem,
+    getFeatured,
+  } = useMarketplace()
+
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All Categories')
   const [selectedType, setSelectedType] = useState('All Types')
   const [selectedPricing, setSelectedPricing] = useState('All Pricing')
   const [sortBy, setSortBy] = useState('Featured')
   const [favorites, setFavorites] = useState<string[]>(['1', '4'])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [searchResults, setSearchResults] = useState<any>(null)
+  const [featuredItems, setFeaturedItems] = useState<MarketplaceItem[]>([])
 
-  const filteredItems = useMemo(() => {
-    let filtered = mockItems
+  // Load initial data and perform search
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const filters: SearchFilters = {
+          category: selectedCategory,
+          type: selectedType,
+          pricing: selectedPricing,
+        }
 
-    if (searchQuery) {
-      filtered = filtered.filter(item =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-    }
+        const pagination = {
+          page: currentPage,
+          perPage: 20,
+          sortBy: sortBy.toLowerCase().replace(/\s+/g, '_'),
+          sortOrder: 'desc' as const,
+        }
 
-    if (selectedCategory !== 'All Categories') {
-      filtered = filtered.filter(item => item.category === selectedCategory)
-    }
+        const results = await searchItems(searchQuery || undefined, filters, pagination)
+        setSearchResults(results)
 
-    if (selectedType !== 'All Types') {
-      filtered = filtered.filter(item => item.type === selectedType)
-    }
-
-    if (selectedPricing !== 'All Pricing') {
-      filtered = filtered.filter(item => item.pricing.type === selectedPricing)
-    }
-
-    // Sort items
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'Featured':
-          if (a.featured && !b.featured) return -1
-          if (!a.featured && b.featured) return 1
-          return b.stats.downloads - a.stats.downloads
-        case 'Most Popular':
-          return b.stats.downloads - a.stats.downloads
-        case 'Highest Rated':
-          return b.stats.rating - a.stats.rating
-        case 'Newest':
-          return new Date(b.metadata.lastUpdated).getTime() - new Date(a.metadata.lastUpdated).getTime()
-        case 'Price: Low to High':
-          const priceA = a.pricing.price || 0
-          const priceB = b.pricing.price || 0
-          return priceA - priceB
-        case 'Price: High to Low':
-          const priceA2 = a.pricing.price || 0
-          const priceB2 = b.pricing.price || 0
-          return priceB2 - priceA2
-        default:
-          return 0
+        // Load featured items if on first page and no search
+        if (currentPage === 1 && !searchQuery) {
+          const featured = await getFeatured()
+          setFeaturedItems(featured)
+        }
+      } catch (err) {
+        console.error('Failed to load marketplace data:', err)
       }
-    })
+    }
 
-    return filtered
-  }, [searchQuery, selectedCategory, selectedType, selectedPricing, sortBy])
+    loadData()
+  }, [searchQuery, selectedCategory, selectedType, selectedPricing, sortBy, currentPage])
+
+  const filteredItems = searchResults?.items || []
 
   const toggleFavorite = (itemId: string) => {
     setFavorites(prev =>
@@ -323,6 +283,45 @@ export default function Marketplace() {
         ? prev.filter(id => id !== itemId)
         : [...prev, itemId]
     )
+  }
+
+  const handleInstallItem = async (item: MarketplaceItem) => {
+    try {
+      const result = await installItem({ itemId: item.id })
+      if (result.success) {
+        // Show success notification (you would implement this)
+        console.log(`Successfully installed ${item.name}`)
+      } else {
+        console.error(`Failed to install ${item.name}: ${result.message}`)
+      }
+    } catch (err) {
+      console.error(`Error installing ${item.name}:`, err)
+    }
+  }
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category)
+    setCurrentPage(1) // Reset to first page
+  }
+
+  const handleTypeChange = (type: string) => {
+    setSelectedType(type)
+    setCurrentPage(1)
+  }
+
+  const handlePricingChange = (pricing: string) => {
+    setSelectedPricing(pricing)
+    setCurrentPage(1)
+  }
+
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort)
+    setCurrentPage(1)
+  }
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query)
+    setCurrentPage(1)
   }
 
   const getPricingDisplay = (pricing: MarketplaceItem['pricing']) => {
@@ -400,7 +399,7 @@ export default function Marketplace() {
               type="text"
               placeholder="Search marketplace..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="input pl-10"
             />
           </div>
@@ -409,17 +408,17 @@ export default function Marketplace() {
           <div className="flex flex-wrap items-center gap-4">
             <select
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => handleCategoryChange(e.target.value)}
               className="input w-auto"
             >
-              {categories.map(category => (
+              {(categories.length > 0 ? categories : ['All Categories']).map(category => (
                 <option key={category} value={category}>{category}</option>
               ))}
             </select>
 
             <select
               value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
+              onChange={(e) => handleTypeChange(e.target.value)}
               className="input w-auto"
             >
               {types.map(type => (
@@ -429,7 +428,7 @@ export default function Marketplace() {
 
             <select
               value={selectedPricing}
-              onChange={(e) => setSelectedPricing(e.target.value)}
+              onChange={(e) => handlePricingChange(e.target.value)}
               className="input w-auto"
             >
               {pricing.map(price => (
@@ -439,7 +438,7 @@ export default function Marketplace() {
 
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={(e) => handleSortChange(e.target.value)}
               className="input w-auto"
             >
               {sortOptions.map(option => (
@@ -453,8 +452,33 @@ export default function Marketplace() {
           </div>
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading marketplace items...</span>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-8">
+            <div className="flex items-center">
+              <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-400 mr-3" />
+              <div>
+                <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                  Failed to load marketplace data
+                </h3>
+                <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                  {error}. Using cached data instead.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Items Grid */}
-        {filteredItems.length > 0 ? (
+        {!loading && filteredItems.length > 0 ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredItems.map((item) => (
               <div key={item.id} className="card card-hover group relative">
@@ -585,8 +609,12 @@ export default function Marketplace() {
                       <button className="btn btn-sm btn-secondary">
                         <ShareIcon className="h-4 w-4" />
                       </button>
-                      <button className="btn btn-sm btn-primary">
-                        {item.pricing.type === 'free' ? 'Install' : 'Buy Now'}
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => handleInstallItem(item)}
+                        disabled={loading}
+                      >
+                        {loading ? 'Installing...' : (item.pricing.type === 'free' ? 'Install' : 'Buy Now')}
                       </button>
                     </div>
                   </div>
@@ -602,7 +630,7 @@ export default function Marketplace() {
               </div>
             ))}
           </div>
-        ) : (
+        ) : !loading ? (
           <div className="text-center py-12">
             <div className="mx-auto h-12 w-12 text-gray-400">
               <ShoppingBagIcon className="h-12 w-12" />
@@ -614,7 +642,7 @@ export default function Marketplace() {
               Try adjusting your search or filters
             </p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   )

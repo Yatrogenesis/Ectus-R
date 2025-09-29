@@ -9,9 +9,15 @@ import {
   PlayIcon,
   StopIcon,
   EyeIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  XCircleIcon,
+  InformationCircleIcon,
 } from '@heroicons/react/24/outline'
 import { useAuth } from '@/contexts/AuthContext'
 import { useWebSocket } from '@/contexts/WebSocketContext'
+import { useDashboard } from '@/hooks/useDashboard'
+import { useProjects } from '@/hooks/useProjects'
 import { cn, formatNumber, formatBytes } from '@/lib/utils'
 
 interface MetricCard {
@@ -43,107 +49,110 @@ interface Project {
 export default function Dashboard() {
   const { user } = useAuth()
   const { isConnected } = useWebSocket()
+  const {
+    metrics,
+    activity,
+    health,
+    quality,
+    loading: dashboardLoading,
+    error: dashboardError,
+    runQualityAnalysis,
+    runRefactoring,
+    refreshData
+  } = useDashboard()
+  const {
+    projects,
+    loading: projectsLoading,
+    activeProjects,
+    deployingProjects
+  } = useProjects({ autoRefresh: true })
 
-  const metrics: MetricCard[] = [
+  // Transform metrics for display
+  const metricCards: MetricCard[] = metrics ? [
     {
       title: 'Total Projects',
-      value: '12',
+      value: metrics.totalProjects.toString(),
       change: '+2.1%',
-      changeType: 'increase',
+      changeType: 'increase' as const,
       icon: FolderIcon,
     },
     {
       title: 'Active Deployments',
-      value: '8',
+      value: metrics.activeDeployments.toString(),
       change: '+12.5%',
-      changeType: 'increase',
+      changeType: 'increase' as const,
       icon: PlayIcon,
     },
     {
       title: 'API Requests',
-      value: '1.2M',
+      value: formatNumber(metrics.apiRequests),
       change: '-3.2%',
-      changeType: 'decrease',
+      changeType: 'decrease' as const,
       icon: ChartBarIcon,
     },
     {
-      title: 'Storage Used',
-      value: formatBytes(user?.usage.storage || 0),
-      change: '+8.1%',
-      changeType: 'increase',
+      title: 'Quality Score',
+      value: `${metrics.qualityScore.toFixed(1)}%`,
+      change: '+5.3%',
+      changeType: 'increase' as const,
       icon: CpuChipIcon,
     },
-  ]
+  ] : []
 
-  const recentActivity: RecentActivity[] = [
-    {
-      id: '1',
-      type: 'deployment',
-      title: 'AI Chat Bot deployed',
-      description: 'Successfully deployed to production environment',
-      timestamp: '2 minutes ago',
-      status: 'success',
-    },
-    {
-      id: '2',
-      type: 'build',
-      title: 'E-commerce API build failed',
-      description: 'Build failed due to missing environment variables',
-      timestamp: '15 minutes ago',
-      status: 'error',
-    },
-    {
-      id: '3',
-      type: 'user_action',
-      title: 'New team member added',
-      description: 'John Doe was added to the development team',
-      timestamp: '1 hour ago',
-      status: 'info',
-    },
-    {
-      id: '4',
-      type: 'deployment',
-      title: 'Documentation site updated',
-      description: 'Latest documentation changes are now live',
-      timestamp: '2 hours ago',
-      status: 'success',
-    },
-  ]
+  // Get recent projects (first 4)
+  const recentProjects = projects.slice(0, 4).map(project => ({
+    id: project.id,
+    name: project.name,
+    status: project.status,
+    lastDeployment: formatTimeAgo(project.lastDeployment),
+    language: project.language,
+    framework: project.framework,
+  }))
 
-  const recentProjects: Project[] = [
-    {
-      id: '1',
-      name: 'AI Chat Bot',
-      status: 'active',
-      lastDeployment: '2 minutes ago',
-      language: 'TypeScript',
-      framework: 'React',
-    },
-    {
-      id: '2',
-      name: 'E-commerce API',
-      status: 'error',
-      lastDeployment: '15 minutes ago',
-      language: 'Python',
-      framework: 'FastAPI',
-    },
-    {
-      id: '3',
-      name: 'Mobile App Backend',
-      status: 'deploying',
-      lastDeployment: '1 hour ago',
-      language: 'Rust',
-      framework: 'Axum',
-    },
-    {
-      id: '4',
-      name: 'Analytics Dashboard',
-      status: 'active',
-      lastDeployment: '3 hours ago',
-      language: 'JavaScript',
-      framework: 'Vue.js',
-    },
-  ]
+  // Transform activity for display
+  const recentActivity = activity.slice(0, 4).map(item => ({
+    id: item.id,
+    type: item.type as 'deployment' | 'build' | 'error' | 'user_action',
+    title: item.title,
+    description: item.description,
+    timestamp: formatTimeAgo(item.timestamp),
+    status: item.status,
+  }))
+
+  const handleQualityAnalysis = async (projectId: string) => {
+    try {
+      await runQualityAnalysis(projectId)
+      // Show success notification
+    } catch (error) {
+      console.error('Failed to start quality analysis:', error)
+      // Show error notification
+    }
+  }
+
+  const handleRefactoring = async (projectId: string, type: string) => {
+    try {
+      await runRefactoring(projectId, type)
+      // Show success notification
+    } catch (error) {
+      console.error('Failed to start refactoring:', error)
+      // Show error notification
+    }
+  }
+
+  // Format time ago helper
+  function formatTimeAgo(timestamp: string): string {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMins / 60)
+    const diffDays = Math.floor(diffHours / 24)
+
+    if (diffMins < 1) return 'just now'
+    if (diffMins < 60) return `${diffMins} minute${diffMins === 1 ? '' : 's'} ago`
+    if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
+    return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -176,6 +185,42 @@ export default function Dashboard() {
       default:
         return EyeIcon
     }
+  }
+
+  // Show loading state
+  if (dashboardLoading || projectsLoading) {
+    return (
+      <div className="min-h-full flex items-center justify-center">
+        <div className="text-center">
+          <CpuChipIcon className="mx-auto h-12 w-12 text-gray-400 animate-pulse" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Loading dashboard...</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Fetching your latest data and metrics
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (dashboardError) {
+    return (
+      <div className="min-h-full flex items-center justify-center">
+        <div className="text-center">
+          <XCircleIcon className="mx-auto h-12 w-12 text-red-400" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">Failed to load dashboard</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {dashboardError}
+          </p>
+          <button
+            onClick={refreshData}
+            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -226,7 +271,7 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Metrics Grid */}
           <div className="mt-2 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {metrics.map((metric) => (
+            {metricCards.map((metric) => (
               <div key={metric.title} className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
                 <div className="p-5">
                   <div className="flex items-center">
@@ -368,6 +413,91 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* Quality Insights & System Health */}
+          {quality && health && (
+            <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+              {/* Quality Insights */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
+                    Quality Insights
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                        {quality.averageQualityScore.toFixed(1)}%
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Average Quality</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        {quality.totalAnalyses}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Total Analyses</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {quality.issuesFound}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Issues Found</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                        {quality.securityVulnerabilities}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Security Issues</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* System Health */}
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg">
+                <div className="px-4 py-5 sm:p-6">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
+                    System Health
+                  </h3>
+                  <div className="space-y-3">
+                    {Object.entries(health.services).map(([service, status]) => (
+                      <div key={service} className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className={cn(
+                            'w-2 h-2 rounded-full mr-3',
+                            status === 'healthy' ? 'bg-green-400' :
+                            status === 'degraded' ? 'bg-yellow-400' : 'bg-red-400'
+                          )} />
+                          <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                            {service.replace('_', ' ')}
+                          </span>
+                        </div>
+                        <span className={cn(
+                          'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                          status === 'healthy' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
+                          status === 'degraded' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                          'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                        )}>
+                          {status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <div className="text-gray-500 dark:text-gray-400">CPU</div>
+                        <div className="font-medium">{health.cpu.toFixed(1)}%</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-500 dark:text-gray-400">Memory</div>
+                        <div className="font-medium">{health.memory.toFixed(1)}%</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Usage Chart Placeholder */}
           <div className="mt-8">
