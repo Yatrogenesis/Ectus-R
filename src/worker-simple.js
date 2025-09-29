@@ -110,17 +110,25 @@ router.post('/api/v1/deployments/magic-loop', async (request, env) => {
     try {
       const aiResponse = await env.AI.run('@cf/meta/llama-2-7b-chat-int8', {
         messages: [
-          { role: 'system', content: 'You are an expert web developer. Generate complete, working HTML applications.' },
+          { role: 'system', content: 'You are an expert web developer. Generate ONLY pure HTML code with inline CSS and JavaScript. Do not use markdown formatting or code blocks.' },
           { role: 'user', content: codeGenPrompt }
         ]
       });
 
-      const generatedCode = aiResponse.response || `
+      let generatedCode = aiResponse.response || `
         <!DOCTYPE html>
         <html><head><title>Generated App</title>
         <style>body{font-family:Arial;padding:40px;background:#f0f0f0;}</style></head>
         <body><h1>Generated Application</h1><p>Prompt: ${prompt}</p>
         <p>Deployment ID: ${deploymentId}</p></body></html>`;
+
+      // Extract HTML from markdown code blocks if present
+      if (generatedCode.includes('```')) {
+        const htmlMatch = generatedCode.match(/```(?:html)?\s*([\s\S]*?)```/);
+        if (htmlMatch && htmlMatch[1]) {
+          generatedCode = htmlMatch[1].trim();
+        }
+      }
 
       // Store in KV for retrieval
       await env.CACHE.put(`deployment:${deploymentId}`, JSON.stringify({
@@ -318,6 +326,27 @@ router.all('*', () => {
   });
 });
 
+// Add CORS headers to all responses
+function addCorsHeaders(response) {
+  const newResponse = new Response(response.body, response);
+  newResponse.headers.set('Access-Control-Allow-Origin', '*');
+  newResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  newResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  return newResponse;
+}
+
+// Handle OPTIONS preflight requests
+router.options('*', () => {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+    status: 200
+  });
+});
+
 // Main worker handler
 export default {
   async fetch(request, env, ctx) {
@@ -329,15 +358,17 @@ export default {
       }
 
       // Otherwise handle as API
-      return await router.handle(request, env, ctx);
+      const response = await router.handle(request, env, ctx);
+      return addCorsHeaders(response);
     } catch (error) {
-      return new Response(JSON.stringify({
+      const errorResponse = new Response(JSON.stringify({
         error: 'Internal Server Error',
         message: error.message
       }), {
         headers: { 'Content-Type': 'application/json' },
         status: 500
       });
+      return addCorsHeaders(errorResponse);
     }
   }
 };
