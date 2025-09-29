@@ -28,12 +28,7 @@ import { healthRoutes } from './routes/health.js';
 // Create router
 const router = Router();
 
-// Global middleware
-router.all('*', cors());
-router.all('*', logger);
-router.all('*', rateLimit);
-
-// Initialize routes
+// Simple route initialization
 healthRoutes(router);
 authRoutes(router);
 

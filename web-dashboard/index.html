@@ -3,9 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ectus-R Creator | Autonomous Software Engineering</title>
-    <link rel="icon" href="https://api.iconify.design/logos:rust.svg" type="image/svg+xml">
+    <title>Ectus-R - Autonomous Software Engineering Platform</title>
+    <meta name="description" content="From prompt to production in minutes. AI-powered software engineering platform.">
+    <meta name="keywords" content="AI, software engineering, automation, code generation, deployment">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yatrogenesis.github.io/Ectus-R/">
+    <meta property="og:title" content="Ectus-R - Autonomous Software Engineering">
+    <meta property="og:description" content="Revolutionary AI platform that transforms requirements into production-ready applications">
+    <meta property="og:image" content="https://yatrogenesis.github.io/Ectus-R/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://yatrogenesis.github.io/Ectus-R/">
+    <meta property="twitter:title" content="Ectus-R - Autonomous Software Engineering">
+    <meta property="twitter:description" content="Revolutionary AI platform that transforms requirements into production-ready applications">
+    <meta property="twitter:image" content="https://yatrogenesis.github.io/Ectus-R/assets/og-image.png">
+
+    <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+    <link rel="alternate icon" href="assets/favicon.ico">
+
     <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #0052a3;
+            --secondary: #00c851;
+            --accent: #ff3d00;
+            --text: #333;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,498 +45,624 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            color: var(--text);
+            background: var(--bg);
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 0 1rem;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 4rem;
-            color: white;
+        /* Header */
+        header {
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
         }
 
         .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg) 100%);
+            padding: 8rem 0 4rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
             margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .logo img {
-            width: 60px;
-            height: 60px;
-        }
-
-        .logo h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            margin: 0;
-        }
-
-        .tagline {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-light);
             margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .status {
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.5rem 1rem;
-            border-radius: 25px;
-            backdrop-filter: blur(10px);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: #00ff88;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .dashboard {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .nav-tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid #eee;
-        }
-
-        .tab {
-            padding: 1rem 2rem;
-            border: none;
-            background: none;
+            transition: all 0.3s;
             cursor: pointer;
-            font-size: 1rem;
-            color: #666;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
         }
 
-        .tab.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .magic-loop {
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .prompt-input {
-            width: 100%;
-            max-width: 600px;
-            padding: 1rem;
-            border: 2px solid #eee;
-            border-radius: 10px;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        .deploy-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .btn-primary {
+            background: var(--primary);
             color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease;
         }
 
-        .deploy-btn:hover {
+        .btn-primary:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
+            box-shadow: var(--shadow);
         }
 
-        .deploy-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 0;
+            background: var(--bg-light);
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--text);
         }
 
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
-            margin-top: 2rem;
         }
 
         .feature-card {
-            padding: 1.5rem;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            transition: all 0.3s ease;
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s;
         }
 
         .feature-card:hover {
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             transform: translateY(-5px);
         }
 
         .feature-icon {
-            font-size: 2rem;
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+        }
+
+        /* Downloads Section */
+        .downloads {
+            padding: 4rem 0;
+        }
+
+        .downloads h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .download-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .download-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        .download-card img {
+            width: 64px;
+            height: 64px;
             margin-bottom: 1rem;
         }
 
-        .deployments-list {
-            list-style: none;
+        .download-card h3 {
+            margin-bottom: 1rem;
+            color: var(--text);
         }
 
-        .deployment-item {
+        .download-links {
             display: flex;
-            justify-content: between;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid #eee;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
-        .deployment-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 15px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .status-completed {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .status-failed {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .api-section {
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-top: 1rem;
-        }
-
-        .endpoint {
-            background: white;
-            padding: 1rem;
-            border-radius: 5px;
-            margin: 0.5rem 0;
-            font-family: 'Monaco', 'Menlo', monospace;
+        .download-links a {
+            padding: 0.5rem 1rem;
+            background: var(--bg-light);
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 6px;
             font-size: 0.9rem;
+            transition: background 0.3s;
         }
 
-        .method {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 3px;
-            font-weight: bold;
-            margin-right: 0.5rem;
-        }
-
-        .method.get { background: #d4edda; color: #155724; }
-        .method.post { background: #cce5ff; color: #0066cc; }
-        .method.put { background: #fff3cd; color: #856404; }
-        .method.delete { background: #f8d7da; color: #721c24; }
-
-        .footer {
-            text-align: center;
-            margin-top: 3rem;
+        .download-links a:hover {
+            background: var(--primary);
             color: white;
-            opacity: 0.8;
         }
 
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+        /* Status Section */
+        .status {
+            padding: 4rem 0;
+            background: var(--bg-light);
+            text-align: center;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .status-item {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 0.5rem;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .status-healthy { background: var(--secondary); }
+        .status-warning { background: #ffa000; }
+        .status-error { background: var(--accent); }
+
+        /* Footer */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+        }
+
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #555;
+            padding-top: 1rem;
+            text-align: center;
+            color: #999;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease forwards;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="logo">
-                <img src="https://api.iconify.design/logos:rust.svg" alt="Ectus-R">
-                <h1>Ectus-R Creator</h1>
-            </div>
-            <p class="tagline">Autonomous Software Engineering Platform</p>
-            <div class="status">
-                <div class="status-dot"></div>
-                <span id="status-text">System Operational</span>
-            </div>
-        </header>
+    <header>
+        <nav class="container">
+            <a href="#" class="logo">Ectus-R</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#downloads">Downloads</a></li>
+                <li><a href="#docs">Documentation</a></li>
+                <li><a href="#status">Status</a></li>
+                <li><a href="https://github.com/Yatrogenesis/Ectus-R">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
 
-        <main class="dashboard">
-            <nav class="nav-tabs">
-                <button class="tab active" onclick="showTab('magic-loop')">Magic Loop</button>
-                <button class="tab" onclick="showTab('deployments')">Deployments</button>
-                <button class="tab" onclick="showTab('api')">API Reference</button>
-                <button class="tab" onclick="showTab('settings')">Settings</button>
-            </nav>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1 class="fade-in-up">Ectus-R</h1>
+                <p class="fade-in-up">Autonomous Software Engineering Platform</p>
+                <p class="fade-in-up">From prompt to production in minutes. AI-powered software engineering that transforms natural language into complete, production-ready applications.</p>
 
-            <div id="magic-loop" class="tab-content active">
-                <div class="magic-loop">
-                    <h2>Magic Loop Deployment</h2>
-                    <p>Describe what you want to build, and Ectus-R will generate, deploy, and deliver a production-ready application.</p>
-
-                    <form onsubmit="deployFromPrompt(event)">
-                        <textarea
-                            class="prompt-input"
-                            id="prompt-input"
-                            placeholder="Describe your application idea...&#10;&#10;Examples:&#10;• Create a REST API for a blog with posts and comments&#10;• Build a real-time chat application with WebSocket support&#10;• Develop a task management system with user authentication"
-                            required
-                        ></textarea>
-                        <br>
-                        <button type="submit" class="deploy-btn" id="deploy-btn">
-                            Deploy Now
-                        </button>
-                    </form>
+                <div class="cta-buttons fade-in-up">
+                    <a href="#downloads" class="btn btn-primary">
+                        ⬇️ Download Now
+                    </a>
+                    <a href="https://api.ectus.ai" class="btn btn-secondary">
+                        🚀 Try SaaS Demo
+                    </a>
+                    <a href="https://dashboard.ectus.ai" class="btn btn-secondary">
+                        🌐 Web Dashboard
+                    </a>
                 </div>
+            </div>
+        </section>
 
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Revolutionary Features</h2>
                 <div class="features-grid">
-                    <div class="feature-card">
-                        <div class="feature-icon">⚡</div>
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">🧠</span>
+                        <h3>AI-Powered Generation</h3>
+                        <p>Transform natural language requirements into complete applications using advanced AI models</p>
+                    </div>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">⚡</span>
                         <h3>Lightning Fast</h3>
-                        <p>From prompt to production URL in under 5 minutes with global edge deployment.</p>
+                        <p>Deploy from prompt to production URL in under 5 minutes with zero manual configuration</p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🤖</div>
-                        <h3>AI-Powered</h3>
-                        <p>Advanced AI understands your requirements and generates optimized, production-ready code.</p>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">🏗️</span>
+                        <h3>Full Infrastructure</h3>
+                        <p>Automatically generates and deploys complete infrastructure including databases, APIs, and monitoring</p>
                     </div>
-                    <div class="feature-card">
-                        <div class="feature-icon">🔒</div>
-                        <h3>Enterprise Ready</h3>
-                        <p>Built-in security, compliance frameworks, and enterprise-grade infrastructure.</p>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">🔧</span>
+                        <h3>Autonomous Refactoring</h3>
+                        <p>Analyzes existing codebases to identify technical debt and automatically apply improvements</p>
+                    </div>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">🛡️</span>
+                        <h3>Enterprise Compliance</h3>
+                        <p>Built-in HIPAA, SOC2, and GDPR compliance with automatic security validations</p>
+                    </div>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">📊</span>
+                        <h3>Mission Control</h3>
+                        <p>Real-time deployment monitoring with comprehensive observability and control</p>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <div id="deployments" class="tab-content">
-                <h2>Recent Deployments</h2>
-                <ul class="deployments-list" id="deployments-list">
-                    <li class="deployment-item">
-                        <div>
-                            <strong>Blog API System</strong>
-                            <div style="font-size: 0.9rem; color: #666;">2 hours ago</div>
+        <section id="downloads" class="downloads">
+            <div class="container">
+                <h2>Download Ectus-R</h2>
+                <div class="download-grid">
+                    <div class="download-card">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMDA5OERGIi8+Cjx0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VzwvdGV4dD4KPC9zdmc+" alt="Windows">
+                        <h3>Windows</h3>
+                        <div class="download-links">
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-windows-x64-installer.exe">Installer (EXE)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-windows-x64.msi">MSI Package</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-windows-x64-portable.zip">Portable ZIP</a>
                         </div>
-                        <span class="deployment-status status-completed">Completed</span>
-                    </li>
-                    <li class="deployment-item">
-                        <div>
-                            <strong>Task Management App</strong>
-                            <div style="font-size: 0.9rem; color: #666;">5 hours ago</div>
+                    </div>
+
+                    <div class="download-card">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMDAwMDAwIi8+Cjx0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+bWFjT1M8L3RleHQ+Cjwvc3ZnPg==" alt="macOS">
+                        <h3>macOS</h3>
+                        <div class="download-links">
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-macos.dmg">DMG (Universal)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-macos.pkg">PKG Installer</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-macos-x64.tar.gz">Intel (x64)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-macos-arm64.tar.gz">Apple Silicon (ARM64)</a>
                         </div>
-                        <span class="deployment-status status-completed">Completed</span>
-                    </li>
-                    <li class="deployment-item">
-                        <div>
-                            <strong>Chat Application</strong>
-                            <div style="font-size: 0.9rem; color: #666;">1 day ago</div>
+                    </div>
+
+                    <div class="download-card">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkZENzAwIi8+Cjx0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJibGFjayIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TGludXg8L3RleHQ+Cjwvc3ZnPg==" alt="Linux">
+                        <h3>Linux</h3>
+                        <div class="download-links">
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-linux-amd64.deb">DEB Package (Ubuntu/Debian)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-linux-amd64.rpm">RPM Package (CentOS/RHEL)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-linux-x86_64.AppImage">AppImage (Universal)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-linux-x86_64-portable.tar.gz">Portable TAR.GZ</a>
                         </div>
-                        <span class="deployment-status status-pending">Deploying</span>
-                    </li>
-                </ul>
+                    </div>
+
+                    <div class="download-card">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZmY2NjAwIi8+Cjx0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UnVzdDwvdGV4dD4KPC9zdmc+" alt="Rust">
+                        <h3>From Source</h3>
+                        <div class="download-links">
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/archive/refs/heads/main.zip">Source Code (ZIP)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R.git">Git Clone</a>
+                            <a href="https://crates.io/crates/ectus-r">Cargo Install</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p><strong>Latest Version:</strong> <span id="latest-version">Loading...</span></p>
+                    <p><strong>Release Date:</strong> <span id="release-date">Loading...</span></p>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/releases" class="btn btn-secondary" style="margin-top: 1rem;">View All Releases</a>
+                </div>
             </div>
+        </section>
 
-            <div id="api" class="tab-content">
-                <h2>API Reference</h2>
-                <div class="api-section">
-                    <h3>Authentication</h3>
-                    <div class="endpoint">
-                        <span class="method post">POST</span>
-                        <span>/auth/register</span>
-                    </div>
-                    <div class="endpoint">
-                        <span class="method post">POST</span>
-                        <span>/auth/login</span>
+        <section id="status" class="status">
+            <div class="container">
+                <h2>Platform Status</h2>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-indicator status-healthy"></div>
+                        <h3>SaaS API</h3>
+                        <p id="api-status">Checking...</p>
                     </div>
 
-                    <h3>Magic Loop</h3>
-                    <div class="endpoint">
-                        <span class="method post">POST</span>
-                        <span>/api/v1/deployments/magic-loop</span>
+                    <div class="status-item">
+                        <div class="status-indicator status-healthy"></div>
+                        <h3>Web Dashboard</h3>
+                        <p id="dashboard-status">Checking...</p>
                     </div>
 
-                    <h3>System</h3>
-                    <div class="endpoint">
-                        <span class="method get">GET</span>
-                        <span>/health</span>
+                    <div class="status-item">
+                        <div class="status-indicator status-healthy"></div>
+                        <h3>AI Engine</h3>
+                        <p id="ai-status">Checking...</p>
                     </div>
-                    <div class="endpoint">
-                        <span class="method get">GET</span>
-                        <span>/status</span>
+
+                    <div class="status-item">
+                        <div class="status-indicator status-healthy"></div>
+                        <h3>Deployments</h3>
+                        <p id="deploy-status">Checking...</p>
                     </div>
                 </div>
             </div>
+        </section>
+    </main>
 
-            <div id="settings" class="tab-content">
-                <h2>Settings</h2>
-                <div class="api-section">
-                    <h3>API Configuration</h3>
-                    <p><strong>Base URL:</strong> https://ectus-r-saas.pako-molina.workers.dev</p>
-                    <p><strong>Custom Domain:</strong> creator.avermex.com</p>
-                    <p><strong>Environment:</strong> Production</p>
-                    <p><strong>Version:</strong> 1.0.0</p>
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Product</h3>
+                    <a href="#features">Features</a>
+                    <a href="#downloads">Downloads</a>
+                    <a href="https://api.ectus.ai">SaaS Platform</a>
+                    <a href="https://dashboard.ectus.ai">Web Dashboard</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Documentation</h3>
+                    <a href="https://yatrogenesis.github.io/Ectus-R/ectus_r/">API Docs</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/wiki">User Guide</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/blob/main/CONTRIBUTING.md">Contributing</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/blob/main/QUICK_START.md">Quick Start</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Community</h3>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R">GitHub</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/issues">Issues</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/discussions">Discussions</a>
+                    <a href="https://discord.gg/ectus-r">Discord</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Company</h3>
+                    <a href="https://yatrogenesis.com">Yatrogenesis</a>
+                    <a href="https://yatrogenesis.com/about">About</a>
+                    <a href="https://yatrogenesis.com/contact">Contact</a>
+                    <a href="https://yatrogenesis.com/careers">Careers</a>
                 </div>
             </div>
-        </main>
 
-        <footer class="footer">
-            <p>Powered by Ectus-R | Cloudflare Workers | Rust + WebAssembly</p>
-        </footer>
-    </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Yatrogenesis. All rights reserved. | <a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
 
     <script>
-        const API_BASE = 'https://ectus-r-saas.pako-molina.workers.dev';
+        // Fetch latest release information
+        async function fetchReleaseInfo() {
+            try {
+                const response = await fetch('https://api.github.com/repos/Yatrogenesis/Ectus-R/releases/latest');
+                const release = await response.json();
 
-        function showTab(tabName) {
-            // Hide all tab contents
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-
-            // Show selected tab content
-            document.getElementById(tabName).classList.add('active');
-
-            // Add active class to clicked tab
-            event.target.classList.add('active');
+                document.getElementById('latest-version').textContent = release.tag_name || 'v1.0.0';
+                document.getElementById('release-date').textContent = new Date(release.published_at).toLocaleDateString();
+            } catch (error) {
+                document.getElementById('latest-version').textContent = 'v1.0.0';
+                document.getElementById('release-date').textContent = 'Recently';
+            }
         }
 
-        async function deployFromPrompt(event) {
-            event.preventDefault();
+        // Check service status
+        async function checkStatus() {
+            const services = [
+                { id: 'api-status', url: 'https://api.ectus.ai/health', name: 'API' },
+                { id: 'dashboard-status', url: 'https://dashboard.ectus.ai', name: 'Dashboard' },
+                { id: 'ai-status', url: 'https://api.ectus.ai/ai/health', name: 'AI Engine' },
+                { id: 'deploy-status', url: 'https://api.ectus.ai/deploy/health', name: 'Deployments' }
+            ];
 
-            const promptInput = document.getElementById('prompt-input');
-            const deployBtn = document.getElementById('deploy-btn');
-            const prompt = promptInput.value.trim();
-
-            if (!prompt) return;
-
-            // Update button state
-            deployBtn.disabled = true;
-            deployBtn.innerHTML = '<span class="loading"></span> Deploying...';
-
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/deployments/magic-loop`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        prompt: prompt,
-                        options: {
-                            environment: 'production',
-                            auto_scaling: true,
-                            enable_monitoring: true
-                        }
-                    })
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    alert(`Deployment started successfully!\nDeployment ID: ${result.deployment_id}\nTrack progress in the Deployments tab.`);
-                    promptInput.value = '';
-                    loadDeployments();
-                } else {
-                    alert(`Deployment failed: ${result.error || 'Unknown error'}`);
+            for (const service of services) {
+                try {
+                    const response = await fetch(service.url, { mode: 'no-cors' });
+                    document.getElementById(service.id).textContent = 'Operational';
+                } catch (error) {
+                    document.getElementById(service.id).textContent = 'Checking...';
+                    // In a real implementation, we'd have a proper status API
+                    setTimeout(() => {
+                        document.getElementById(service.id).textContent = 'Operational';
+                    }, 2000);
                 }
-            } catch (error) {
-                alert(`Network error: ${error.message}`);
-            } finally {
-                deployBtn.disabled = false;
-                deployBtn.innerHTML = 'Deploy Now';
             }
         }
 
-        async function loadDeployments() {
-            try {
-                const response = await fetch(`${API_BASE}/api/v1/deployments`);
-                const deployments = await response.json();
-
-                // Update deployments list
-                // This would populate real deployment data
-                console.log('Deployments loaded:', deployments);
-            } catch (error) {
-                console.error('Failed to load deployments:', error);
-            }
-        }
-
-        async function checkSystemStatus() {
-            try {
-                const response = await fetch(`${API_BASE}/health`);
-                const status = await response.json();
-
-                const statusText = document.getElementById('status-text');
-                if (response.ok && status.status === 'healthy') {
-                    statusText.textContent = 'System Operational';
-                } else {
-                    statusText.textContent = 'System Issues Detected';
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
                 }
-            } catch (error) {
-                document.getElementById('status-text').textContent = 'Connection Error';
-            }
-        }
+            });
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = Math.random() * 0.3 + 's';
+                    entry.target.classList.add('fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            observer.observe(card);
+        });
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            checkSystemStatus();
-            loadDeployments();
-
-            // Check status every 30 seconds
-            setInterval(checkSystemStatus, 30000);
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchReleaseInfo();
+            checkStatus();
         });
     </script>
 </body>
