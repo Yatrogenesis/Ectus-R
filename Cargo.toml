@@ -9,16 +9,7 @@ repository = "https://github.com/Yatrogenesis/Ectus-R"
 
 [workspace]
 members = [
-    "crates/aion-core",
-    "crates/aion-api-gateway",
-    "crates/aion-auth",
-    "crates/aion-database",
-    "crates/aion-monitoring",
-    "crates/aion-ai-engine",
-    "crates/aion-config",
-    "crates/aion-server",
-    "crates/aion-cli",
-    "services/gateway-service"
+    "crates/aion-enterprise"
 ]
 
 [dependencies]
