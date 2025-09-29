@@ -336,8 +336,16 @@
         // Load recent deployments
         async function loadRecentDeployments() {
             try {
+                console.log('Loading recent deployments from:', `${API_BASE}/deployments`);
                 const response = await fetch(`${API_BASE}/deployments`);
+                console.log('Deployments response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
+                console.log('Deployments data:', data);
 
                 const deploymentList = document.getElementById('deploymentList');
 
@@ -383,6 +391,9 @@
             result.classList.remove('show');
 
             try {
+                console.log('Making request to:', `${API_BASE}/deployments/magic-loop`);
+                console.log('Request payload:', { prompt });
+
                 const response = await fetch(`${API_BASE}/deployments/magic-loop`, {
                     method: 'POST',
                     headers: {
@@ -391,7 +402,15 @@
                     body: JSON.stringify({ prompt })
                 });
 
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (data.success) {
                     // Show result
@@ -414,8 +433,13 @@
                 }
 
             } catch (error) {
-                console.error('Error:', error);
-                alert('Error generating application. Please try again.');
+                console.error('Full error details:', error);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+
+                // Show detailed error for debugging
+                const errorMsg = `Error generating application: ${error.message}\n\nDetails: ${error.toString()}\n\nPlease check console for full details.`;
+                alert(errorMsg);
             } finally {
                 // Reset form state
                 generateBtn.disabled = false;
