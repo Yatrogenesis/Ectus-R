@@ -713,13 +713,35 @@ For dashboards: Include multiple sections and interactive elements
 Return ONLY the HTML code without markdown or explanations.`;
 
     try {
-      // Try with a better model first
-      const aiResponse = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
-        messages: [
-          { role: 'system', content: 'You are a senior full-stack developer specializing in creating complete, functional web applications. Generate only clean HTML with inline CSS and JavaScript. No markdown, no explanations, just pure working code.' },
-          { role: 'user', content: codeGenPrompt }
-        ]
+      // Use Groq API for better code generation
+      const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-70b-versatile',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a senior full-stack developer specializing in creating complete, functional web applications. Generate ONLY clean HTML with inline CSS and JavaScript. No markdown formatting, no code blocks, no explanations - just pure working HTML code that starts with <!DOCTYPE html>.'
+            },
+            { role: 'user', content: codeGenPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 4000
+        })
       });
+
+      if (!groqResponse.ok) {
+        throw new Error(`Groq API error: ${groqResponse.status}`);
+      }
+
+      const groqData = await groqResponse.json();
+      const aiResponse = {
+        response: groqData.choices[0]?.message?.content || ''
+      };
 
       let generatedCode = aiResponse.response || `
         <!DOCTYPE html>
@@ -760,18 +782,40 @@ Return ONLY the HTML code without markdown or explanations.`;
       });
 
     } catch (aiError) {
-      console.log('Llama 3.1 failed, trying Llama 2.7b fallback:', aiError.message);
+      console.log('Groq Llama 3.1-70B failed, trying Llama 3.1-8B fallback:', aiError.message);
 
       try {
-        // Fallback to previous model
-        const fallbackResponse = await env.AI.run('@cf/meta/llama-2-7b-chat-int8', {
-          messages: [
-            { role: 'system', content: 'You are a senior full-stack developer. Generate only clean HTML with inline CSS and JavaScript. No markdown, no explanations, just pure working code.' },
-            { role: 'user', content: codeGenPrompt }
-          ]
+        // Fallback to smaller Groq model
+        const fallbackResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama-3.1-8b-instant',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a senior full-stack developer. Generate ONLY clean HTML with inline CSS and JavaScript. No markdown formatting, no code blocks, no explanations - just pure working HTML code that starts with <!DOCTYPE html>.'
+              },
+              { role: 'user', content: codeGenPrompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 4000
+          })
         });
 
-        let generatedCode = fallbackResponse.response || generateFallbackTemplate(prompt, deploymentId);
+        if (!fallbackResponse.ok) {
+          throw new Error(`Groq fallback API error: ${fallbackResponse.status}`);
+        }
+
+        const fallbackData = await fallbackResponse.json();
+        const fallbackAIResponse = {
+          response: fallbackData.choices[0]?.message?.content || ''
+        };
+
+        let generatedCode = fallbackAIResponse.response || generateFallbackTemplate(prompt, deploymentId);
 
         // Extract HTML from markdown if present
         if (generatedCode.includes('```')) {
