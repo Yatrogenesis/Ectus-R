@@ -1,0 +1,468 @@
+name: 🚀 Ectus-R CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 2 AM UTC for security scans
+    - cron: '0 2 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Security and compliance scanning
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run cargo audit
+        run: |
+          cargo install cargo-audit
+          cargo audit --json > audit-results.json || true
+
+      - name: Upload audit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit
+          path: audit-results.json
+
+  # Code quality and linting
+  code-quality:
+    name: 📊 Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run Clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Run cargo check
+        run: cargo check --all-targets --all-features
+
+  # Comprehensive testing
+  test-suite:
+    name: 🧪 Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        rust: [stable, beta]
+        exclude:
+          - os: macos-latest
+            rust: beta
+          - os: windows-latest
+            rust: beta
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust ${{ matrix.rust }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev pkg-config
+
+      - name: Install system dependencies (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew install openssl pkg-config
+
+      - name: Run unit tests
+        run: cargo test --all-features --verbose
+
+      - name: Run integration tests
+        run: cargo test --test '*' --all-features --verbose
+
+      - name: Run doc tests
+        run: cargo test --doc --all-features --verbose
+
+  # Web dashboard testing
+  web-dashboard-tests:
+    name: 🌐 Web Dashboard Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web-dashboard
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web-dashboard/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run type checking
+        run: npm run type-check
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run component tests
+        run: npm run test:components
+
+      - name: Build for production
+        run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dashboard-build
+          path: web-dashboard/dist/
+
+  # Performance benchmarks
+  benchmarks:
+    name: ⚡ Performance Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run benchmarks
+        run: cargo bench --all-features
+
+      - name: Store benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Rust Benchmark
+          tool: 'cargo'
+          output-file-path: target/criterion/benchmark_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+
+  # Build release binaries
+  build-release:
+    name: 🏗️ Build Release
+    runs-on: ${{ matrix.os }}
+    needs: [security-scan, code-quality, test-suite]
+    if: startsWith(github.ref, 'refs/tags/v')
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: ectus-r-linux-x64
+
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            name: ectus-r-windows-x64.exe
+
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: ectus-r-macos-x64
+
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            name: ectus-r-macos-arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev pkg-config
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }} --all-features
+
+      - name: Create installer (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          # Create NSIS installer script
+          echo 'OutFile "ectus-r-installer-${{ github.ref_name }}.exe"' > installer.nsi
+          echo 'InstallDir "$PROGRAMFILES64\Ectus-R"' >> installer.nsi
+          echo 'Section "MainSection" SEC01' >> installer.nsi
+          echo '  SetOutPath "$INSTDIR"' >> installer.nsi
+          echo '  File "target\${{ matrix.target }}\release\ectus-server.exe"' >> installer.nsi
+          echo '  File "target\${{ matrix.target }}\release\ectus-cli.exe"' >> installer.nsi
+          echo '  WriteUninstaller "$INSTDIR\uninstall.exe"' >> installer.nsi
+          echo '  CreateShortCut "$DESKTOP\Ectus-R.lnk" "$INSTDIR\ectus-server.exe"' >> installer.nsi
+          echo 'SectionEnd' >> installer.nsi
+
+      - name: Create installer package (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          mkdir -p package/usr/local/bin
+          cp target/${{ matrix.target }}/release/ectus-server package/usr/local/bin/
+          cp target/${{ matrix.target }}/release/ectus-cli package/usr/local/bin/
+          pkgbuild --root package --identifier com.yatrogenesis.ectus-r --version ${{ github.ref_name }} ectus-r-${{ github.ref_name }}-${{ matrix.target }}.pkg
+
+      - name: Create DEB package (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p package/usr/local/bin
+          mkdir -p package/DEBIAN
+          cp target/${{ matrix.target }}/release/ectus-server package/usr/local/bin/
+          cp target/${{ matrix.target }}/release/ectus-cli package/usr/local/bin/
+          echo "Package: ectus-r" > package/DEBIAN/control
+          echo "Version: ${{ github.ref_name }}" >> package/DEBIAN/control
+          echo "Architecture: amd64" >> package/DEBIAN/control
+          echo "Maintainer: Yatrogenesis <info@yatrogenesis.com>" >> package/DEBIAN/control
+          echo "Description: Autonomous Software Engineering Platform" >> package/DEBIAN/control
+          dpkg-deb --build package ectus-r-${{ github.ref_name }}-amd64.deb
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: |
+            target/${{ matrix.target }}/release/ectus-server*
+            target/${{ matrix.target }}/release/ectus-cli*
+            *.exe
+            *.pkg
+            *.deb
+
+  # Deploy to Cloudflare Workers
+  deploy-workers:
+    name: ☁️ Deploy to Cloudflare
+    runs-on: ubuntu-latest
+    needs: [test-suite, web-dashboard-tests]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    environment:
+      name: production
+      url: https://api.ectus.ai
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Deploy API Worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "Deploying API worker..."
+          wrangler deploy --env production
+
+      - name: Deploy Web Dashboard
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "Deploying web dashboard to Cloudflare Pages..."
+          npx wrangler pages deploy web-dashboard/dist --project-name ectus-r-dashboard
+
+  # Create GitHub Release
+  github-release:
+    name: 📦 GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-release, deploy-workers]
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -f CHANGELOG.md ]; then
+            awk '/^## \[/{if(p) exit; p=1} p' CHANGELOG.md > release_notes.md
+          else
+            echo "## What's Changed" > release_notes.md
+            echo "* See commit history for details" >> release_notes.md
+          fi
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat release_notes.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: |
+            */ectus-r*
+            */*.exe
+            */*.pkg
+            */*.deb
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Deploy documentation to GitHub Pages
+  deploy-docs:
+    name: 📚 Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: [test-suite]
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Generate Rust documentation
+        run: |
+          cargo doc --all-features --no-deps
+          echo '<meta http-equiv="refresh" content="0; url=ectus_r/">' > target/doc/index.html
+
+      - name: Setup Node.js for docs site
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Build documentation site
+        run: |
+          mkdir -p docs-site
+          cp -r target/doc/* docs-site/
+
+          # Create a simple docs landing page
+          cat > docs-site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Ectus-R Documentation</title>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                         line-height: 1.6; color: #333; max-width: 1200px; margin: 0 auto; padding: 2rem; }
+                  .header { text-align: center; margin-bottom: 3rem; }
+                  .logo { font-size: 3rem; font-weight: bold; color: #0066cc; margin-bottom: 0.5rem; }
+                  .tagline { font-size: 1.2rem; color: #666; }
+                  .nav { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem; }
+                  .card { border: 1px solid #e1e5e9; border-radius: 8px; padding: 1.5rem; text-decoration: none; color: inherit; }
+                  .card:hover { border-color: #0066cc; box-shadow: 0 4px 12px rgba(0,102,204,0.15); }
+                  .card h3 { margin-top: 0; color: #0066cc; }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <div class="logo">Ectus-R</div>
+                  <div class="tagline">Autonomous Software Engineering Platform</div>
+              </div>
+
+              <div class="nav">
+                  <a href="ectus_r/" class="card">
+                      <h3>🦀 Rust API Documentation</h3>
+                      <p>Complete API documentation for all Rust crates and modules</p>
+                  </a>
+
+                  <a href="https://github.com/Yatrogenesis/Ectus-R" class="card">
+                      <h3>📚 GitHub Repository</h3>
+                      <p>Source code, examples, and contribution guidelines</p>
+                  </a>
+
+                  <a href="https://api.ectus.ai/health" class="card">
+                      <h3>⚡ Live API Status</h3>
+                      <p>Check the current status of the Ectus-R SaaS platform</p>
+                  </a>
+
+                  <a href="https://dashboard.ectus.ai" class="card">
+                      <h3>🌐 Web Dashboard</h3>
+                      <p>Access the Ectus-R web interface and mission control</p>
+                  </a>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs-site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Notify on completion
+  notify-completion:
+    name: 📢 Notify Completion
+    runs-on: ubuntu-latest
+    needs: [github-release, deploy-docs, deploy-workers]
+    if: always() && startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Notify success
+        if: needs.github-release.result == 'success'
+        run: |
+          echo "🎉 Ectus-R ${{ github.ref_name }} successfully released!"
+          echo "📦 Binaries: https://github.com/Yatrogenesis/Ectus-R/releases/tag/${{ github.ref_name }}"
+          echo "📚 Documentation: https://yatrogenesis.github.io/Ectus-R/"
+          echo "☁️ SaaS Platform: https://api.ectus.ai"
+
+      - name: Notify failure
+        if: needs.github-release.result == 'failure'
+        run: |
+          echo "❌ Release failed for ${{ github.ref_name }}"
+          exit 1

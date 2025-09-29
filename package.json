@@ -1,0 +1,48 @@
+{
+  "name": "ectus-r-saas",
+  "version": "1.0.0",
+  "description": "Ectus-R SaaS Platform - Autonomous Software Engineering with Cloudflare Workers",
+  "main": "src/worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "build": "esbuild src/worker.js --bundle --format=esm --target=es2022 --outfile=dist/worker.js",
+    "lint": "eslint src/ --ext .js,.ts",
+    "format": "prettier --write src/",
+    "db:migrate": "wrangler d1 execute ectus-main-db --file schema.sql",
+    "db:migrate:remote": "wrangler d1 execute ectus-main-db --file schema.sql --remote",
+    "kv:setup": "npm run kv:create:sessions && npm run kv:create:cache && npm run kv:create:metadata",
+    "kv:create:sessions": "wrangler kv namespace create SESSIONS",
+    "kv:create:cache": "wrangler kv namespace create CACHE",
+    "kv:create:metadata": "wrangler kv namespace create METADATA"
+  },
+  "keywords": [
+    "saas",
+    "cloudflare-workers",
+    "autonomous-software",
+    "deployment",
+    "magic-loop",
+    "ai-development"
+  ],
+  "author": "Yatrogenesis",
+  "license": "MIT",
+  "dependencies": {
+    "itty-router": "^4.0.26",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/uuid": "^9.0.7",
+    "esbuild": "^0.19.8",
+    "eslint": "^8.55.0",
+    "prettier": "^3.1.0",
+    "vitest": "^1.0.4",
+    "wrangler": "^3.19.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

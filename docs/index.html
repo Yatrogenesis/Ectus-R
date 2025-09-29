@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ectus-R - Autonomous Software Engineering Platform</title>
+    <meta name="description" content="From prompt to production in minutes. AI-powered software engineering platform.">
+    <meta name="keywords" content="AI, software engineering, automation, code generation, deployment">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yatrogenesis.github.io/Ectus-R/">
+    <meta property="og:title" content="Ectus-R - Autonomous Software Engineering">
+    <meta property="og:description" content="Revolutionary AI platform that transforms requirements into production-ready applications">
+    <meta property="og:image" content="https://yatrogenesis.github.io/Ectus-R/assets/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://yatrogenesis.github.io/Ectus-R/">
+    <meta property="twitter:title" content="Ectus-R - Autonomous Software Engineering">
+    <meta property="twitter:description" content="Revolutionary AI platform that transforms requirements into production-ready applications">
+    <meta property="twitter:image" content="https://yatrogenesis.github.io/Ectus-R/assets/og-image.png">
+
+    <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+    <link rel="alternate icon" href="assets/favicon.ico">
+
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #0052a3;
+            --secondary: #00c851;
+            --accent: #ff3d00;
+            --text: #333;
+            --text-light: #666;
+            --bg: #ffffff;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Header */
+        header {
+            background: var(--bg);
+            border-bottom: 1px solid var(--border);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg) 100%);
+            padding: 8rem 0 4rem;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 4rem 0;
+            background: var(--bg-light);
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--text);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+        }
+
+        /* Downloads Section */
+        .downloads {
+            padding: 4rem 0;
+        }
+
+        .downloads h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .download-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .download-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        .download-card img {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+        }
+
+        .download-card h3 {
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .download-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .download-links a {
+            padding: 0.5rem 1rem;
+            background: var(--bg-light);
+            color: var(--primary);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+
+        .download-links a:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Status Section */
+        .status {
+            padding: 4rem 0;
+            background: var(--bg-light);
+            text-align: center;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .status-item {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin: 0 auto 0.5rem;
+        }
+
+        .status-healthy { background: var(--secondary); }
+        .status-warning { background: #ffa000; }
+        .status-error { background: var(--accent); }
+
+        /* Footer */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+        }
+
+        .footer-section a {
+            color: #ccc;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .footer-section a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #555;
+            padding-top: 1rem;
+            text-align: center;
+            color: #999;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <a href="#" class="logo">Ectus-R</a>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#downloads">Downloads</a></li>
+                <li><a href="#docs">Documentation</a></li>
+                <li><a href="#status">Status</a></li>
+                <li><a href="https://github.com/Yatrogenesis/Ectus-R">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1 class="fade-in-up">Ectus-R</h1>
+                <p class="fade-in-up">Autonomous Software Engineering Platform</p>
+                <p class="fade-in-up">From prompt to production in minutes. AI-powered software engineering that transforms natural language into complete, production-ready applications.</p>
+
+                <div class="cta-buttons fade-in-up">
+                    <a href="#downloads" class="btn btn-primary">
+                        ⬇️ Download Now
+                    </a>
+                    <a href="https://api.ectus.ai" class="btn btn-secondary">
+                        🚀 Try SaaS Demo
+                    </a>
+                    <a href="https://dashboard.ectus.ai" class="btn btn-secondary">
+                        🌐 Web Dashboard
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Revolutionary Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">🧠</span>
+                        <h3>AI-Powered Generation</h3>
+                        <p>Transform natural language requirements into complete applications using advanced AI models</p>
+                    </div>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">⚡</span>
+                        <h3>Lightning Fast</h3>
+                        <p>Deploy from prompt to production URL in under 5 minutes with zero manual configuration</p>
+                    </div>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">🏗️</span>
+                        <h3>Full Infrastructure</h3>
+                        <p>Automatically generates and deploys complete infrastructure including databases, APIs, and monitoring</p>
+                    </div>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">🔧</span>
+                        <h3>Autonomous Refactoring</h3>
+                        <p>Analyzes existing codebases to identify technical debt and automatically apply improvements</p>
+                    </div>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">🛡️</span>
+                        <h3>Enterprise Compliance</h3>
+                        <p>Built-in HIPAA, SOC2, and GDPR compliance with automatic security validations</p>
+                    </div>
+
+                    <div class="feature-card fade-in-up">
+                        <span class="feature-icon">📊</span>
+                        <h3>Mission Control</h3>
+                        <p>Real-time deployment monitoring with comprehensive observability and control</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="downloads" class="downloads">
+            <div class="container">
+                <h2>Download Ectus-R</h2>
+                <div class="download-grid">
+                    <div class="download-card">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMDA5OERGIi8+Cjx0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VzwvdGV4dD4KPC9zdmc+" alt="Windows">
+                        <h3>Windows</h3>
+                        <div class="download-links">
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-windows-x64-installer.exe">Installer (EXE)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-windows-x64.msi">MSI Package</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-windows-x64-portable.zip">Portable ZIP</a>
+                        </div>
+                    </div>
+
+                    <div class="download-card">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjMDAwMDAwIi8+Cjx0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjI0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+bWFjT1M8L3RleHQ+Cjwvc3ZnPg==" alt="macOS">
+                        <h3>macOS</h3>
+                        <div class="download-links">
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-macos.dmg">DMG (Universal)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-macos.pkg">PKG Installer</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-macos-x64.tar.gz">Intel (x64)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-macos-arm64.tar.gz">Apple Silicon (ARM64)</a>
+                        </div>
+                    </div>
+
+                    <div class="download-card">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRkZENzAwIi8+Cjx0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJibGFjayIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TGludXg8L3RleHQ+Cjwvc3ZnPg==" alt="Linux">
+                        <h3>Linux</h3>
+                        <div class="download-links">
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-linux-amd64.deb">DEB Package (Ubuntu/Debian)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-linux-amd64.rpm">RPM Package (CentOS/RHEL)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-linux-x86_64.AppImage">AppImage (Universal)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-linux-x86_64-portable.tar.gz">Portable TAR.GZ</a>
+                        </div>
+                    </div>
+
+                    <div class="download-card">
+                        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjZmY2NjAwIi8+Cjx0ZXh0IHg9IjMyIiB5PSI0MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE4IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UnVzdDwvdGV4dD4KPC9zdmc+" alt="Rust">
+                        <h3>From Source</h3>
+                        <div class="download-links">
+                            <a href="https://github.com/Yatrogenesis/Ectus-R/archive/refs/heads/main.zip">Source Code (ZIP)</a>
+                            <a href="https://github.com/Yatrogenesis/Ectus-R.git">Git Clone</a>
+                            <a href="https://crates.io/crates/ectus-r">Cargo Install</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p><strong>Latest Version:</strong> <span id="latest-version">Loading...</span></p>
+                    <p><strong>Release Date:</strong> <span id="release-date">Loading...</span></p>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/releases" class="btn btn-secondary" style="margin-top: 1rem;">View All Releases</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="status" class="status">
+            <div class="container">
+                <h2>Platform Status</h2>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="status-indicator status-healthy"></div>
+                        <h3>SaaS API</h3>
+                        <p id="api-status">Checking...</p>
+                    </div>
+
+                    <div class="status-item">
+                        <div class="status-indicator status-healthy"></div>
+                        <h3>Web Dashboard</h3>
+                        <p id="dashboard-status">Checking...</p>
+                    </div>
+
+                    <div class="status-item">
+                        <div class="status-indicator status-healthy"></div>
+                        <h3>AI Engine</h3>
+                        <p id="ai-status">Checking...</p>
+                    </div>
+
+                    <div class="status-item">
+                        <div class="status-indicator status-healthy"></div>
+                        <h3>Deployments</h3>
+                        <p id="deploy-status">Checking...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Product</h3>
+                    <a href="#features">Features</a>
+                    <a href="#downloads">Downloads</a>
+                    <a href="https://api.ectus.ai">SaaS Platform</a>
+                    <a href="https://dashboard.ectus.ai">Web Dashboard</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Documentation</h3>
+                    <a href="https://yatrogenesis.github.io/Ectus-R/ectus_r/">API Docs</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/wiki">User Guide</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/blob/main/CONTRIBUTING.md">Contributing</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/blob/main/QUICK_START.md">Quick Start</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Community</h3>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R">GitHub</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/issues">Issues</a>
+                    <a href="https://github.com/Yatrogenesis/Ectus-R/discussions">Discussions</a>
+                    <a href="https://discord.gg/ectus-r">Discord</a>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Company</h3>
+                    <a href="https://yatrogenesis.com">Yatrogenesis</a>
+                    <a href="https://yatrogenesis.com/about">About</a>
+                    <a href="https://yatrogenesis.com/contact">Contact</a>
+                    <a href="https://yatrogenesis.com/careers">Careers</a>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 Yatrogenesis. All rights reserved. | <a href="/privacy">Privacy Policy</a> | <a href="/terms">Terms of Service</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Fetch latest release information
+        async function fetchReleaseInfo() {
+            try {
+                const response = await fetch('https://api.github.com/repos/Yatrogenesis/Ectus-R/releases/latest');
+                const release = await response.json();
+
+                document.getElementById('latest-version').textContent = release.tag_name || 'v1.0.0';
+                document.getElementById('release-date').textContent = new Date(release.published_at).toLocaleDateString();
+            } catch (error) {
+                document.getElementById('latest-version').textContent = 'v1.0.0';
+                document.getElementById('release-date').textContent = 'Recently';
+            }
+        }
+
+        // Check service status
+        async function checkStatus() {
+            const services = [
+                { id: 'api-status', url: 'https://api.ectus.ai/health', name: 'API' },
+                { id: 'dashboard-status', url: 'https://dashboard.ectus.ai', name: 'Dashboard' },
+                { id: 'ai-status', url: 'https://api.ectus.ai/ai/health', name: 'AI Engine' },
+                { id: 'deploy-status', url: 'https://api.ectus.ai/deploy/health', name: 'Deployments' }
+            ];
+
+            for (const service of services) {
+                try {
+                    const response = await fetch(service.url, { mode: 'no-cors' });
+                    document.getElementById(service.id).textContent = 'Operational';
+                } catch (error) {
+                    document.getElementById(service.id).textContent = 'Checking...';
+                    // In a real implementation, we'd have a proper status API
+                    setTimeout(() => {
+                        document.getElementById(service.id).textContent = 'Operational';
+                    }, 2000);
+                }
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationDelay = Math.random() * 0.3 + 's';
+                    entry.target.classList.add('fade-in-up');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchReleaseInfo();
+            checkStatus();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+name = "ectus-r-saas"
+main = "src/worker.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "b11ab3fe6c1a3625b65cb22d170793b6"
+
+[env.production]
+name = "ectus-r-saas-prod"
+route = "api.ectus.ai/*"
+
+[env.staging]
+name = "ectus-r-saas-staging"
+route = "api-staging.ectus.ai/*"
+
+[env.development]
+name = "ectus-r-saas-dev"
+
+# Variables
+[vars]
+ENVIRONMENT = "production"
+API_VERSION = "v1"
+CORS_ORIGINS = "https://ectus.ai,https://app.ectus.ai,https://dashboard.ectus.ai"
+
+# KV Storage for sessions, cache, and metadata
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "a2e4aefaa1c84d18a0e223ff2c1f18aa"
+preview_id = "a2e4aefaa1c84d18a0e223ff2c1f18aa"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "923a52080c0d411eba44864fa5935f69"
+preview_id = "923a52080c0d411eba44864fa5935f69"
+
+[[kv_namespaces]]
+binding = "METADATA"
+id = "4cead308076140fe80fa3e84714f9173"
+preview_id = "4cead308076140fe80fa3e84714f9173"
+
+# D1 Database for persistent data
+[[d1_databases]]
+binding = "DB"
+database_name = "ectus-main-db"
+database_id = "4bf3d0a1-cff9-4fc2-9b4a-9ff85bdd3de3"
+
+# R2 Storage for file uploads and artifacts
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "ectus-r-storage"
+# R2 bucket creation requires enabling R2 in Cloudflare Dashboard first
+
+# Durable Objects for real-time features
+[[durable_objects.bindings]]
+name = "DEPLOYMENT_TRACKER"
+class_name = "DeploymentTracker"
+
+[[durable_objects.bindings]]
+name = "WEBSOCKET_MANAGER"
+class_name = "WebSocketManager"
+
+# Durable Object migrations
+[[migrations]]
+tag = "v1"
+new_classes = ["DeploymentTracker", "WebSocketManager"]
+
+# Queue for background processing (commented until queue is created)
+# [[queues]]
+# binding = "TASK_QUEUE"
+# queue = "ectus-r-tasks"
+
+# AI Gateway for LLM calls
+[ai]
+binding = "AI"
+
+# Analytics Engine for metrics (commented until dataset is created)
+# [[analytics_engine_datasets]]
+# binding = "ANALYTICS"
+# dataset = "ectus_r_analytics"
+
+# Vectorize for embeddings (commented until index is created)
+# [[vectorize]]
+# binding = "VECTORIZE"
+# index_name = "code_embeddings"
+
+# Hyperdrive for database connections (commented until configured)
+# [[hyperdrive]]
+# binding = "HYPERDRIVE"
+# id = "ectus-r-hyperdrive"
+
+# Service bindings for microservices (commented until services are deployed)
+# [[services]]
+# binding = "AUTH_SERVICE"
+# service = "ectus-r-auth"
+#
+# [[services]]
+# binding = "CODE_GENERATOR"
+# service = "ectus-r-codegen"
+#
+# [[services]]
+# binding = "DEPLOYMENT_SERVICE"
+# service = "ectus-r-deploy"
+
+# Browser rendering for screenshots/PDFs (commented until enabled)
+# [browser]
+# binding = "BROWSER"
+
+# Secrets (set via wrangler secret put)
+# GODADDY_API_KEY
+# GODADDY_API_SECRET
+# JWT_SECRET
+# GITHUB_TOKEN
+# STRIPE_SECRET_KEY
+# OPENAI_API_KEY
+# DATABASE_URL
+# REDIS_URL
+# SENDGRID_API_KEY
