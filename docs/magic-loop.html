@@ -415,14 +415,14 @@
                 if (data.success) {
                     // Show result
                     document.getElementById('deploymentInfo').innerHTML = `
-                        <p><strong>Deployment ID:</strong> ${data.deployment_id}</p>
-                        <p><strong>Status:</strong> ${data.status}</p>
+                        <p><strong>Deployment ID:</strong> ${data.deploymentId}</p>
+                        <p><strong>Generation Method:</strong> ${data.method}</p>
                         <p><strong>Prompt:</strong> ${data.prompt}</p>
-                        <p><strong>Message:</strong> ${data.message}</p>
+                        <p><strong>Created:</strong> ${new Date(data.timestamp).toLocaleString()}</p>
                     `;
 
-                    document.getElementById('previewLink').href = data.preview_url;
-                    document.getElementById('apiLink').href = `${API_BASE}/deployments/${data.deployment_id}`;
+                    document.getElementById('previewLink').href = `${API_BASE}/deployments/${data.deploymentId}`;
+                    document.getElementById('apiLink').href = `${API_BASE}/deployments/${data.deploymentId}`;
 
                     result.classList.add('show');
 
