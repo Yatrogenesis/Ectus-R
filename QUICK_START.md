@@ -1,14 +1,14 @@
 # AION-R Quick Start Guide
 
-🚀 **Get AION-R Enterprise Platform running in 5 minutes!**
+Get AION-R Platform running quickly.
 
 ## Prerequisites
 
-- **Docker** & **Docker Compose** (recommended)
-- **Rust** 1.70+ (for local development)
-- **Git** for cloning
+- Docker & Docker Compose (recommended)
+- Rust 1.70+ (for local development)
+- Git for cloning
 
-## 🔥 Fastest Start (Docker)
+## Quick Start (Docker)
 
 ### Windows Users
 
@@ -29,24 +29,24 @@ chmod +x scripts/*.sh
 ./scripts/start-dev.sh
 ```
 
-## 🎯 What Gets Started
+## What Gets Started
 
 ### Core Services
-- **🌐 API Gateway** (Port 8080) - Enterprise API gateway with load balancing
-- **🔐 Auth Service** (Port 8081) - Multi-tenant authentication
-- **🤖 AI Service** (Port 8082) - AI/ML processing engine
-- **📊 Monitoring** (Port 8083) - Metrics and observability
+- API Gateway (Port 8080) - API gateway with load balancing
+- Auth Service (Port 8081) - Multi-tenant authentication
+- AI Service (Port 8082) - AI/ML processing engine
+- Monitoring (Port 8083) - Metrics and observability
 
 ### Infrastructure
-- **📊 Grafana** (Port 3000) - Dashboards and visualization
-- **📈 Prometheus** (Port 9090) - Metrics collection
-- **🔍 Jaeger** (Port 16686) - Distributed tracing
-- **🐰 RabbitMQ** (Port 15672) - Message queuing
-- **💾 MinIO** (Port 9001) - S3-compatible storage
-- **🗄️ PostgreSQL** (Port 5432) - Primary database
-- **⚡ Redis** (Port 6379) - Caching and sessions
+- Grafana (Port 3000) - Dashboards and visualization
+- Prometheus (Port 9090) - Metrics collection
+- Jaeger (Port 16686) - Distributed tracing
+- RabbitMQ (Port 15672) - Message queuing
+- MinIO (Port 9001) - S3-compatible storage
+- PostgreSQL (Port 5432) - Primary database
+- Redis (Port 6379) - Caching and sessions
 
-## 📋 Quick Commands
+## Quick Commands
 
 ```bash
 # Health check all services
@@ -63,18 +63,18 @@ docker-compose down
 docker-compose restart aion-gateway
 ```
 
-## 🔗 Access URLs
+## Access URLs
 
 | Service | URL | Credentials |
 |---------|-----|-------------|
-| **API Gateway** | http://localhost:8080 | - |
-| **Grafana** | http://localhost:3000 | admin / aion_grafana_pass |
+| API Gateway | http://localhost:8080 | - |
+| Grafana | http://localhost:3000 | admin / aion_grafana_pass |
 | **Prometheus** | http://localhost:9090 | - |
 | **Jaeger** | http://localhost:16686 | - |
 | **RabbitMQ** | http://localhost:15672 | aion_user / aion_pass |
 | **MinIO Console** | http://localhost:9001 | aion_access_key / aion_secret_key |
 
-## 🧪 Test the Platform
+## Test the Platform
 
 ### 1. Check System Status
 ```bash
@@ -98,16 +98,16 @@ curl -X POST http://localhost:8081/auth/login \
   -d '{"username": "admin", "password": "admin123"}'
 ```
 
-## ⚡ Performance Expectations
+## Performance Expectations
 
 | Metric | Expected Value |
 |--------|----------------|
-| **Startup Time** | < 30 seconds |
-| **API Response** | < 5ms |
-| **Memory Usage** | < 100MB per service |
-| **Throughput** | 10,000+ req/s |
+| Startup Time | < 30 seconds |
+| API Response | < 5ms |
+| Memory Usage | < 100MB per service |
+| Throughput | 10,000+ req/s |
 
-## 🛠️ Development Mode
+## Development Mode
 
 ### Local Rust Development
 ```bash
@@ -138,11 +138,11 @@ JWT_SECRET=your-256-bit-secret-key
 RUST_LOG=debug
 ```
 
-## 🏥 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
-**Port already in use:**
+Port already in use:
 ```bash
 # Check what's using port 8080
 netstat -tulpn | grep :8080
@@ -151,7 +151,7 @@ netstat -tulpn | grep :8080
 sudo kill -9 $(sudo lsof -t -i:8080)
 ```
 
-**Docker issues:**
+Docker issues:
 ```bash
 # Clean Docker environment
 docker-compose down --volumes --remove-orphans
@@ -160,25 +160,25 @@ docker system prune -a
 # Restart Docker Desktop (Windows/macOS)
 ```
 
-**Compilation errors (Windows):**
+Compilation errors (Windows):
 - Use WSL2 or Docker for development
 - Install Visual Studio Build Tools
 - Use `cargo build` in WSL2
 
-## 📚 Next Steps
+## Next Steps
 
-1. **[Architecture Guide](docs/architecture/system-design.md)** - Understand the system
-2. **[API Documentation](docs/api/README.md)** - Explore the APIs
-3. **[Security Guide](docs/security/README.md)** - Configure security
-4. **[Deployment Guide](docs/deployment/README.md)** - Deploy to production
-5. **[Monitoring Guide](docs/monitoring/README.md)** - Set up monitoring
+1. [Architecture Guide](docs/architecture/system-design.md) - Understand the system
+2. [API Documentation](docs/api/README.md) - Explore the APIs
+3. [Security Guide](docs/security/README.md) - Configure security
+4. [Deployment Guide](docs/deployment/README.md) - Deploy to production
+5. [Monitoring Guide](docs/monitoring/README.md) - Set up monitoring
 
-## 🤝 Support
+## Support
 
-- **Issues**: [GitHub Issues](https://github.com/Yatrogenesis/AION-R/issues)
-- **Documentation**: [Wiki](https://github.com/Yatrogenesis/AION-R/wiki)
-- **Enterprise Support**: enterprise@yatrogenesis.com
+- Issues: [GitHub Issues](https://github.com/Yatrogenesis/AION-R/issues)
+- Documentation: [Wiki](https://github.com/Yatrogenesis/AION-R/wiki)
+- Enterprise Support: enterprise@yatrogenesis.com
 
 ---
 
-**🎉 Welcome to AION-R Enterprise Platform!**
+Welcome to AION-R Platform!
