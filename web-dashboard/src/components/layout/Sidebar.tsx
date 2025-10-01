@@ -6,7 +6,7 @@ import {
   DocumentDuplicateIcon,
   PuzzlePieceIcon,
   ShoppingBagIcon,
-  ChartBarIcon,
+  ChartBarSquareIcon as ChartBarIcon,
   UsersIcon,
   Cog6ToothIcon,
   XMarkIcon,

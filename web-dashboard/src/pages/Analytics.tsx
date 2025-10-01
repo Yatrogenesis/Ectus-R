@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import {
-  ChartBarIcon,
+  ChartBarSquareIcon as ChartBarIcon,
   UsersIcon,
   EyeIcon,
   CpuChipIcon,

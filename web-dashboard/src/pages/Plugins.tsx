@@ -8,7 +8,7 @@ import {
   StopIcon,
   Cog6ToothIcon,
   TrashIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon as DownloadIcon,
   StarIcon,
   ShieldCheckIcon,
 } from '@heroicons/react/24/outline'

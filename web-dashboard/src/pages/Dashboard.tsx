@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  ChartBarIcon,
+  ChartBarSquareIcon as ChartBarIcon,
   FolderIcon,
   UsersIcon,
   CpuChipIcon,

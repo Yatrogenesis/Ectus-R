@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { MagnifyingGlassIcon, CommandLineIcon, FolderIcon, DocumentIcon } from '@heroicons/react/24/outline'
+import { MagnifyingGlassIcon, CommandLineIcon, FolderIcon, DocumentTextIcon as DocumentIcon } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { debounce } from '@/lib/utils'

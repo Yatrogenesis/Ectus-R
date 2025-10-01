@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import {
   CloudArrowUpIcon,
-  DocumentIcon,
+  DocumentTextIcon as DocumentIcon,
   PhotoIcon,
   FilmIcon,
   MusicalNoteIcon,

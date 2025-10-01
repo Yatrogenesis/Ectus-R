@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 import {
   MagnifyingGlassIcon,
   StarIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon as DownloadIcon,
   ShoppingBagIcon,
   HeartIcon,
   ShareIcon,
