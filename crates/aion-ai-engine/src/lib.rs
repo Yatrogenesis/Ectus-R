@@ -38,6 +38,7 @@ pub mod autocorrection_cycle;
 pub mod ast_parser;
 pub mod refactoring_operations;
 pub mod llm_providers;
+pub mod locked_files;
 
 pub use inference::*;
 pub use models::*;

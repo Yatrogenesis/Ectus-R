@@ -10,6 +10,7 @@ use serde::{Serialize, Deserialize};
 use crate::test_integration::{TestIntegrationEngine, DetailedTestResults, TestFailure};
 use crate::code_generation::GeneratedCode;
 use crate::llm_providers::{MultiProviderLLM, LLMRequest, LLMClient, GroqClient, OpenAIClient, HuggingFaceClient, GitHubModelsClient, CloudflareAIClient};
+use crate::locked_files::LockedFilesManager;
 
 /// Maximum iterations before giving up
 const MAX_AUTOCORRECTION_ITERATIONS: u32 = 5;
@@ -22,6 +23,7 @@ pub struct AutocorrectionCycle {
     test_engine: TestIntegrationEngine,
     max_iterations: u32,
     llm: MultiProviderLLM,
+    locked_files: LockedFilesManager,
 }
 
 /// Result of autocorrection attempt
@@ -94,10 +96,24 @@ impl AutocorrectionCycle {
             info!("✅ Available LLM providers: {:?}", available);
         }
 
+        let project_root = std::env::current_dir()?;
+        let mut locked_files = LockedFilesManager::new(&project_root);
+
+        // Load locked files from config
+        if let Err(e) = locked_files.load_from_config() {
+            warn!("Failed to load locked files config: {}", e);
+        }
+
+        // Scan for git modifications
+        if let Err(e) = locked_files.scan_git_modifications() {
+            warn!("Failed to scan git modifications: {}", e);
+        }
+
         Ok(Self {
             test_engine: TestIntegrationEngine::new(),
             max_iterations: MAX_AUTOCORRECTION_ITERATIONS,
             llm,
+            locked_files,
         })
     }
 
@@ -352,7 +368,7 @@ impl AutocorrectionCycle {
         Ok((code, applied_fixes))
     }
 
-    /// Write code to project filesystem
+    /// Write code to project filesystem (respects locked files)
     async fn write_code_to_project(
         &self,
         project_path: &Path,
@@ -369,6 +385,20 @@ impl AutocorrectionCycle {
 
         let main_file = project_path.join(format!("src/main.{}", file_extension));
 
+        // Check if file is locked
+        if self.locked_files.is_locked(&main_file) {
+            warn!("🔒 File is locked: {:?}", main_file);
+            warn!("   Creating suggestion file instead...");
+
+            // Create suggestion file instead of overwriting
+            let suggestion_path = self.locked_files.create_suggestion_file(&main_file, &code.code)?;
+
+            info!("💡 Suggestion written to: {:?}", suggestion_path);
+            info!("   Review and merge manually if needed");
+
+            return Ok(());
+        }
+
         tokio::fs::create_dir_all(main_file.parent().unwrap()).await?;
         tokio::fs::write(&main_file, &code.code).await
             .context(format!("Failed to write code to {:?}", main_file))?;
@@ -384,10 +414,14 @@ impl Default for AutocorrectionCycle {
             warn!("Failed to initialize autocorrection cycle with LLM: {}", e);
             warn!("Continuing without LLM support (heuristic mode only)");
 
+            let project_root = std::env::current_dir().unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let locked_files = LockedFilesManager::new(&project_root);
+
             Self {
                 test_engine: TestIntegrationEngine::new(),
                 max_iterations: MAX_AUTOCORRECTION_ITERATIONS,
                 llm: MultiProviderLLM::new(),
+                locked_files,
             }
         })
     }

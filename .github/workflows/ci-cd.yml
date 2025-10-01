@@ -256,10 +256,44 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Run cargo audit
+      - name: Rust Security Audit
         uses: actions-rs/audit-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web-dashboard/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: web-dashboard
+        run: npm ci
+
+      - name: Node.js Security Audit
+        working-directory: web-dashboard
+        run: |
+          npm audit --audit-level=high --json > ../audit-report.json || true
+          npm audit --audit-level=high
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-audit-report
+          path: audit-report.json
+
+      - name: Check for Critical Vulnerabilities
+        working-directory: web-dashboard
+        run: |
+          CRITICAL=$(npm audit --audit-level=critical --json | jq '.metadata.vulnerabilities.critical // 0')
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "❌ Found $CRITICAL critical vulnerabilities"
+            exit 1
+          else
+            echo "✅ No critical vulnerabilities found"
+          fi
 
   # Job 6: Build and push Docker image
   docker-build:
