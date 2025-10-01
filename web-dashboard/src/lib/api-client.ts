@@ -84,9 +84,15 @@ export class APIClient {
   private ws?: WebSocket
 
   constructor(config: APIClientConfig) {
-    this.baseUrl = config.baseUrl || process.env.REACT_APP_API_URL || 'http://localhost:8080'
+    // Priority: config > env > Cloudflare production > local fallback
+    this.baseUrl = config.baseUrl
+      || process.env.REACT_APP_API_URL
+      || 'https://ectus-r-saas.pako-molina.workers.dev'  // Cloudflare Worker
+      || 'http://localhost:8080'  // Local dev fallback
     this.apiKey = config.apiKey || process.env.REACT_APP_API_KEY
     this.timeout = config.timeout || 30000
+
+    console.log(`[APIClient] Initialized with baseUrl: ${this.baseUrl}`)
   }
 
   /**
