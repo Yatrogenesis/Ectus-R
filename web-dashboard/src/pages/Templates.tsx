@@ -6,7 +6,7 @@ import {
   Squares2X2Icon,
   ListBulletIcon,
   StarIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon as DownloadIcon,
   EyeIcon,
   TagIcon,
   ClockIcon,

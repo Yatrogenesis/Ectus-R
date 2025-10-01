@@ -163,6 +163,102 @@ export class APIClient {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
+  // ===== GENERIC HTTP METHODS =====
+
+  /**
+   * Generic GET request
+   */
+  async get<T>(endpoint: string): Promise<T> {
+    const response = await this.request<T>(endpoint, { method: 'GET' })
+
+    if (response.error) {
+      throw new Error(response.error)
+    }
+
+    if (!response.data) {
+      throw new Error('No data received')
+    }
+
+    return response.data
+  }
+
+  /**
+   * Generic POST request
+   */
+  async post<T>(endpoint: string, body?: any): Promise<T> {
+    const response = await this.request<T>(endpoint, {
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
+    })
+
+    if (response.error) {
+      throw new Error(response.error)
+    }
+
+    if (!response.data) {
+      throw new Error('No data received')
+    }
+
+    return response.data
+  }
+
+  /**
+   * Generic PUT request
+   */
+  async put<T>(endpoint: string, body?: any): Promise<T> {
+    const response = await this.request<T>(endpoint, {
+      method: 'PUT',
+      body: body ? JSON.stringify(body) : undefined,
+    })
+
+    if (response.error) {
+      throw new Error(response.error)
+    }
+
+    if (!response.data) {
+      throw new Error('No data received')
+    }
+
+    return response.data
+  }
+
+  /**
+   * Generic DELETE request
+   */
+  async delete<T>(endpoint: string): Promise<T> {
+    const response = await this.request<T>(endpoint, { method: 'DELETE' })
+
+    if (response.error) {
+      throw new Error(response.error)
+    }
+
+    if (!response.data) {
+      throw new Error('No data received')
+    }
+
+    return response.data
+  }
+
+  /**
+   * Generic PATCH request
+   */
+  async patch<T>(endpoint: string, body?: any): Promise<T> {
+    const response = await this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: body ? JSON.stringify(body) : undefined,
+    })
+
+    if (response.error) {
+      throw new Error(response.error)
+    }
+
+    if (!response.data) {
+      throw new Error('No data received')
+    }
+
+    return response.data
+  }
+
   // ===== PROJECT MANAGEMENT =====
 
   /**

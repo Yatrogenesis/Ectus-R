@@ -20,7 +20,9 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline'
 import { cn, formatRelativeTime, getStatusColor } from '@/lib/utils'
-import { apiClient } from '@/lib/api-client'
+import { getAPIClient } from '@/lib/api-client'
+
+const apiClient = getAPIClient()
 
 interface Project {
   id: string
