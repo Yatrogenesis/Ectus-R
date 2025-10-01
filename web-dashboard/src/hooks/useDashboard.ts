@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { getAPIClient } from '../lib/api-client'
 
 // Types for dashboard metrics
 export interface DashboardMetrics {
