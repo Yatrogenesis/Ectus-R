@@ -35,6 +35,8 @@ pub mod advanced_ai_assistant;
 pub mod ai_providers;
 pub mod test_integration;
 pub mod autocorrection_cycle;
+pub mod ast_parser;
+pub mod refactoring_operations;
 
 pub use inference::*;
 pub use models::*;

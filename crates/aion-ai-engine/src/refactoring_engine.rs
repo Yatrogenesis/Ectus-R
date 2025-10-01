@@ -13,8 +13,11 @@ use tokio::sync::RwLock;
 use walkdir::WalkDir;
 use regex::Regex;
 
+use crate::ast_parser::{ASTParser, AST, Language, FunctionDefinition, VariableDeclaration};
+
 /// Main refactoring engine for analyzing and improving existing code
 pub struct RefactoringEngine {
+    ast_parser: Arc<ASTParser>,
     code_analyzer: Arc<CodeAnalyzer>,
     pattern_detector: Arc<PatternDetector>,
     debt_analyzer: Arc<TechnicalDebtAnalyzer>,
@@ -272,8 +275,9 @@ pub enum RefactoringType {
 
 impl RefactoringEngine {
     /// Create new refactoring engine
-    pub fn new() -> Self {
-        Self {
+    pub fn new() -> Result<Self> {
+        Ok(Self {
+            ast_parser: Arc::new(ASTParser::new()?),
             code_analyzer: Arc::new(CodeAnalyzer::new()),
             pattern_detector: Arc::new(PatternDetector::new()),
             debt_analyzer: Arc::new(TechnicalDebtAnalyzer::new()),
@@ -284,7 +288,7 @@ impl RefactoringEngine {
             migration_planner: Arc::new(MigrationPlanner::new()),
             metrics_collector: Arc::new(MetricsCollector::new()),
             refactoring_history: Arc::new(RwLock::new(Vec::new())),
-        }
+        })
     }
 
     /// Analyze entire codebase for refactoring opportunities
