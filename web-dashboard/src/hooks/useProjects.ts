@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { getAPIClient } from '../lib/api-client'
 
 // Types for the API integration
 export interface Project {
@@ -42,152 +43,12 @@ export interface UseProjectsOptions {
   filters?: ProjectFilters
 }
 
-// API client class for project management
-class ProjectsAPI {
-  private baseUrl: string
-  private apiKey?: string
+// API client using the centralized APIClient
+const apiClient = getAPIClient()
 
-  constructor() {
-    this.baseUrl = process.env.REACT_APP_API_URL || 'https://ectus-r-saas.pako-molina.workers.dev'
-    this.apiKey = process.env.REACT_APP_API_KEY
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`
-
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    }
-
-    if (this.apiKey) {
-      headers['Authorization'] = `Bearer ${this.apiKey}`
-    }
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    })
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
-    }
-
-    return response.json()
-  }
-
-  async getProjects(filters?: ProjectFilters): Promise<Project[]> {
-    const params = new URLSearchParams()
-
-    if (filters?.search) {
-      params.append('search', filters.search)
-    }
-    if (filters?.status) {
-      params.append('status', filters.status)
-    }
-    if (filters?.environment) {
-      params.append('environment', filters.environment)
-    }
-    if (filters?.tags && filters.tags.length > 0) {
-      params.append('tags', filters.tags.join(','))
-    }
-
-    const queryString = params.toString()
-    const endpoint = `/api/projects${queryString ? `?${queryString}` : ''}`
-
-    try {
-      return await this.request<Project[]>(endpoint)
-    } catch (error) {
-      console.warn('API call failed, using fallback projects:', error)
-      return this.getFallbackProjects()
-    }
-  }
-
-  async getProject(id: string): Promise<Project> {
-    try {
-      return await this.request<Project>(`/api/projects/${id}`)
-    } catch (error) {
-      console.warn('API call failed, using fallback project:', error)
-      const fallbackProjects = this.getFallbackProjects()
-      const project = fallbackProjects.find(p => p.id === id)
-      if (!project) {
-        throw new Error(`Project with id ${id} not found`)
-      }
-      return project
-    }
-  }
-
-  async createProject(project: CreateProjectRequest): Promise<Project> {
-    try {
-      return await this.request<Project>('/api/projects', {
-        method: 'POST',
-        body: JSON.stringify(project),
-      })
-    } catch (error) {
-      console.warn('API call failed, creating mock project:', error)
-      return this.createMockProject(project)
-    }
-  }
-
-  async updateProject(id: string, updates: Partial<Project>): Promise<Project> {
-    try {
-      return await this.request<Project>(`/api/projects/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(updates),
-      })
-    } catch (error) {
-      console.warn('API call failed, returning mock update:', error)
-      const fallbackProjects = this.getFallbackProjects()
-      const project = fallbackProjects.find(p => p.id === id)
-      if (!project) {
-        throw new Error(`Project with id ${id} not found`)
-      }
-      return { ...project, ...updates }
-    }
-  }
-
-  async deleteProject(id: string): Promise<void> {
-    try {
-      await this.request<void>(`/api/projects/${id}`, {
-        method: 'DELETE',
-      })
-    } catch (error) {
-      console.warn('API call failed for delete operation:', error)
-      // In fallback mode, we just simulate success
-    }
-  }
-
-  async deployProject(id: string, environment: string): Promise<{ deploymentUrl: string }> {
-    try {
-      return await this.request<{ deploymentUrl: string }>(`/api/projects/${id}/deploy`, {
-        method: 'POST',
-        body: JSON.stringify({ environment }),
-      })
-    } catch (error) {
-      console.warn('API call failed for deployment:', error)
-      return {
-        deploymentUrl: `https://${id}-${environment}.example.com`
-      }
-    }
-  }
-
-  async getProjectLogs(id: string, limit = 100): Promise<string[]> {
-    try {
-      return await this.request<string[]>(`/api/projects/${id}/logs?limit=${limit}`)
-    } catch (error) {
-      console.warn('API call failed for logs:', error)
-      return [
-        `[${new Date().toISOString()}] Project ${id} logs unavailable in fallback mode`,
-        `[${new Date().toISOString()}] Using mock data for development`,
-      ]
-    }
-  }
-
-  private getFallbackProjects(): Project[] {
-    return [
+// Fallback data for development (kept for offline mode)
+function getFallbackProjects(): Project[] {
+  return [
       {
         id: '1',
         name: 'AI Chat Bot',
@@ -281,9 +142,9 @@ class ProjectsAPI {
         tags: ['Payment', 'Security', 'Go'],
       },
     ]
-  }
+}
 
-  private createMockProject(request: CreateProjectRequest): Project {
+function createMockProject(request: CreateProjectRequest): Project {
     return {
       id: `mock-${Date.now()}`,
       name: request.name,
@@ -299,11 +160,7 @@ class ProjectsAPI {
       visibility: request.visibility,
       tags: request.tags,
     }
-  }
 }
-
-// Initialize the API client
-const projectsAPI = new ProjectsAPI()
 
 // Custom hook for project management
 export function useProjects(options: UseProjectsOptions = {}) {
@@ -317,11 +174,13 @@ export function useProjects(options: UseProjectsOptions = {}) {
     try {
       setLoading(true)
       setError(null)
-      const data = await projectsAPI.getProjects(filters)
+      const data = await apiClient.getProjects(filters)
       setProjects(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch projects')
-      console.error('Error fetching projects:', err)
+      // Fallback to mock data if API fails
+      console.warn('API call failed, using fallback projects:', err)
+      setProjects(getFallbackProjects())
+      setError(null) // Don't show error to user in fallback mode
     } finally {
       setLoading(false)
     }
@@ -329,19 +188,20 @@ export function useProjects(options: UseProjectsOptions = {}) {
 
   const createProject = useCallback(async (project: CreateProjectRequest) => {
     try {
-      const newProject = await projectsAPI.createProject(project)
+      const newProject = await apiClient.createProject(project)
       setProjects(prev => [newProject, ...prev])
       return newProject
     } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to create project'
-      setError(error)
-      throw new Error(error)
+      console.warn('API call failed, creating mock project:', err)
+      const mockProject = createMockProject(project)
+      setProjects(prev => [mockProject, ...prev])
+      return mockProject
     }
   }, [])
 
   const updateProject = useCallback(async (id: string, updates: Partial<Project>) => {
     try {
-      const updatedProject = await projectsAPI.updateProject(id, updates)
+      const updatedProject = await apiClient.updateProject(id, updates)
       setProjects(prev =>
         prev.map(project =>
           project.id === id ? updatedProject : project
@@ -349,26 +209,29 @@ export function useProjects(options: UseProjectsOptions = {}) {
       )
       return updatedProject
     } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to update project'
-      setError(error)
-      throw new Error(error)
+      console.warn('API call failed, updating locally:', err)
+      setProjects(prev =>
+        prev.map(project =>
+          project.id === id ? { ...project, ...updates } : project
+        )
+      )
+      return { ...updates, id } as Project
     }
   }, [])
 
   const deleteProject = useCallback(async (id: string) => {
     try {
-      await projectsAPI.deleteProject(id)
+      await apiClient.deleteProject(id)
       setProjects(prev => prev.filter(project => project.id !== id))
     } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to delete project'
-      setError(error)
-      throw new Error(error)
+      console.warn('API call failed for delete, removing locally:', err)
+      setProjects(prev => prev.filter(project => project.id !== id))
     }
   }, [])
 
   const deployProject = useCallback(async (id: string, environment: string) => {
     try {
-      const deployment = await projectsAPI.deployProject(id, environment)
+      const deployment = await apiClient.deployProject(id, environment)
 
       // Update project status to deploying
       await updateProject(id, {
@@ -380,9 +243,19 @@ export function useProjects(options: UseProjectsOptions = {}) {
 
       return deployment
     } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to deploy project'
-      setError(error)
-      throw new Error(error)
+      console.warn('API call failed for deployment:', err)
+      const mockDeployment = {
+        deploymentUrl: `https://${id}-${environment}.example.com`,
+        deploymentId: `deploy-${Date.now()}`,
+        status: 'deploying' as const
+      }
+      await updateProject(id, {
+        status: 'deploying',
+        lastDeployment: new Date().toISOString(),
+        environment: environment as any,
+        deploymentUrl: mockDeployment.deploymentUrl
+      })
+      return mockDeployment
     }
   }, [updateProject])
 
@@ -431,11 +304,17 @@ export function useProject(id: string) {
     try {
       setLoading(true)
       setError(null)
-      const data = await projectsAPI.getProject(id)
+      const data = await apiClient.getProject(id)
       setProject(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch project')
-      console.error('Error fetching project:', err)
+      console.warn('API call failed, using fallback project:', err)
+      const fallbackProjects = getFallbackProjects()
+      const fallbackProject = fallbackProjects.find(p => p.id === id)
+      if (fallbackProject) {
+        setProject(fallbackProject)
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to fetch project')
+      }
     } finally {
       setLoading(false)
     }
@@ -443,24 +322,29 @@ export function useProject(id: string) {
 
   const fetchLogs = useCallback(async (limit = 100) => {
     try {
-      const projectLogs = await projectsAPI.getProjectLogs(id, limit)
+      const projectLogs = await apiClient.getProjectLogs(id, limit)
       setLogs(projectLogs)
     } catch (err) {
-      console.error('Error fetching logs:', err)
+      console.warn('API call failed for logs:', err)
+      setLogs([
+        `[${new Date().toISOString()}] Project ${id} logs unavailable`,
+        `[${new Date().toISOString()}] Using fallback mode for development`,
+      ])
     }
   }, [id])
 
   const updateProject = useCallback(async (updates: Partial<Project>) => {
     try {
-      const updatedProject = await projectsAPI.updateProject(id, updates)
+      const updatedProject = await apiClient.updateProject(id, updates)
       setProject(updatedProject)
       return updatedProject
     } catch (err) {
-      const error = err instanceof Error ? err.message : 'Failed to update project'
-      setError(error)
-      throw new Error(error)
+      console.warn('API call failed, updating locally:', err)
+      const updated = { ...project, ...updates } as Project
+      setProject(updated)
+      return updated
     }
-  }, [id])
+  }, [id, project])
 
   useEffect(() => {
     fetchProject()
@@ -479,4 +363,4 @@ export function useProject(id: string) {
 }
 
 // Export the API client for direct usage
-export { projectsAPI }
+export { apiClient }
