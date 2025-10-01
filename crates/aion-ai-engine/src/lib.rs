@@ -33,6 +33,7 @@ pub mod vulnerability_scanner;
 pub mod refactoring_engine;
 pub mod advanced_ai_assistant;
 pub mod ai_providers;
+pub mod test_integration;
 
 pub use inference::*;
 pub use models::*;

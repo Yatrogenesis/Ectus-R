@@ -12,6 +12,7 @@ use uuid::Uuid;
 use crate::errors::{AIEngineError, Result};
 use crate::inference::{InferenceEngine, InferenceRequest};
 use crate::code_generation::{GeneratedCode, CodeGenerationEngine};
+use crate::test_integration::{TestIntegrationEngine, DetailedTestResults};
 
 /// Autonomous QA engine that tests and corrects generated code
 pub struct AutonomousQAEngine {
@@ -21,6 +22,7 @@ pub struct AutonomousQAEngine {
     error_analyzer: Arc<ErrorAnalyzer>,
     fix_generator: Arc<FixGenerator>,
     metrics: Arc<RwLock<QAMetrics>>,
+    test_integration: Arc<TestIntegrationEngine>,
 }
 
 /// Results of autonomous quality assurance
