@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Demo Connection</title>
+    <style>
+        body { font-family: monospace; padding: 2rem; background: #1a1a1a; color: #fff; }
+        .test { margin: 1rem 0; padding: 1rem; background: #2a2a2a; border-radius: 0.5rem; }
+        .success { border-left: 4px solid #10b981; }
+        .error { border-left: 4px solid #ef4444; }
+        .pending { border-left: 4px solid #f59e0b; }
+        button { padding: 0.5rem 1rem; background: #6366f1; border: none; color: white; border-radius: 0.25rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Ectus-R Demo Connection</h1>
+
+    <button onclick="runAllTests()">Run All Tests</button>
+
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'https://ectus-r-demo.pako-molina.workers.dev/api';
+        const results = document.getElementById('results');
+
+        async function runAllTests() {
+            results.innerHTML = '';
+
+            await testHealthCheck();
+            await testCORS();
+            await testAuth();
+            await testAuthWithSession();
+        }
+
+        async function testHealthCheck() {
+            const testDiv = addTest('Health Check', 'pending');
+
+            try {
+                const response = await fetch(`${API_URL}/demo/status`);
+                const data = await response.json();
+
+                if (data.status === 'operational') {
+                    updateTest(testDiv, 'success', `✅ Status: ${data.status}, AI: ${data.ai_available}`);
+                } else {
+                    updateTest(testDiv, 'error', `❌ Unexpected status: ${JSON.stringify(data)}`);
+                }
+            } catch (error) {
+                updateTest(testDiv, 'error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testCORS() {
+            const testDiv = addTest('CORS Headers', 'pending');
+
+            try {
+                const response = await fetch(`${API_URL}/demo/status`, {
+                    method: 'OPTIONS'
+                });
+
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                };
+
+                updateTest(testDiv, 'success', `✅ CORS configured: ${JSON.stringify(corsHeaders, null, 2)}`);
+            } catch (error) {
+                updateTest(testDiv, 'error', `❌ CORS Error: ${error.message}`);
+            }
+        }
+
+        async function testAuth() {
+            const testDiv = addTest('Authentication (Credentials)', 'pending');
+
+            try {
+                const response = await fetch(`${API_URL}/demo/auth`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        authType: 'credentials',
+                        credentials: {
+                            username: 'demo_user',
+                            password: 'SecureDemo2025!'
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.sessionId) {
+                    window.testSessionId = data.sessionId;
+                    updateTest(testDiv, 'success', `✅ Auth successful\nSession: ${data.sessionId}\nUser: ${JSON.stringify(data.user, null, 2)}`);
+                } else {
+                    updateTest(testDiv, 'error', `❌ Auth failed: ${JSON.stringify(data)}`);
+                }
+            } catch (error) {
+                updateTest(testDiv, 'error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        async function testAuthWithSession() {
+            const testDiv = addTest('Code Generation (with session)', 'pending');
+
+            if (!window.testSessionId) {
+                updateTest(testDiv, 'error', '❌ No session from previous test');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/demo/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${window.testSessionId}`
+                    },
+                    body: JSON.stringify({
+                        prompt: 'Create a simple REST API health check endpoint',
+                        language: 'rust',
+                        framework: 'axum'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.code) {
+                    updateTest(testDiv, 'success', `✅ Code generated\nLines: ${data.metrics.linesOfCode}\nCode preview:\n${data.code.substring(0, 200)}...`);
+                } else {
+                    updateTest(testDiv, 'error', `❌ Generation failed: ${JSON.stringify(data)}`);
+                }
+            } catch (error) {
+                updateTest(testDiv, 'error', `❌ Error: ${error.message}`);
+            }
+        }
+
+        function addTest(name, status) {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `<strong>${name}</strong><br><span>Testing...</span>`;
+            results.appendChild(div);
+            return div;
+        }
+
+        function updateTest(div, status, message) {
+            div.className = `test ${status}`;
+            div.innerHTML = `<strong>${div.querySelector('strong').textContent}</strong><br><pre>${message}</pre>`;
+        }
+
+        // Run tests on load
+        setTimeout(runAllTests, 500);
+    </script>
+</body>
+</html>

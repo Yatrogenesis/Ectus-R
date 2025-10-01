@@ -14,12 +14,20 @@
 ✅ https://ectus-r-creator.pages.dev/demo.html
 ```
 **Status**: LIVE y FUNCIONANDO
+**Acceso directo**: https://ectus-r-creator.pages.dev/demo
 
 **Credenciales**:
 ```
 Usuario: demo_user
 Password: SecureDemo2025!
 ```
+
+### 🧪 Test de Conexión Demo
+```
+✅ https://ectus-r-creator.pages.dev/test-demo-connection.html
+```
+**Status**: LIVE - Diagnóstico automático
+**Uso**: Verifica que API y demo estén conectados correctamente
 
 **Prueba la IA**:
 1. Ingresa credenciales
