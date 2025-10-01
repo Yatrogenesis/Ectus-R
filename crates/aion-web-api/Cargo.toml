@@ -8,6 +8,7 @@ description = "Web API server for Ectus-R platform"
 aion-core = { path = "../aion-core" }
 aion-monitoring = { path = "../aion-monitoring" }
 aion-ai-engine = { path = "../aion-ai-engine" }
+aion-optimization-engine = { path = "../aion-optimization-engine" }
 
 # Web framework
 axum = { version = "0.7", features = ["ws", "multipart", "macros"] }

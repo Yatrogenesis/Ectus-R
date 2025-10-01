@@ -29,6 +29,9 @@ use handlers::*;
 use models::*;
 use services::*;
 
+// Import optimization engine
+use aion_optimization_engine::{OptimizationEngine, OptimizationConfig};
+
 /// Application state shared across handlers
 #[derive(Clone)]
 pub struct AppState {
@@ -36,6 +39,7 @@ pub struct AppState {
     pub ai_service: Arc<AIService>,
     pub deployment_service: Arc<DeploymentService>,
     pub auth_service: Arc<AuthService>,
+    pub optimization_engine: Arc<RwLock<OptimizationEngine>>,
     pub config: AppConfig,
 }
 
@@ -93,11 +97,22 @@ async fn main() -> anyhow::Result<()> {
     let deployment_service = Arc::new(DeploymentService::new().await?);
     let auth_service = Arc::new(AuthService::new(&config.jwt_secret)?);
 
+    // Initialize optimization engine
+    println!("🧠 Initializing optimization engine...");
+    let optimization_config = OptimizationConfig::default();
+    let optimization_engine = Arc::new(RwLock::new(
+        OptimizationEngine::new(&optimization_config).await?
+    ));
+
+    // Start optimization engine
+    optimization_engine.write().await.start().await?;
+
     let app_state = AppState {
         monitoring_service,
         ai_service,
         deployment_service,
         auth_service,
+        optimization_engine,
         config: config.clone(),
     };
 
@@ -198,6 +213,15 @@ fn create_api_v1_router() -> Router<AppState> {
         .route("/auth/login", post(login))
         .route("/auth/refresh", post(refresh_token))
         .route("/auth/logout", post(logout))
+
+        // Optimization endpoints
+        .route("/optimization/status", get(get_optimization_status))
+        .route("/optimization/config", get(get_optimization_config))
+        .route("/optimization/config", put(update_optimization_config))
+        .route("/optimization/metrics", get(get_optimization_metrics))
+        .route("/optimization/recommendations", get(get_optimization_recommendations))
+        .route("/optimization/start", post(start_optimization))
+        .route("/optimization/stop", post(stop_optimization))
 
         // Admin endpoints
         .route("/admin/stats", get(get_admin_stats))

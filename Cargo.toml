@@ -12,7 +12,8 @@ members = [
     "crates/aion-enterprise",
     "crates/aion-monitoring",
     "crates/aion-ai-engine",
-    "crates/aion-web-api"
+    "crates/aion-web-api",
+    "crates/aion-optimization-engine"
 ]
 
 [dependencies]
@@ -76,7 +77,14 @@ deadpool-postgres = "0.12"
 
 [dev-dependencies]
 tokio-test = "0.4"
-criterion = "0.5"
+criterion = { version = "0.5", features = ["html_reports"] }
+aion-optimization-engine = { path = "crates/aion-optimization-engine" }
+aion-monitoring = { path = "crates/aion-monitoring" }
+futures = "0.3"
+
+[[bench]]
+name = "optimization_benchmarks"
+harness = false
 
 [[bin]]
 name = "ectus-server"

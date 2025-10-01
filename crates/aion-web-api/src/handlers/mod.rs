@@ -8,6 +8,7 @@ pub mod projects;
 pub mod auth;
 pub mod admin;
 pub mod dashboard;
+pub mod optimization;
 
 // Re-export handler functions
 pub use system::*;
@@ -17,3 +18,4 @@ pub use projects::*;
 pub use auth::*;
 pub use admin::*;
 pub use dashboard::*;
+pub use optimization::*;

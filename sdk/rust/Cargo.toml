@@ -1,0 +1,28 @@
+[package]
+name = "ectus-plugin-sdk"
+version = "1.0.0"
+edition = "2021"
+authors = ["Yatrogenesis <info@yatrogenesis.com>"]
+description = "Official Rust SDK for Ectus-R plugins"
+license = "MIT"
+repository = "https://github.com/Yatrogenesis/Ectus-R"
+keywords = ["ectus-r", "plugin", "code-generation", "ai", "automation"]
+categories = ["development-tools", "api-bindings"]
+
+[lib]
+name = "ectus_plugin_sdk"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-trait = "0.1"
+thiserror = "2.0"
+anyhow = "1.0"
+tokio = { version = "1.0", features = ["full"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[features]
+default = []
