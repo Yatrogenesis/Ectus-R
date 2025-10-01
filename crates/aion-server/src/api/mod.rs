@@ -19,10 +19,8 @@ use crate::{AppState, middleware::*};
 pub mod auth;
 pub mod health;
 pub mod code_generation;
-pub mod requirements;
-pub mod models;
-pub mod users;
 pub mod admin;
+// requirements, models, and users are defined inline below
 
 /// Build the main API router
 pub fn build_api_router(state: Arc<AppState>) -> Router {
@@ -40,10 +38,10 @@ pub fn build_api_router(state: Arc<AppState>) -> Router {
         .route("/api/v1/auth/reset-password", post(auth::reset_password))
 
         // Protected API v1 routes
-        .nest("/api/v1", api_v1_routes())
+        .nest("/api/v1", api_v1_routes(state.clone()))
 
         // Admin routes
-        .nest("/api/v1/admin", admin_routes())
+        .nest("/api/v1/admin", admin_routes(state.clone()))
 
         // Apply middleware
         .layer(
@@ -60,7 +58,7 @@ pub fn build_api_router(state: Arc<AppState>) -> Router {
 }
 
 /// API v1 routes (require authentication)
-fn api_v1_routes() -> Router<Arc<AppState>> {
+fn api_v1_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         // User profile
         .route("/users/profile", get(users::get_profile))
@@ -127,7 +125,7 @@ fn api_v1_routes() -> Router<Arc<AppState>> {
 }
 
 /// Admin routes (require admin role)
-fn admin_routes() -> Router<Arc<AppState>> {
+fn admin_routes(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         .route("/users", get(admin::list_users))
         .route("/users/:id", get(admin::get_user))
@@ -176,8 +174,7 @@ mod ai {
     pub mod text {
         use axum::{extract::State, response::Json, Extension};
         use std::sync::Arc;
-        use crate::{AppState, errors::AppError};
-        use aion_auth::models::AuthenticatedUser;
+        use crate::{AppState, errors::AppError, middleware::AuthenticatedUser};
 
         pub async fn analyze_text(
             State(_state): State<Arc<AppState>>,
@@ -215,8 +212,7 @@ mod ai {
     pub mod vision {
         use axum::{extract::State, response::Json, Extension};
         use std::sync::Arc;
-        use crate::{AppState, errors::AppError};
-        use aion_auth::models::AuthenticatedUser;
+        use crate::{AppState, errors::AppError, middleware::AuthenticatedUser};
 
         pub async fn analyze_image(
             State(_state): State<Arc<AppState>>,
@@ -254,8 +250,7 @@ mod ai {
     pub mod audio {
         use axum::{extract::State, response::Json, Extension};
         use std::sync::Arc;
-        use crate::{AppState, errors::AppError};
-        use aion_auth::models::AuthenticatedUser;
+        use crate::{AppState, errors::AppError, middleware::AuthenticatedUser};
 
         pub async fn transcribe_audio(
             State(_state): State<Arc<AppState>>,
@@ -287,8 +282,7 @@ mod projects {
     use axum::{extract::{State, Path}, response::Json, Extension};
     use std::sync::Arc;
     use uuid::Uuid;
-    use crate::{AppState, errors::AppError};
-    use aion_auth::models::AuthenticatedUser;
+    use crate::{AppState, errors::AppError, middleware::AuthenticatedUser};
 
     pub async fn list_projects(
         State(_state): State<Arc<AppState>>,
@@ -343,8 +337,7 @@ mod projects {
 mod usage {
     use axum::{extract::State, response::Json, Extension};
     use std::sync::Arc;
-    use crate::{AppState, errors::AppError};
-    use aion_auth::models::AuthenticatedUser;
+    use crate::{AppState, errors::AppError, middleware::AuthenticatedUser};
 
     pub async fn get_usage(
         State(_state): State<Arc<AppState>>,
@@ -364,8 +357,7 @@ mod usage {
 mod billing {
     use axum::{extract::State, response::Json, Extension};
     use std::sync::Arc;
-    use crate::{AppState, errors::AppError};
-    use aion_auth::models::AuthenticatedUser;
+    use crate::{AppState, errors::AppError, middleware::AuthenticatedUser};
 
     pub async fn get_current_billing(
         State(_state): State<Arc<AppState>>,
@@ -386,8 +378,7 @@ mod requirements {
     use axum::{extract::State, response::Json, Extension};
     use std::sync::Arc;
     use serde::{Deserialize, Serialize};
-    use crate::{AppState, errors::AppError};
-    use aion_auth::models::AuthenticatedUser;
+    use crate::{AppState, errors::AppError, middleware::AuthenticatedUser};
 
     #[derive(Debug, Deserialize)]
     pub struct RequirementsRequest {
@@ -425,8 +416,7 @@ mod models {
     use std::sync::Arc;
     use uuid::Uuid;
     use serde::Serialize;
-    use crate::{AppState, errors::AppError};
-    use aion_auth::models::AuthenticatedUser;
+    use crate::{AppState, errors::AppError, middleware::AuthenticatedUser};
 
     #[derive(Debug, Serialize)]
     pub struct ModelInfo {
@@ -479,8 +469,7 @@ mod models {
 mod users {
     use axum::{extract::State, response::Json, Extension};
     use std::sync::Arc;
-    use crate::{AppState, errors::AppError};
-    use aion_auth::models::AuthenticatedUser;
+    use crate::{AppState, errors::AppError, middleware::AuthenticatedUser};
 
     pub async fn get_profile(
         State(_state): State<Arc<AppState>>,

@@ -163,7 +163,7 @@ pub struct DataGovernancePolicy {
     pub audit_required: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum DataClassification {
     Public,
     Internal,
@@ -394,7 +394,7 @@ impl ComplianceManager {
             metadata: {
                 let mut map = HashMap::new();
                 map.insert("report_id".to_string(), serde_json::Value::String(report_id.to_string()));
-                map.insert("overall_status".to_string(), serde_json::Value::String(format!("{:?}", overall_status)));
+                map.insert("overall_status".to_string(), serde_json::Value::String(format!("{:?}", report.overall_status)));
                 map
             },
             ip_address: None,

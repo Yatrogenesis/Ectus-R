@@ -1233,7 +1233,7 @@ impl ErrorAnalyzer {
     }
 
     pub async fn analyze_code(&self, project_path: &Path, test_results: &TestResults) -> Result<Vec<CodeError>> {
-        println!"🔍 Analyzing code for errors and issues...");
+        println!("🔍 Analyzing code for errors and issues...");
 
         let mut errors = Vec::new();
 

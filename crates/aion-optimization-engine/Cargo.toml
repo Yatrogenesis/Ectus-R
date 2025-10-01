@@ -17,9 +17,9 @@ sqlx = { version = "0.7", features = ["postgres", "uuid", "chrono", "runtime-tok
 redis = { version = "0.24", features = ["tokio-comp"] }
 
 # Machine Learning dependencies
-candle-core = "0.3"
-candle-nn = "0.3"
-candle-transformers = "0.3"
+candle-core = "0.9"
+candle-nn = "0.9"
+candle-transformers = "0.9"
 ndarray = "0.15"
 linfa = "0.7"
 linfa-linear = "0.7"

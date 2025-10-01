@@ -7,8 +7,8 @@ description = "Web API server for Ectus-R platform"
 [dependencies]
 aion-core = { path = "../aion-core" }
 aion-monitoring = { path = "../aion-monitoring" }
-aion-ai-engine = { path = "../aion-ai-engine" }
-aion-optimization-engine = { path = "../aion-optimization-engine" }
+# aion-ai-engine = { path = "../aion-ai-engine" }  # Comentado: candle-core tiene conflictos de versión
+# aion-optimization-engine = { path = "../aion-optimization-engine" }  # Comentado: depende de aion-ai-engine
 
 # Web framework
 axum = { version = "0.7", features = ["ws", "multipart", "macros"] }

@@ -15,8 +15,12 @@ pub trait EventHandler: Send + Sync {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum PlatformEvent {
+    PlatformStarted { timestamp: chrono::DateTime<chrono::Utc>, services_count: usize },
+    PlatformStopped { timestamp: chrono::DateTime<chrono::Utc>, uptime_seconds: u64 },
+    ServiceRegistered { service_name: String, timestamp: chrono::DateTime<chrono::Utc> },
     ServiceStarted { service_name: String, timestamp: chrono::DateTime<chrono::Utc> },
     ServiceStopped { service_name: String, timestamp: chrono::DateTime<chrono::Utc> },
+    ServiceError { service_name: String, error: String, timestamp: chrono::DateTime<chrono::Utc> },
     UserLoggedIn { user_id: uuid::Uuid, timestamp: chrono::DateTime<chrono::Utc> },
     DataProcessed { bytes: u64, timestamp: chrono::DateTime<chrono::Utc> },
     AlertTriggered { alert_id: String, severity: String, timestamp: chrono::DateTime<chrono::Utc> },
@@ -65,8 +69,12 @@ impl EventBus {
         // Send to registered handlers
         let handlers = self.handlers.read().await;
         let event_type = match &event {
+            PlatformEvent::PlatformStarted { .. } => "PlatformStarted",
+            PlatformEvent::PlatformStopped { .. } => "PlatformStopped",
+            PlatformEvent::ServiceRegistered { .. } => "ServiceRegistered",
             PlatformEvent::ServiceStarted { .. } => "ServiceStarted",
             PlatformEvent::ServiceStopped { .. } => "ServiceStopped",
+            PlatformEvent::ServiceError { .. } => "ServiceError",
             PlatformEvent::UserLoggedIn { .. } => "UserLoggedIn",
             PlatformEvent::DataProcessed { .. } => "DataProcessed",
             PlatformEvent::AlertTriggered { .. } => "AlertTriggered",

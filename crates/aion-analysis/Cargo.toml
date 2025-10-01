@@ -48,9 +48,9 @@ toml = "0.8"
 yaml-rust = "0.4"
 
 # AI/ML for code analysis
-candle-core = "0.3"
-candle-nn = "0.3"
-candle-transformers = "0.3"
+candle-core = "0.9"
+candle-nn = "0.9"
+candle-transformers = "0.9"
 
 # Code formatting
 rustfmt-nightly = { version = "1.6", optional = true }

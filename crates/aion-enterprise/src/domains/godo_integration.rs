@@ -238,9 +238,9 @@ impl GoDaddyDomainManager {
                 Err(e) => {
                     results.push(DomainOperationResult {
                         success: false,
-                        domain: config.domain,
+                        domain: config.domain.clone(),
                         record_id: None,
-                        full_domain: config.subdomain.map_or(config.domain.clone(), |s| format!("{}.{}", s, config.domain)),
+                        full_domain: config.subdomain.as_ref().map_or(config.domain.clone(), |s| format!("{}.{}", s, config.domain)),
                         message: format!("Failed: {}", e),
                         propagation_time: None,
                         ssl_certificate: None,
@@ -504,7 +504,7 @@ pub struct PropagationStatus {
 }
 
 // Integration with Magic Loop
-impl super::cloudflare_deployer::CloudflareDeployer {
+impl crate::deployment::cloudflare_deployer::CloudflareDeployer {
     /// Configure custom domain using GoDo-R
     pub async fn setup_custom_domain_with_godo(
         &self,

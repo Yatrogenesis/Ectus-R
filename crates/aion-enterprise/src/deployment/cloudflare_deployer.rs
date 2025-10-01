@@ -471,7 +471,7 @@ impl CloudflareDeployer {
         Ok(TestResult {
             name: "Health Check".to_string(),
             passed: response.status().is_success(),
-            duration: std::time::Duration::from_millis(response.elapsed().unwrap_or_default().as_millis() as u64),
+            duration: std::time::Duration::from_millis(100), // Placeholder duration
             details: Some(format!("Status: {}", response.status())),
         })
     }
@@ -487,7 +487,7 @@ impl CloudflareDeployer {
         Ok(TestResult {
             name: "API Endpoints".to_string(),
             passed: response.status().as_u16() < 500, // Allow 404 but not 5xx
-            duration: std::time::Duration::from_millis(response.elapsed().unwrap_or_default().as_millis() as u64),
+            duration: std::time::Duration::from_millis(100), // Placeholder duration
             details: Some(format!("Status: {}", response.status())),
         })
     }
@@ -504,7 +504,7 @@ impl CloudflareDeployer {
         Ok(TestResult {
             name: "AI Endpoint".to_string(),
             passed: response.status().is_success(),
-            duration: std::time::Duration::from_millis(response.elapsed().unwrap_or_default().as_millis() as u64),
+            duration: std::time::Duration::from_millis(100), // Placeholder duration
             details: Some(format!("Status: {}", response.status())),
         })
     }
@@ -513,7 +513,7 @@ impl CloudflareDeployer {
     async fn test_cors_headers(&self, worker_url: &str) -> Result<TestResult> {
         let client = reqwest::Client::new();
         let response = client
-            .options(worker_url)
+            .request(reqwest::Method::OPTIONS, worker_url)
             .send()
             .await?;
 
@@ -522,7 +522,7 @@ impl CloudflareDeployer {
         Ok(TestResult {
             name: "CORS Headers".to_string(),
             passed: has_cors,
-            duration: std::time::Duration::from_millis(response.elapsed().unwrap_or_default().as_millis() as u64),
+            duration: std::time::Duration::from_millis(100), // Placeholder duration
             details: Some(format!("CORS headers present: {}", has_cors)),
         })
     }
@@ -675,6 +675,7 @@ impl CostEstimate {
 }
 
 // GoDaddy integration (placeholder)
+#[derive(Clone)]
 pub struct GoDaddyClient {
     api_key: String,
     api_secret: String,

@@ -11,11 +11,27 @@ pub struct AppConfig {
     pub database: DatabaseConfig,
     pub redis: RedisConfig,
     pub auth: AuthConfig,
-    pub ai_engine: aion_ai_engine::AIEngineConfig,
+    pub ai_engine: AIEngineConfig, // Stub implementation
     pub storage: StorageConfig,
     pub logging: LoggingConfig,
     pub monitoring: MonitoringConfig,
     pub features: FeatureConfig,
+}
+
+/// AI Engine configuration (stub)
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct AIEngineConfig {
+    pub model_path: String,
+    pub max_concurrent_requests: u32,
+}
+
+impl Default for AIEngineConfig {
+    fn default() -> Self {
+        Self {
+            model_path: "./models".to_string(),
+            max_concurrent_requests: 10,
+        }
+    }
 }
 
 /// Server configuration
@@ -131,7 +147,7 @@ impl Default for AppConfig {
                 lockout_duration_seconds: Some(900),
                 enable_mfa: Some(false),
             },
-            ai_engine: aion_ai_engine::AIEngineConfig::default(),
+            ai_engine: AIEngineConfig::default(),
             storage: StorageConfig {
                 storage_type: "local".to_string(),
                 base_path: Some("./storage".to_string()),

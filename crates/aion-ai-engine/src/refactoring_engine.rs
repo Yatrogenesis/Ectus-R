@@ -535,9 +535,9 @@ impl RefactoringEngine {
         // Patterns for different dependency types
         let import_patterns = vec![
             (Regex::new(r"^use\s+([^;]+);")?, "rust"),
-            (Regex::new(r"^import\s+.*from\s+['\"]([^'\"]+)['\"]")?, "typescript"),
+            (Regex::new(r#"^import\s+.*from\s+['"]([^'"]+)['"]"#)?, "typescript"),
             (Regex::new(r"^from\s+(\S+)\s+import")?, "python"),
-            (Regex::new(r"^import\s+['\"]([^'\"]+)['\"]")?, "go"),
+            (Regex::new(r#"^import\s+['"]([^'"]+)['"]"#)?, "go"),
         ];
 
         for file_path in files {

@@ -13,7 +13,8 @@ members = [
     "crates/aion-monitoring",
     "crates/aion-ai-engine",
     "crates/aion-web-api",
-    "crates/aion-optimization-engine"
+    "crates/aion-optimization-engine",
+    "crates/aion-server"
 ]
 
 [dependencies]
@@ -86,13 +87,14 @@ futures = "0.3"
 name = "optimization_benchmarks"
 harness = false
 
-[[bin]]
-name = "ectus-server"
-path = "crates/aion-server/src/main.rs"
+# Binarios problemáticos comentados temporalmente
+# [[bin]]
+# name = "ectus-server"
+# path = "crates/aion-server/src/main.rs"
 
-[[bin]]
-name = "ectus-cli"
-path = "crates/aion-cli/src/main.rs"
+# [[bin]]
+# name = "ectus-cli"
+# path = "crates/aion-cli/src/main.rs"
 
 [features]
 default = ["postgres", "redis", "monitoring", "security"]

@@ -34,7 +34,7 @@ pub use openapi::*;
 pub use secrets_manager::*;
 
 // Import optimization engine
-use aion_optimization_engine::{OptimizationEngine, OptimizationConfig};
+// use aion_optimization_engine::{OptimizationEngine, OptimizationConfig};
 
 /// Application state shared across handlers
 #[derive(Clone)]
@@ -43,7 +43,7 @@ pub struct AppState {
     pub ai_service: Arc<AIService>,
     pub deployment_service: Arc<DeploymentService>,
     pub auth_service: Arc<AuthService>,
-    pub optimization_engine: Arc<RwLock<OptimizationEngine>>,
+    // pub optimization_engine: Arc<RwLock<OptimizationEngine>>,
     pub config: AppConfig,
 }
 
@@ -129,21 +129,21 @@ async fn main() -> anyhow::Result<()> {
     );
 
     // Initialize optimization engine
-    println!("🧠 Initializing optimization engine...");
-    let optimization_config = OptimizationConfig::default();
-    let optimization_engine = Arc::new(RwLock::new(
-        OptimizationEngine::new(&optimization_config).await?
-    ));
+    // println!("🧠 Initializing optimization engine...");
+    // let optimization_config = OptimizationConfig::default();
+    // let optimization_engine = Arc::new(RwLock::new(
+    //     OptimizationEngine::new(&optimization_config).await?
+    // ));
 
     // Start optimization engine
-    optimization_engine.write().await.start().await?;
+    // optimization_engine.write().await.start().await?;
 
     let app_state = AppState {
         monitoring_service,
         ai_service,
         deployment_service,
         auth_service,
-        optimization_engine,
+        // optimization_engine,
         config: config.clone(),
     };
 

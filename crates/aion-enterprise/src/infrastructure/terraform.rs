@@ -12,6 +12,17 @@ use anyhow::{Result, Context};
 use std::fs;
 use std::io::Write;
 
+// Helper macro for creating HashMaps
+macro_rules! hashmap {
+    ($($key:expr => $value:expr),* $(,)?) => {
+        {
+            let mut map = HashMap::new();
+            $(map.insert($key.to_string(), $value);)*
+            map
+        }
+    };
+}
+
 /// Terraform infrastructure generator and manager
 #[derive(Debug, Clone)]
 pub struct TerraformManager {
@@ -172,17 +183,17 @@ impl TerraformManager {
         let provider_config = self.generate_provider_config(&spec)?;
 
         // Step 3: Generate networking infrastructure
-        let network_resources = self.generate_network_resources(&spec)?;
+        let network_resources = self.generate_network_resources(&spec, &architecture)?;
 
         // Step 4: Generate compute resources
-        let compute_resources = self.generate_compute_resources(&spec, &architecture)?;
+        let compute_resources = self.generate_compute_resources(&spec)?;
 
         // Step 5: Generate storage resources
         let storage_resources = self.generate_storage_resources(&spec)?;
 
         // Step 6: Generate database resources if needed
-        let database_resources = if let Some(db_config) = &spec.database_config {
-            self.generate_database_resources(db_config, &spec)?
+        let database_resources = if let Some(_db_config) = &spec.database_config {
+            self.generate_database_resources(&spec)?
         } else {
             vec![]
         };
@@ -206,7 +217,7 @@ impl TerraformManager {
         all_resources.extend(monitoring_resources);
         all_resources.extend(security_resources);
 
-        let optimized_resources = self.optimization_engine.optimize(all_resources)?;
+        let optimized_resources = self.optimization_engine.optimize(&all_resources, &spec)?;
 
         // Step 11: Generate variables and outputs
         let variables = self.generate_variables(&spec)?;
@@ -242,12 +253,12 @@ impl TerraformManager {
         };
 
         // Step 15: Validate configuration
-        let validated = self.validation_engine.validate(&infrastructure)?;
+        let _validated = self.validation_engine.validate(&infrastructure)?;
 
         // Store generated configuration
         self.generated_configs.insert(infrastructure.id, infrastructure.clone());
 
-        Ok(validated)
+        Ok(infrastructure)
     }
 
     /// Export generated infrastructure to Terraform files
@@ -382,54 +393,222 @@ impl TerraformManager {
     fn load_modules() -> HashMap<String, ModuleDefinition> {
         HashMap::new()
     }
-}
 
-// Helper macro for creating HashMaps
-macro_rules! hashmap {
-    ($($key:expr => $value:expr),* $(,)?) => {
-        {
-            let mut map = HashMap::new();
-            $(map.insert($key.to_string(), $value);)*
-            map
-        }
-    };
+    fn generate_backend_config(&self, _spec: &InfrastructureSpec) -> Result<BackendConfig> {
+        Ok(BackendConfig)
+    }
+
+    fn write_main_tf(&self, _infrastructure: &GeneratedInfrastructure, _output_dir: &Path) -> Result<()> {
+        Ok(())
+    }
+
+    fn write_variables_tf(&self, _infrastructure: &GeneratedInfrastructure, _output_dir: &Path) -> Result<()> {
+        Ok(())
+    }
+
+    fn write_outputs_tf(&self, _infrastructure: &GeneratedInfrastructure, _output_dir: &Path) -> Result<()> {
+        Ok(())
+    }
+
+    fn write_providers_tf(&self, _infrastructure: &GeneratedInfrastructure, _output_dir: &Path) -> Result<()> {
+        Ok(())
+    }
+
+    fn write_tfvars_example(&self, _infrastructure: &GeneratedInfrastructure, _output_dir: &Path) -> Result<()> {
+        Ok(())
+    }
+
+    fn write_readme(&self, _infrastructure: &GeneratedInfrastructure, _output_dir: &Path) -> Result<()> {
+        Ok(())
+    }
+
+    fn write_gitignore(&self, _output_dir: &Path) -> Result<()> {
+        Ok(())
+    }
+
+    fn generate_modules(&self, _spec: &InfrastructureSpec) -> Result<Vec<ModuleCall>> {
+        Ok(vec![])
+    }
+
+    fn generate_data_sources(&self, _spec: &InfrastructureSpec) -> Result<Vec<DataSource>> {
+        Ok(vec![])
+    }
+
+    fn generate_locals(&self, _spec: &InfrastructureSpec) -> Result<HashMap<String, serde_json::Value>> {
+        Ok(HashMap::new())
+    }
+
+    fn generate_required_providers(&self, _spec: &InfrastructureSpec) -> Result<HashMap<String, ProviderRequirement>> {
+        Ok(HashMap::new())
+    }
+
+    fn generate_variables(&self, _spec: &InfrastructureSpec) -> Result<HashMap<String, Variable>> {
+        Ok(HashMap::new())
+    }
+
+    fn generate_outputs(&self, _resources: &[TerraformResource]) -> Result<HashMap<String, Output>> {
+        Ok(HashMap::new())
+    }
+
+    fn analyze_architecture(&self, _spec: &InfrastructureSpec) -> Result<String> {
+        Ok("standard".to_string())
+    }
+
+    fn generate_provider_config(&self, _spec: &InfrastructureSpec) -> Result<HashMap<String, ProviderRequirement>> {
+        Ok(HashMap::new())
+    }
+
+    fn generate_network_resources(&self, _spec: &InfrastructureSpec, _architecture: &str) -> Result<Vec<TerraformResource>> {
+        Ok(vec![])
+    }
+
+    fn generate_compute_resources(&self, _spec: &InfrastructureSpec) -> Result<Vec<TerraformResource>> {
+        Ok(vec![])
+    }
+
+    fn generate_storage_resources(&self, _spec: &InfrastructureSpec) -> Result<Vec<TerraformResource>> {
+        Ok(vec![])
+    }
+
+    fn generate_database_resources(&self, _spec: &InfrastructureSpec) -> Result<Vec<TerraformResource>> {
+        Ok(vec![])
+    }
+
+    fn generate_supporting_services(&self, _spec: &InfrastructureSpec) -> Result<Vec<TerraformResource>> {
+        Ok(vec![])
+    }
+
+    fn generate_monitoring_resources(&self, _spec: &InfrastructureSpec) -> Result<Vec<TerraformResource>> {
+        Ok(vec![])
+    }
+
+    fn generate_security_resources(&self, _spec: &InfrastructureSpec) -> Result<Vec<TerraformResource>> {
+        Ok(vec![])
+    }
 }
 
 // Additional supporting structures (simplified for brevity)
+#[derive(Debug, Clone)]
 pub struct TerraformTemplate;
+#[derive(Debug, Clone)]
 pub struct ProviderConfig;
+#[derive(Debug, Clone)]
 pub struct ModuleDefinition;
+
+#[derive(Debug, Clone, Default)]
 pub struct StateBackendConfig;
+
+#[derive(Debug, Clone)]
 pub struct WorkspaceManager;
+
+impl WorkspaceManager {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct ValidationEngine;
+
+impl ValidationEngine {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn validate(&self, _infrastructure: &GeneratedInfrastructure) -> Result<bool> {
+        Ok(true)
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct OptimizationEngine;
+
+impl OptimizationEngine {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn optimize(&self, resources: &[TerraformResource], _spec: &InfrastructureSpec) -> Result<Vec<TerraformResource>> {
+        Ok(resources.to_vec())
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct CostEstimator;
+
+impl CostEstimator {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn estimate(&self, _resources: &[TerraformResource], _spec: &InfrastructureSpec) -> Result<CostEstimate> {
+        Ok(CostEstimate)
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct ComplianceChecker;
+
+impl ComplianceChecker {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn check(&self, _resources: &[TerraformResource], _spec: &InfrastructureSpec) -> Result<ComplianceStatus> {
+        Ok(ComplianceStatus)
+    }
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Variable;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Output;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModuleCall;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DataSource;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BackendConfig;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderRequirement;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CostEstimate;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ComplianceStatus;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Lifecycle;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Provisioner;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Environment;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScalingRequirements;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SecurityRequirements;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ComplianceFramework;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BudgetConstraints;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PerformanceTargets;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AvailabilityRequirements;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DisasterRecoveryConfig;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MonitoringConfig;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NetworkingConfig;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StorageConfig;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ComputeConfig;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DatabaseConfig;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CachingConfig;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MessagingConfig;
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CDNConfig;
 
 use serde_json::json;

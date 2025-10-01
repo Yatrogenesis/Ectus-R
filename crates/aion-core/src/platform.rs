@@ -1,4 +1,4 @@
-use crate::{EnterpriseMetrics, EventBus, CacheManager, HealthChecker};
+use crate::{EnterpriseMetrics, EventBus, CacheManager, HealthChecker, events::PlatformEvent};
 use anyhow::Result;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
@@ -80,7 +80,7 @@ pub enum ComplianceStandard {
     ISO27001,
     GDPR,
     HIPAA,
-    PCI_DSS,
+    PciDss,
 }
 
 #[async_trait]
@@ -244,7 +244,7 @@ impl AionPlatform {
             uptime_seconds: uptime,
             services_count: self.services.len(),
             services_health,
-            metrics_summary,
+            metrics_summary: serde_json::to_value(&metrics_summary)?,
             timestamp: Utc::now(),
         })
     }
@@ -275,35 +275,6 @@ pub struct PlatformStatus {
     pub services_health: Vec<ServiceHealth>,
     pub metrics_summary: serde_json::Value,
     pub timestamp: DateTime<Utc>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum PlatformEvent {
-    PlatformStarted {
-        timestamp: DateTime<Utc>,
-        services_count: usize,
-    },
-    PlatformStopped {
-        timestamp: DateTime<Utc>,
-        uptime_seconds: u64,
-    },
-    ServiceRegistered {
-        service_name: String,
-        timestamp: DateTime<Utc>,
-    },
-    ServiceStarted {
-        service_name: String,
-        timestamp: DateTime<Utc>,
-    },
-    ServiceStopped {
-        service_name: String,
-        timestamp: DateTime<Utc>,
-    },
-    ServiceError {
-        service_name: String,
-        error: String,
-        timestamp: DateTime<Utc>,
-    },
 }
 
 impl Default for PlatformConfig {

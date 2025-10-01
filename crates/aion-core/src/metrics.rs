@@ -3,10 +3,10 @@ use anyhow::Result;
 use chrono::{DateTime, Utc};
 use dashmap::DashMap;
 use serde::{Deserialize, Serialize};
-use std::sync::atomic::{AtomicU64, AtomicF64, Ordering};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use sysinfo::{System, SystemExt, ProcessExt, PidExt};
+use sysinfo::System;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MetricsConfig {
@@ -23,20 +23,20 @@ pub struct EnterpriseMetrics {
 
     // Performance metrics
     request_count: AtomicU64,
-    request_duration_sum: AtomicF64,
+    request_duration_sum: AtomicU64, // Store as microseconds
     error_count: AtomicU64,
 
     // System metrics
-    memory_usage: AtomicF64,
-    cpu_usage: AtomicF64,
-    disk_usage: AtomicF64,
+    memory_usage: AtomicU64, // Store as bytes
+    cpu_usage: AtomicU64, // Store as percentage * 100
+    disk_usage: AtomicU64, // Store as bytes
     network_rx_bytes: AtomicU64,
     network_tx_bytes: AtomicU64,
 
     // Business metrics
     active_users: AtomicU64,
     ai_operations: AtomicU64,
-    data_processed_gb: AtomicF64,
+    data_processed_gb: AtomicU64, // Store as MB
 
     // Custom metrics storage
     custom_metrics: Arc<DashMap<String, MetricValue>>,
@@ -139,16 +139,16 @@ impl EnterpriseMetrics {
             config,
             metrics_config,
             request_count: AtomicU64::new(0),
-            request_duration_sum: AtomicF64::new(0.0),
+            request_duration_sum: AtomicU64::new(0),
             error_count: AtomicU64::new(0),
-            memory_usage: AtomicF64::new(0.0),
-            cpu_usage: AtomicF64::new(0.0),
-            disk_usage: AtomicF64::new(0.0),
+            memory_usage: AtomicU64::new(0),
+            cpu_usage: AtomicU64::new(0),
+            disk_usage: AtomicU64::new(0),
             network_rx_bytes: AtomicU64::new(0),
             network_tx_bytes: AtomicU64::new(0),
             active_users: AtomicU64::new(0),
             ai_operations: AtomicU64::new(0),
-            data_processed_gb: AtomicF64::new(0.0),
+            data_processed_gb: AtomicU64::new(0),
             custom_metrics: Arc::new(DashMap::new()),
             time_series: Arc::new(DashMap::new()),
             system: Arc::new(tokio::sync::Mutex::new(system)),
@@ -188,24 +188,27 @@ impl EnterpriseMetrics {
         let pid = sysinfo::get_current_pid().unwrap_or_else(|_| sysinfo::Pid::from(0));
 
         if let Some(process) = system.process(pid) {
-            let memory_mb = process.memory() as f64 / 1024.0 / 1024.0;
-            let cpu_percent = process.cpu_usage() as f64;
+            let memory_bytes = process.memory();
+            let cpu_percent_scaled = (process.cpu_usage() * 100.0) as u64;
 
-            self.memory_usage.store(memory_mb, Ordering::Relaxed);
-            self.cpu_usage.store(cpu_percent, Ordering::Relaxed);
+            self.memory_usage.store(memory_bytes, Ordering::Relaxed);
+            self.cpu_usage.store(cpu_percent_scaled, Ordering::Relaxed);
 
             // Store time series data
+            let memory_mb = memory_bytes as f64 / 1024.0 / 1024.0;
+            let cpu_percent = cpu_percent_scaled as f64 / 100.0;
             self.record_time_series("memory_usage_mb", memory_mb, None).await;
             self.record_time_series("cpu_usage_percent", cpu_percent, None).await;
         }
 
         // Collect disk usage
-        let total_disk = system.disks().iter().map(|d| d.total_space()).sum::<u64>() as f64;
-        let used_disk = system.disks().iter().map(|d| d.total_space() - d.available_space()).sum::<u64>() as f64;
-        let disk_usage_percent = if total_disk > 0.0 { (used_disk / total_disk) * 100.0 } else { 0.0 };
+        let disks = sysinfo::Disks::new_with_refreshed_list();
+        let total_disk = disks.iter().map(|d| d.total_space()).sum::<u64>();
+        let used_disk = disks.iter().map(|d| d.total_space() - d.available_space()).sum::<u64>();
+        let disk_usage_bytes = used_disk;
 
-        self.disk_usage.store(disk_usage_percent, Ordering::Relaxed);
-        self.record_time_series("disk_usage_percent", disk_usage_percent, None).await;
+        self.disk_usage.store(disk_usage_bytes, Ordering::Relaxed);
+        self.record_time_series("disk_usage_bytes", disk_usage_bytes as f64, None).await;
 
         Ok(())
     }
@@ -237,7 +240,7 @@ impl EnterpriseMetrics {
 
     pub fn record_request_duration(&self, duration: Duration) {
         let duration_ms = duration.as_secs_f64() * 1000.0;
-        self.request_duration_sum.fetch_add(duration_ms, Ordering::Relaxed);
+        self.request_duration_sum.fetch_add(duration_ms as u64, Ordering::Relaxed);
     }
 
     pub fn increment_error_count(&self) {
@@ -281,7 +284,7 @@ impl EnterpriseMetrics {
     }
 
     pub fn add_data_processed(&self, gb: f64) {
-        self.data_processed_gb.fetch_add(gb, Ordering::Relaxed);
+        self.data_processed_gb.fetch_add((gb * 1000.0) as u64, Ordering::Relaxed);
     }
 
     // Custom metrics
@@ -307,7 +310,7 @@ impl EnterpriseMetrics {
 
         let duration_sum = self.request_duration_sum.load(Ordering::Relaxed);
         let average_response_time = if request_count > 0 {
-            duration_sum / request_count as f64
+            duration_sum as f64 / request_count as f64
         } else {
             0.0
         };
@@ -326,17 +329,17 @@ impl EnterpriseMetrics {
 
         // Calculate health score
         let health_score = self.calculate_health_score(
-            cpu_percent,
-            memory_mb,
-            disk_percent,
+            cpu_percent as f64,
+            memory_mb as f64,
+            disk_percent as f64,
             error_rate,
         );
 
         // Generate alerts
         let alerts = self.generate_alerts(
-            cpu_percent,
-            memory_mb,
-            disk_percent,
+            cpu_percent as f64,
+            memory_mb as f64,
+            disk_percent as f64,
             error_rate,
         );
 
@@ -346,10 +349,10 @@ impl EnterpriseMetrics {
             requests_per_second,
             average_response_time_ms: average_response_time,
             error_rate_percent: error_rate,
-            memory_usage_mb: memory_mb,
+            memory_usage_mb: memory_mb as f64,
             memory_usage_percent: 0.0, // Would calculate from total system memory
-            cpu_usage_percent: cpu_percent,
-            disk_usage_percent: disk_percent,
+            cpu_usage_percent: cpu_percent as f64,
+            disk_usage_percent: disk_percent as f64,
             network_rx_mbps: 0.0, // Would calculate from network stats
             network_tx_mbps: 0.0,
             active_users: self.active_users.load(Ordering::Relaxed),
@@ -367,7 +370,7 @@ impl EnterpriseMetrics {
         disk_percent: f64,
         error_rate: f64,
     ) -> f64 {
-        let mut score = 100.0;
+        let mut score: f64 = 100.0;
 
         // Penalize high CPU usage
         if cpu_percent > 80.0 {
@@ -472,16 +475,16 @@ impl Clone for EnterpriseMetrics {
             config: self.config.clone(),
             metrics_config: self.metrics_config.clone(),
             request_count: AtomicU64::new(self.request_count.load(Ordering::Relaxed)),
-            request_duration_sum: AtomicF64::new(self.request_duration_sum.load(Ordering::Relaxed)),
+            request_duration_sum: AtomicU64::new(self.request_duration_sum.load(Ordering::Relaxed)),
             error_count: AtomicU64::new(self.error_count.load(Ordering::Relaxed)),
-            memory_usage: AtomicF64::new(self.memory_usage.load(Ordering::Relaxed)),
-            cpu_usage: AtomicF64::new(self.cpu_usage.load(Ordering::Relaxed)),
-            disk_usage: AtomicF64::new(self.disk_usage.load(Ordering::Relaxed)),
+            memory_usage: AtomicU64::new(self.memory_usage.load(Ordering::Relaxed)),
+            cpu_usage: AtomicU64::new(self.cpu_usage.load(Ordering::Relaxed)),
+            disk_usage: AtomicU64::new(self.disk_usage.load(Ordering::Relaxed)),
             network_rx_bytes: AtomicU64::new(self.network_rx_bytes.load(Ordering::Relaxed)),
             network_tx_bytes: AtomicU64::new(self.network_tx_bytes.load(Ordering::Relaxed)),
             active_users: AtomicU64::new(self.active_users.load(Ordering::Relaxed)),
             ai_operations: AtomicU64::new(self.ai_operations.load(Ordering::Relaxed)),
-            data_processed_gb: AtomicF64::new(self.data_processed_gb.load(Ordering::Relaxed)),
+            data_processed_gb: AtomicU64::new(self.data_processed_gb.load(Ordering::Relaxed)),
             custom_metrics: self.custom_metrics.clone(),
             time_series: self.time_series.clone(),
             system: self.system.clone(),

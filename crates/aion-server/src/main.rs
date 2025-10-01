@@ -44,9 +44,9 @@ async fn main() -> anyhow::Result<()> {
     let state = AppState::new(config.clone()).await?;
     info!("Application state initialized");
 
-    // Initialize AI Engine
-    aion_ai_engine::initialize_ai_engine(config.ai_engine.clone()).await?;
-    info!("AI Engine initialized");
+    // Initialize AI Engine (commented out - crate not available)
+    // aion_ai_engine::initialize_ai_engine(config.ai_engine.clone()).await?;
+    // info!("AI Engine initialized");
 
     // Build router
     let app = build_api_router(Arc::new(state))
