@@ -456,7 +456,7 @@
             const data = new FormData(form);
 
             // Send to Cloudflare Worker
-            fetch('https://ectus-r-saas.yatrogenesis.workers.dev/api/leads', {
+            fetch('https://ectus-r-demo.pako-molina.workers.dev/api/leads', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(Object.fromEntries(data))

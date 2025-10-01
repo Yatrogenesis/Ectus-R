@@ -46,10 +46,6 @@ database_id = "4bf3d0a1-cff9-4fc2-9b4a-9ff85bdd3de3"
 # SENDGRID_API_KEY - SendGrid API key for email notifications
 # NOTIFICATION_EMAIL - Email to receive lead notifications
 
-# Rate limiting
-[limits]
-cpu_ms = 50
-
 # Observability
 [observability]
 enabled = true
