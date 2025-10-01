@@ -277,30 +277,53 @@ async function handleGenerate(request, env, corsHeaders) {
 
 /**
  * Validate SAT certificate
+ * Validates against authorized certificate: MOBF8108153Q5
  */
 async function validateSATCertificate(certData, env) {
 	try {
-		// Parse PEM certificate
-		const certBase64 = certData.replace(/-----BEGIN CERTIFICATE-----/, '')
-			.replace(/-----END CERTIFICATE-----/, '')
-			.replace(/\s/g, '');
+		// Parse certificate (can be PEM or DER base64)
+		let certBase64 = certData;
 
-		// Decode base64
+		// Remove PEM headers if present
+		if (certData.includes('-----BEGIN CERTIFICATE-----')) {
+			certBase64 = certData
+				.replace(/-----BEGIN CERTIFICATE-----/, '')
+				.replace(/-----END CERTIFICATE-----/, '')
+				.replace(/\s/g, '');
+		}
+
+		// Decode base64 to binary
 		const certBuffer = Uint8Array.from(atob(certBase64), c => c.charCodeAt(0));
 
-		// Basic validation: check if it's a valid X.509 certificate
-		// In production, validate:
-		// - Certificate chain
-		// - Issuer (SAT CA)
-		// - Expiration date
-		// - RFC from certificate
+		// Basic validation: minimum certificate size
+		if (certBuffer.length < 100) {
+			return false;
+		}
 
-		// Simplified validation for demo
-		if (certBuffer.length > 100) {
+		// Extract RFC from certificate
+		// RFC pattern: MOBF8108153Q5 (x500UniqueIdentifier)
+		const certString = new TextDecoder().decode(certBuffer);
+		const rfc = extractRFCFromCert(certData);
+
+		// Authorized RFC (Francisco Molina Burgos)
+		const AUTHORIZED_RFC = 'MOBF8108153Q5';
+
+		// Validate RFC matches
+		if (rfc === AUTHORIZED_RFC) {
+			console.log(`SAT certificate validated: ${rfc}`);
 			return true;
 		}
 
+		// Additional validation: check serial number
+		const AUTHORIZED_SERIAL = 'MOBF810815HYNLRR00';
+		if (certString.includes(AUTHORIZED_SERIAL)) {
+			console.log(`SAT certificate validated via serial: ${AUTHORIZED_SERIAL}`);
+			return true;
+		}
+
+		console.warn(`Unauthorized certificate. RFC: ${rfc}`);
 		return false;
+
 	} catch (error) {
 		console.error('Certificate validation error:', error);
 		return false;
@@ -311,17 +334,70 @@ async function validateSATCertificate(certData, env) {
  * Extract RFC from SAT certificate
  */
 function extractRFCFromCert(certData) {
-	// In production, parse X.509 certificate Subject field
-	// For demo, return placeholder
-	return 'XAXX010101000';
+	try {
+		// Extract from x500UniqueIdentifier field
+		// Pattern: MOBF8108153Q5 (13 chars: 4 letters + 6 digits + 3 alphanumeric)
+		const rfcPattern = /[A-Z]{4}\d{6}[A-Z0-9]{3}/g;
+		const matches = certData.match(rfcPattern);
+
+		if (matches && matches.length > 0) {
+			// Return first valid RFC (usually the subject's RFC)
+			return matches[0];
+		}
+
+		// Fallback: try to find in decoded certificate
+		const certBase64 = certData
+			.replace(/-----BEGIN CERTIFICATE-----/, '')
+			.replace(/-----END CERTIFICATE-----/, '')
+			.replace(/\s/g, '');
+
+		const certBuffer = atob(certBase64);
+		const rfcMatches = certBuffer.match(rfcPattern);
+
+		if (rfcMatches && rfcMatches.length > 0) {
+			return rfcMatches[0];
+		}
+
+		return null;
+	} catch (error) {
+		console.error('RFC extraction error:', error);
+		return null;
+	}
 }
 
 /**
  * Extract name from SAT certificate
  */
 function extractNameFromCert(certData) {
-	// In production, parse X.509 certificate Subject field
-	return 'Usuario Demo';
+	try {
+		// Look for CN (Common Name) in Subject field
+		// Pattern: CN=FRANCISCO MOLINA BURGOS
+		const cnPattern = /CN=([^,]+)/;
+		const match = certData.match(cnPattern);
+
+		if (match && match[1]) {
+			return match[1].trim();
+		}
+
+		// Fallback: try to decode from certificate
+		const certBase64 = certData
+			.replace(/-----BEGIN CERTIFICATE-----/, '')
+			.replace(/-----END CERTIFICATE-----/, '')
+			.replace(/\s/g, '');
+
+		const certBuffer = atob(certBase64);
+		const cnMatch = certBuffer.match(cnPattern);
+
+		if (cnMatch && cnMatch[1]) {
+			return cnMatch[1].trim();
+		}
+
+		// Default for authorized certificate
+		return 'Francisco Molina Burgos';
+	} catch (error) {
+		console.error('Name extraction error:', error);
+		return 'Usuario Autorizado';
+	}
 }
 
 /**
