@@ -190,6 +190,18 @@ pub struct Project {
     pub updated_at: chrono::DateTime<chrono::Utc>,
     pub repository_url: Option<String>,
     pub deployment_count: u32,
+    // Additional fields for dashboard
+    #[serde(rename = "lastDeployment")]
+    pub last_deployment: String,
+    #[serde(rename = "createdAt")]
+    pub created_at_iso: String,
+    pub repository: String,
+    pub environment: String,
+    pub team: Vec<String>,
+    #[serde(rename = "deploymentUrl")]
+    pub deployment_url: Option<String>,
+    pub visibility: String,
+    pub tags: Vec<String>,
 }
 
 /// AI generation request

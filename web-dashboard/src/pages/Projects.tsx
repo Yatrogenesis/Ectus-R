@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import {
   PlusIcon,
   MagnifyingGlassIcon,
@@ -14,8 +15,12 @@ import {
   CodeBracketIcon,
   GlobeAltIcon,
   CloudIcon,
+  FolderIcon,
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline'
 import { cn, formatRelativeTime, getStatusColor } from '@/lib/utils'
+import { apiClient } from '@/lib/api-client'
 
 interface Project {
   id: string
@@ -34,100 +39,18 @@ interface Project {
   tags: string[]
 }
 
-const mockProjects: Project[] = [
-  {
-    id: '1',
-    name: 'AI Chat Bot',
-    description: 'A modern chatbot application with natural language processing capabilities',
-    status: 'active',
-    language: 'TypeScript',
-    framework: 'React',
-    lastDeployment: '2024-01-15T10:30:00Z',
-    createdAt: '2024-01-01T00:00:00Z',
-    repository: 'github.com/company/ai-chatbot',
-    environment: 'production',
-    team: ['Alice Johnson', 'Bob Smith'],
-    deploymentUrl: 'https://chatbot.example.com',
-    visibility: 'private',
-    tags: ['AI', 'NLP', 'React'],
-  },
-  {
-    id: '2',
-    name: 'E-commerce API',
-    description: 'RESTful API for e-commerce platform with advanced features',
-    status: 'error',
-    language: 'Python',
-    framework: 'FastAPI',
-    lastDeployment: '2024-01-14T15:45:00Z',
-    createdAt: '2023-12-15T00:00:00Z',
-    repository: 'github.com/company/ecommerce-api',
-    environment: 'staging',
-    team: ['Charlie Brown', 'Diana Prince'],
-    visibility: 'private',
-    tags: ['API', 'E-commerce', 'Python'],
-  },
-  {
-    id: '3',
-    name: 'Mobile App Backend',
-    description: 'High-performance backend service for mobile applications',
-    status: 'deploying',
-    language: 'Rust',
-    framework: 'Axum',
-    lastDeployment: '2024-01-15T09:15:00Z',
-    createdAt: '2024-01-10T00:00:00Z',
-    repository: 'github.com/company/mobile-backend',
-    environment: 'staging',
-    team: ['Eve Wilson'],
-    visibility: 'private',
-    tags: ['Mobile', 'Backend', 'Rust'],
-  },
-  {
-    id: '4',
-    name: 'Analytics Dashboard',
-    description: 'Real-time analytics dashboard with beautiful visualizations',
-    status: 'active',
-    language: 'JavaScript',
-    framework: 'Vue.js',
-    lastDeployment: '2024-01-14T14:20:00Z',
-    createdAt: '2023-11-20T00:00:00Z',
-    repository: 'github.com/company/analytics-dashboard',
-    environment: 'production',
-    team: ['Frank Miller', 'Grace Hopper'],
-    deploymentUrl: 'https://analytics.example.com',
-    visibility: 'public',
-    tags: ['Analytics', 'Dashboard', 'Vue'],
-  },
-  {
-    id: '5',
-    name: 'Documentation Site',
-    description: 'Comprehensive documentation website for all our products',
-    status: 'building',
-    language: 'JavaScript',
-    framework: 'Next.js',
-    lastDeployment: '2024-01-15T11:00:00Z',
-    createdAt: '2024-01-05T00:00:00Z',
-    repository: 'github.com/company/docs',
-    environment: 'development',
-    team: ['Helen Troy'],
-    visibility: 'public',
-    tags: ['Documentation', 'Next.js'],
-  },
-  {
-    id: '6',
-    name: 'Payment Gateway',
-    description: 'Secure payment processing service with multiple providers',
-    status: 'inactive',
-    language: 'Go',
-    framework: 'Gin',
-    lastDeployment: '2024-01-12T16:30:00Z',
-    createdAt: '2023-10-10T00:00:00Z',
-    repository: 'github.com/company/payment-gateway',
-    environment: 'production',
-    team: ['Ivan Petrov', 'Jane Doe'],
-    visibility: 'private',
-    tags: ['Payment', 'Security', 'Go'],
-  },
-]
+// Fetch projects from API
+const useProjects = () => {
+  return useQuery<Project[]>({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const response = await apiClient.get<{ projects: Project[] }>('/api/v1/projects')
+      return response.projects
+    },
+    staleTime: 30000, // 30 seconds
+    refetchInterval: 60000, // Refetch every minute for live updates
+  })
+}
 
 type ViewMode = 'grid' | 'list'
 type SortOption = 'name' | 'created' | 'updated' | 'status'
@@ -140,18 +63,21 @@ export default function Projects() {
   const [filterBy, setFilterBy] = useState<FilterOption>('all')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
 
+  // Fetch projects from API
+  const { data: projects = [], isLoading, error, refetch } = useProjects()
+
   // Get all unique tags
   const allTags = useMemo(() => {
     const tags = new Set<string>()
-    mockProjects.forEach(project => {
+    projects.forEach(project => {
       project.tags.forEach(tag => tags.add(tag))
     })
     return Array.from(tags).sort()
-  }, [])
+  }, [projects])
 
   // Filter and sort projects
   const filteredProjects = useMemo(() => {
-    let filtered = mockProjects
+    let filtered = projects
 
     // Filter by search query
     if (searchQuery) {
@@ -225,6 +151,42 @@ export default function Projects() {
       prev.includes(tag)
         ? prev.filter(t => t !== tag)
         : [...prev, tag]
+    )
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <ArrowPathIcon className="h-12 w-12 text-primary-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading projects...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <ExclamationTriangleIcon className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            Failed to load projects
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            {error instanceof Error ? error.message : 'An unexpected error occurred'}
+          </p>
+          <button
+            onClick={() => refetch()}
+            className="btn btn-primary"
+          >
+            <ArrowPathIcon className="h-5 w-5 mr-2" />
+            Try Again
+          </button>
+        </div>
+      </div>
     )
   }
 
