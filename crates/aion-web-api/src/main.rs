@@ -260,6 +260,24 @@ fn create_api_v1_router() -> Router<AppState> {
         .route("/admin/stats", get(get_admin_stats))
         .route("/admin/users", get(list_users))
         .route("/admin/system", get(get_system_info))
+
+        // Payment and subscription endpoints
+        .route("/pricing", get(get_pricing_plans))
+        .route("/checkout", post(create_checkout_session))
+        .route("/webhooks/stripe", post(handle_stripe_webhook))
+        .route("/subscription/:user_id", get(get_subscription_status))
+        .route("/subscription/cancel/:user_id", post(cancel_subscription))
+        .route("/payment-method/:user_id", put(update_payment_method))
+        .route("/customer-portal/:user_id", get(get_customer_portal))
+
+        // Analytics and conversion tracking endpoints
+        .route("/analytics/track", post(track_event))
+        .route("/analytics/metrics", get(get_analytics_metrics))
+        .route("/analytics/funnel", get(get_conversion_funnel))
+        .route("/analytics/cohorts", get(get_cohort_analysis))
+        .route("/analytics/ab-tests", get(get_ab_test_results))
+        .route("/analytics/realtime", get(get_realtime_analytics))
+        .route("/analytics/feature-flag", post(track_feature_flag))
 }
 
 /// Load application configuration
