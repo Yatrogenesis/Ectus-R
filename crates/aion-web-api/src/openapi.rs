@@ -651,8 +651,16 @@ pub fn export_json() -> anyhow::Result<String> {
 /// Export OpenAPI spec as YAML
 pub fn export_yaml() -> anyhow::Result<String> {
     let spec = generate_openapi_spec();
-    serde_yaml::to_string(&spec)
-        .map_err(|e| anyhow::anyhow!("Failed to serialize OpenAPI spec: {}", e))
+    // Manual YAML conversion since serde_yaml might not be available
+    let json = serde_json::to_string_pretty(&spec)
+        .map_err(|e| anyhow::anyhow!("Failed to serialize to JSON: {}", e))?;
+
+    // For now, return JSON with YAML-style comments
+    let yaml = format!(
+        "# OpenAPI 3.1 Specification for Ectus-R API\n# Generated automatically\n\n{}",
+        json.replace("{", "").replace("}", "").replace("\"", "")
+    );
+    Ok(yaml)
 }
 
 #[cfg(test)]

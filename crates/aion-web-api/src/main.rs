@@ -24,10 +24,14 @@ mod handlers;
 mod models;
 mod middleware;
 mod services;
+mod openapi;
+mod secrets_manager;
 
 use handlers::*;
 use models::*;
 use services::*;
+pub use openapi::*;
+pub use secrets_manager::*;
 
 // Import optimization engine
 use aion_optimization_engine::{OptimizationEngine, OptimizationConfig};
@@ -93,9 +97,36 @@ async fn main() -> anyhow::Result<()> {
     // Initialize services
     println!("🔧 Initializing services...");
     let monitoring_service = Arc::new(MonitoringService::new().await?);
+    // Initialize secrets manager
+    println!("🔐 Initializing secrets manager...");
+    let secrets_manager = SecretsManager::from_env()
+        .unwrap_or_else(|_| SecretsManager::new(SecretBackend::Environment));
+
+    // Load secrets configuration
+    let secrets_config = SecretsConfig::load(&secrets_manager).await
+        .unwrap_or_else(|_| {
+            println!("⚠️  Warning: Using fallback configuration");
+            SecretsConfig {
+                database_url: std::env::var("DATABASE_URL").unwrap_or_default(),
+                redis_url: std::env::var("REDIS_URL").unwrap_or_default(),
+                jwt_secret: config.jwt_secret.clone(),
+                encryption_key: "fallback_key_32_chars_minimum".to_string(),
+                api_keys: HashMap::new(),
+            }
+        });
+
     let ai_service = Arc::new(AIService::new().await?);
     let deployment_service = Arc::new(DeploymentService::new().await?);
-    let auth_service = Arc::new(AuthService::new(&config.jwt_secret)?);
+    let auth_service = Arc::new(AuthService::new(&secrets_config.jwt_secret)?);
+
+    println!("✅ Secrets manager initialized with {} backend",
+        match secrets_manager.backend {
+            SecretBackend::Environment => "Environment",
+            SecretBackend::Vault { .. } => "HashiCorp Vault",
+            SecretBackend::AwsSecretsManager { .. } => "AWS Secrets Manager",
+            SecretBackend::AzureKeyVault { .. } => "Azure Key Vault",
+        }
+    );
 
     // Initialize optimization engine
     println!("🧠 Initializing optimization engine...");
@@ -147,7 +178,9 @@ fn create_router(state: AppState) -> Router {
         // WebSocket endpoint for real-time updates
         .route("/ws", get(websocket_handler))
 
-        // Static file serving for docs
+        // OpenAPI documentation endpoints
+        .route("/api/openapi.json", get(serve_openapi_json))
+        .route("/api/openapi.yaml", get(serve_openapi_yaml))
         .route("/docs", get(serve_api_docs))
         .route("/", get(root_handler))
 
@@ -328,6 +361,36 @@ async fn health_check() -> Json<serde_json::Value> {
             "deployments": "operational"
         }
     }))
+}
+
+/// Serve OpenAPI JSON specification
+async fn serve_openapi_json() -> (StatusCode, Json<serde_json::Value>) {
+    match openapi::export_json() {
+        Ok(json_str) => {
+            let value: serde_json::Value = serde_json::from_str(&json_str).unwrap();
+            (StatusCode::OK, Json(value))
+        }
+        Err(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(serde_json::json!({"error": "Failed to generate OpenAPI spec"}))
+        )
+    }
+}
+
+/// Serve OpenAPI YAML specification
+async fn serve_openapi_yaml() -> (StatusCode, [(header::HeaderName, &'static str); 1], String) {
+    match openapi::export_yaml() {
+        Ok(yaml) => (
+            StatusCode::OK,
+            [(header::CONTENT_TYPE, "application/x-yaml")],
+            yaml
+        ),
+        Err(_) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            [(header::CONTENT_TYPE, "text/plain")],
+            "Failed to generate OpenAPI spec".to_string()
+        )
+    }
 }
 
 /// WebSocket handler for real-time updates

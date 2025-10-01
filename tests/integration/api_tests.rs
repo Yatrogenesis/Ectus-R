@@ -9,7 +9,7 @@ use std::time::Duration;
 const BASE_URL: &str = "http://localhost:8080";
 
 #[tokio::test]
-#[ignore] // Ignore by default since it requires running server
+#[cfg_attr(not(feature = "integration-tests"), ignore)]
 async fn test_api_health_check() {
     let client = Client::new();
 
@@ -32,7 +32,7 @@ async fn test_api_health_check() {
 }
 
 #[tokio::test]
-#[ignore] // Ignore by default since it requires running server
+#[cfg_attr(not(feature = "integration-tests"), ignore)]
 async fn test_api_user_registration_and_authentication() {
     let client = Client::new();
 

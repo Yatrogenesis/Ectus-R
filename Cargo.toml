@@ -104,6 +104,8 @@ monitoring = ["dep:metrics", "dep:opentelemetry", "dep:metrics-exporter-promethe
 security = ["dep:jsonwebtoken", "dep:argon2"]
 kafka = ["dep:rdkafka"]
 rabbitmq = ["dep:lapin"]
+integration-tests = []
+test-mode = []
 
 [profile.release]
 lto = true
