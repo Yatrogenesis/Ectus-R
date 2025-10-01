@@ -180,28 +180,9 @@ async function handleAuth(request, env, corsHeaders) {
  */
 async function handleGenerate(request, env, corsHeaders) {
 	try {
-		// Verify session
+		// Public demo - no authentication required
 		const authHeader = request.headers.get('Authorization');
-		if (!authHeader) {
-			return new Response(JSON.stringify({
-				error: 'Authorization required'
-			}), {
-				status: 401,
-				headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-			});
-		}
-
-		const sessionId = authHeader.replace('Bearer ', '');
-		const session = env.SESSIONS ? await env.SESSIONS.get(`session:${sessionId}`) : null;
-
-		if (!session) {
-			return new Response(JSON.stringify({
-				error: 'Invalid session'
-			}), {
-				status: 401,
-				headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-			});
-		}
+		const sessionId = authHeader ? authHeader.replace('Bearer ', '') : 'public-demo';
 
 		const { prompt, language = 'rust', framework = 'axum' } = await request.json();
 

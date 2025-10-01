@@ -397,8 +397,13 @@
 
     <script>
         const API_URL = 'https://ectus-r-demo.pako-molina.workers.dev/api';
-        let sessionId = null;
+        let sessionId = 'demo-public-access'; // Public access without auth
         let certData = null;
+
+        // Auto-start demo without authentication
+        window.addEventListener('DOMContentLoaded', () => {
+            showDemo({ username: 'demo_public', type: 'public' });
+        });
 
         function switchTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
