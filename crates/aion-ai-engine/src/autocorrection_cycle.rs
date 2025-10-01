@@ -1,13 +1,15 @@
 // AION-R Autocorrection Cycle: Complete self-healing implementation
 // Integrates test execution with fix generation and validation
+// NOW WITH REAL LLM INTEGRATION (Groq, OpenAI, HuggingFace, GitHub, Cloudflare)
 
 use std::path::Path;
-use anyhow::{Result, Context};
+use anyhow::{Result, Context, anyhow};
 use tracing::{info, warn, error, debug};
 use serde::{Serialize, Deserialize};
 
 use crate::test_integration::{TestIntegrationEngine, DetailedTestResults, TestFailure};
 use crate::code_generation::GeneratedCode;
+use crate::llm_providers::{MultiProviderLLM, LLMRequest, LLMClient, GroqClient, OpenAIClient, HuggingFaceClient, GitHubModelsClient, CloudflareAIClient};
 
 /// Maximum iterations before giving up
 const MAX_AUTOCORRECTION_ITERATIONS: u32 = 5;
@@ -15,10 +17,11 @@ const MAX_AUTOCORRECTION_ITERATIONS: u32 = 5;
 /// Minimum improvement threshold to continue (percentage)
 const MIN_IMPROVEMENT_THRESHOLD: f64 = 5.0;
 
-/// Autocorrection cycle manager
+/// Autocorrection cycle manager with real LLM integration
 pub struct AutocorrectionCycle {
     test_engine: TestIntegrationEngine,
     max_iterations: u32,
+    llm: MultiProviderLLM,
 }
 
 /// Result of autocorrection attempt
@@ -49,17 +52,56 @@ pub struct FixDescription {
     pub failure_type: String,
     pub fix_strategy: String,
     pub code_change: String,
+    pub llm_provider_used: Option<String>,
 }
 
 impl AutocorrectionCycle {
-    pub fn new() -> Self {
-        Self {
+    /// Create new autocorrection cycle with LLM providers from environment
+    pub fn new() -> Result<Self> {
+        let mut llm = MultiProviderLLM::new();
+
+        // Try to initialize all available providers from environment variables
+        if let Ok(groq_key) = std::env::var("GROQ_API_KEY") {
+            info!("🚀 Initializing Groq LLM client");
+            llm.add_provider(Box::new(GroqClient::new(groq_key)?));
+        }
+
+        if let Ok(openai_key) = std::env::var("OPENAI_API_KEY") {
+            info!("🚀 Initializing OpenAI LLM client");
+            llm.add_provider(Box::new(OpenAIClient::new(openai_key)?));
+        }
+
+        if let Ok(hf_key) = std::env::var("HUGGINGFACE_API_KEY") {
+            info!("🚀 Initializing Hugging Face LLM client");
+            llm.add_provider(Box::new(HuggingFaceClient::new(hf_key)?));
+        }
+
+        if let Ok(github_key) = std::env::var("GITHUB_TOKEN") {
+            info!("🚀 Initializing GitHub Models LLM client");
+            llm.add_provider(Box::new(GitHubModelsClient::new(github_key)?));
+        }
+
+        if let (Ok(cf_key), Ok(cf_account)) = (std::env::var("CLOUDFLARE_API_KEY"), std::env::var("CLOUDFLARE_ACCOUNT_ID")) {
+            info!("🚀 Initializing Cloudflare AI client");
+            llm.add_provider(Box::new(CloudflareAIClient::new(cf_key, cf_account)?));
+        }
+
+        let available = llm.available_providers();
+        if available.is_empty() {
+            warn!("⚠️  No LLM providers configured. Set API keys in environment variables.");
+            warn!("   Supported: GROQ_API_KEY, OPENAI_API_KEY, HUGGINGFACE_API_KEY, GITHUB_TOKEN, CLOUDFLARE_API_KEY");
+        } else {
+            info!("✅ Available LLM providers: {:?}", available);
+        }
+
+        Ok(Self {
             test_engine: TestIntegrationEngine::new(),
             max_iterations: MAX_AUTOCORRECTION_ITERATIONS,
-        }
+            llm,
+        })
     }
 
-    /// Run complete autocorrection cycle
+    /// Run complete autocorrection cycle with real LLM-powered fixes
     pub async fn run_autocorrection(
         &self,
         project_path: &Path,
@@ -80,57 +122,68 @@ impl AutocorrectionCycle {
                 .await
                 .context("Failed to execute tests")?;
 
-            info!(
-                "   Tests: {}/{} passed",
-                test_results.passed_tests,
-                test_results.total_tests
+            let current_failures = test_results.failures.len();
+
+            info!("   Tests: {} passed, {} failed",
+                test_results.tests_passed,
+                current_failures
             );
 
             // Step 2: Check if all tests pass
             if test_results.all_passed {
                 info!("✅ All tests passed! Autocorrection successful.");
+
+                corrections.push(CorrectionAttempt {
+                    iteration,
+                    failures_before: previous_failures,
+                    failures_after: 0,
+                    improvement_percentage: 100.0,
+                    fixes_applied: vec![],
+                    success: true,
+                });
+
                 return Ok(AutocorrectionResult {
                     success: true,
                     iterations_completed: iteration,
                     final_test_results: test_results,
                     corrections_applied: corrections,
                     convergence_achieved: true,
-                    final_code: code.content.clone(),
+                    final_code: code.code.clone(),
                 });
             }
 
-            // Step 3: Check for convergence failure
-            if iteration > 1 {
-                let improvement = self.calculate_improvement(
-                    previous_failures,
-                    test_results.failed_tests,
-                );
+            // Step 3: Check for convergence (diminishing returns)
+            if current_failures >= previous_failures && iteration > 1 {
+                warn!("⚠️  No improvement detected. Convergence check...");
 
-                debug!("   Improvement: {:.2}%", improvement);
+                let improvement = if previous_failures > 0 {
+                    ((previous_failures - current_failures) as f64 / previous_failures as f64) * 100.0
+                } else {
+                    0.0
+                };
 
                 if improvement < MIN_IMPROVEMENT_THRESHOLD {
-                    warn!("⚠️  Insufficient improvement ({:.2}%), stopping autocorrection", improvement);
+                    warn!("❌ Convergence threshold not met. Stopping autocorrection.");
+
                     return Ok(AutocorrectionResult {
                         success: false,
                         iterations_completed: iteration,
                         final_test_results: test_results,
                         corrections_applied: corrections,
                         convergence_achieved: false,
-                        final_code: code.content.clone(),
+                        final_code: code.code.clone(),
                     });
                 }
             }
 
-            previous_failures = test_results.failed_tests;
+            // Step 4: Generate fixes using LLM
+            info!("🔧 Generating fixes for {} failures using LLM...", current_failures);
 
-            // Step 4: Analyze failures and generate fixes
-            let fixes = self.generate_fixes_for_failures(
+            let fixes = self.generate_fixes_with_llm(
                 &test_results.failures,
                 &code,
                 language,
             ).await?;
-
-            info!("   Generated {} fixes", fixes.len());
 
             // Step 5: Apply fixes to code
             let (updated_code, applied_fixes) = self.apply_fixes_to_code(
@@ -138,210 +191,144 @@ impl AutocorrectionCycle {
                 fixes,
             ).await?;
 
-            // Step 6: Write updated code to filesystem
+            info!("   Applied {} fixes", applied_fixes.len());
+
+            // Step 6: Write updated code to project
             self.write_code_to_project(project_path, &updated_code, language).await?;
 
-            // Step 7: Record correction attempt
+            // Track correction attempt
+            let improvement = if previous_failures > 0 {
+                ((previous_failures - current_failures) as f64 / previous_failures as f64) * 100.0
+            } else {
+                0.0
+            };
+
             corrections.push(CorrectionAttempt {
                 iteration,
                 failures_before: previous_failures,
-                failures_after: test_results.failed_tests,
-                improvement_percentage: 0.0, // Will be calculated in next iteration
+                failures_after: current_failures,
+                improvement_percentage: improvement,
                 fixes_applied: applied_fixes,
-                success: false, // Will be determined in next iteration
+                success: current_failures < previous_failures,
             });
 
+            previous_failures = current_failures;
             code = updated_code;
         }
 
-        // Max iterations reached without success
-        let final_test_results = self.test_engine
-            .execute_and_parse_tests(project_path, language)
-            .await?;
+        // Maximum iterations reached
+        warn!("⚠️  Maximum iterations ({}) reached", self.max_iterations);
 
-        warn!("⚠️  Max iterations ({}) reached without full success", self.max_iterations);
+        // Final test run
+        let final_results = self.test_engine
+            .execute_and_parse_tests(project_path, language)
+            .await
+            .context("Failed to execute final tests")?;
 
         Ok(AutocorrectionResult {
-            success: false,
+            success: final_results.all_passed,
             iterations_completed: self.max_iterations,
-            final_test_results,
+            final_test_results: final_results,
             corrections_applied: corrections,
             convergence_achieved: false,
-            final_code: code.content,
+            final_code: code.code,
         })
     }
 
-    /// Calculate improvement percentage
-    fn calculate_improvement(&self, failures_before: usize, failures_after: usize) -> f64 {
-        if failures_before == 0 {
-            return 100.0;
-        }
-
-        let improvement = failures_before.saturating_sub(failures_after) as f64;
-        (improvement / failures_before as f64) * 100.0
-    }
-
-    /// Generate fixes for test failures
-    async fn generate_fixes_for_failures(
+    /// Generate fixes using real LLM (with fallback between providers)
+    async fn generate_fixes_with_llm(
         &self,
         failures: &[TestFailure],
         code: &GeneratedCode,
         language: &str,
-    ) -> Result<Vec<ProposedFix>> {
+    ) -> Result<Vec<FixDescription>> {
         let mut fixes = Vec::new();
 
-        for failure in failures {
-            let fix = self.analyze_failure_and_propose_fix(failure, code, language).await?;
-            fixes.push(fix);
+        for (idx, failure) in failures.iter().enumerate().take(5) { // Limit to 5 failures per iteration
+            debug!("Analyzing failure {}: {}", idx + 1, failure.test_name);
+
+            let system_prompt = format!(
+                "You are an expert {} developer and debugger. \
+                Your task is to analyze test failures and provide precise code fixes. \
+                Return ONLY the corrected code, no explanations.",
+                language
+            );
+
+            let user_prompt = format!(
+                "Test Failure:\n\
+                Test: {}\n\
+                Error: {}\n\
+                {}{}
+                \n\n\
+                Current Code:\n\
+                ```{}\n\
+                {}\n\
+                ```\n\
+                \n\
+                Provide the corrected code that will make this test pass. \
+                Return ONLY the fixed code, no markdown, no explanations.",
+                failure.test_name,
+                failure.failure_message,
+                failure.file_path.as_ref().map(|p| format!("File: {}\n", p)).unwrap_or_default(),
+                failure.line_number.map(|l| format!("Line: {}\n", l)).unwrap_or_default(),
+                language,
+                code.code
+            );
+
+            let request = LLMRequest {
+                prompt: user_prompt,
+                system_prompt: Some(system_prompt),
+                max_tokens: Some(2000),
+                temperature: Some(0.2), // Low temperature for precise fixes
+                model: None,
+            };
+
+            match self.llm.generate_with_fallback(&request).await {
+                Ok(response) => {
+                    info!("✅ Generated fix using {:?}", response.provider);
+
+                    fixes.push(FixDescription {
+                        failure_type: failure.test_name.clone(),
+                        fix_strategy: format!("LLM-generated fix via {:?}", response.provider),
+                        code_change: response.content.clone(),
+                        llm_provider_used: Some(format!("{:?}", response.provider)),
+                    });
+                }
+                Err(e) => {
+                    warn!("⚠️  Failed to generate fix for '{}': {}", failure.test_name, e);
+
+                    // Fallback to heuristic fix
+                    fixes.push(self.generate_heuristic_fix(failure, code, language));
+                }
+            }
         }
 
         Ok(fixes)
     }
 
-    /// Analyze a single failure and propose fix
-    async fn analyze_failure_and_propose_fix(
+    /// Fallback heuristic fix when LLM is unavailable
+    fn generate_heuristic_fix(
         &self,
         failure: &TestFailure,
-        code: &GeneratedCode,
+        _code: &GeneratedCode,
         language: &str,
-    ) -> Result<ProposedFix> {
-        // Determine fix strategy based on failure type
-        let strategy = self.determine_fix_strategy(failure);
-
-        info!("   Analyzing failure: {} -> Strategy: {:?}", failure.test_name, strategy);
-
-        let fix_code = match strategy {
-            FixStrategy::AssertionMismatch => {
-                self.fix_assertion_mismatch(failure, code).await?
-            }
-            FixStrategy::NullPointerError => {
-                self.fix_null_pointer(failure, code).await?
-            }
-            FixStrategy::TypeMismatch => {
-                self.fix_type_mismatch(failure, code).await?
-            }
-            FixStrategy::MissingFunction => {
-                self.fix_missing_function(failure, code).await?
-            }
-            FixStrategy::LogicError => {
-                self.fix_logic_error(failure, code).await?
-            }
-            FixStrategy::Generic => {
-                self.fix_generic_error(failure, code).await?
-            }
+    ) -> FixDescription {
+        // Simple heuristic patterns
+        let fix_code = if failure.failure_message.contains("assertion") {
+            format!("// Heuristic fix for assertion failure in {}", language)
+        } else if failure.failure_message.contains("null") || failure.failure_message.contains("None") {
+            format!("// Heuristic fix for null/None error in {}", language)
+        } else if failure.failure_message.contains("type") {
+            format!("// Heuristic fix for type error in {}", language)
+        } else {
+            format!("// Generic heuristic fix for {}", language)
         };
 
-        Ok(ProposedFix {
-            test_name: failure.test_name.clone(),
-            failure_message: failure.failure_message.clone(),
-            strategy,
-            code_changes: fix_code,
-            confidence: self.calculate_fix_confidence(&strategy),
-        })
-    }
-
-    /// Determine appropriate fix strategy
-    fn determine_fix_strategy(&self, failure: &TestFailure) -> FixStrategy {
-        let message = failure.failure_message.to_lowercase();
-
-        if message.contains("assert") || message.contains("expected") {
-            FixStrategy::AssertionMismatch
-        } else if message.contains("null") || message.contains("none") || message.contains("undefined") {
-            FixStrategy::NullPointerError
-        } else if message.contains("type") || message.contains("cannot convert") {
-            FixStrategy::TypeMismatch
-        } else if message.contains("not found") || message.contains("undefined") {
-            FixStrategy::MissingFunction
-        } else if message.contains("logic") || message.contains("incorrect") {
-            FixStrategy::LogicError
-        } else {
-            FixStrategy::Generic
-        }
-    }
-
-    /// Fix assertion mismatch
-    async fn fix_assertion_mismatch(&self, failure: &TestFailure, code: &GeneratedCode) -> Result<String> {
-        // Extract expected and actual values
-        if let (Some(expected), Some(actual)) = (&failure.expected, &failure.actual) {
-            // Generate code that returns expected value
-            Ok(format!(
-                "// FIX: Assertion mismatch - adjusted to return expected value\n\
-                 // Expected: {}\n\
-                 // Actual: {}\n\
-                 // TODO: Review logic to ensure correctness\n",
-                expected, actual
-            ))
-        } else {
-            Ok(format!(
-                "// FIX: Assertion mismatch in {}\n\
-                 // Review test expectations and implementation\n",
-                failure.test_name
-            ))
-        }
-    }
-
-    /// Fix null pointer error
-    async fn fix_null_pointer(&self, failure: &TestFailure, code: &GeneratedCode) -> Result<String> {
-        Ok(format!(
-            "// FIX: Null pointer error in {}\n\
-             // Added null check and default value\n\
-             if value.is_none() {{\n\
-                 return Err(Error::new(\"Value is None\"));\n\
-             }}\n",
-            failure.test_name
-        ))
-    }
-
-    /// Fix type mismatch
-    async fn fix_type_mismatch(&self, failure: &TestFailure, code: &GeneratedCode) -> Result<String> {
-        Ok(format!(
-            "// FIX: Type mismatch in {}\n\
-             // Added type conversion\n",
-            failure.test_name
-        ))
-    }
-
-    /// Fix missing function
-    async fn fix_missing_function(&self, failure: &TestFailure, code: &GeneratedCode) -> Result<String> {
-        Ok(format!(
-            "// FIX: Missing function in {}\n\
-             // Stub implementation added\n\
-             pub fn placeholder_function() -> Result<()> {{\n\
-                 todo!(\"Implement function logic\")\n\
-             }}\n",
-            failure.test_name
-        ))
-    }
-
-    /// Fix logic error
-    async fn fix_logic_error(&self, failure: &TestFailure, code: &GeneratedCode) -> Result<String> {
-        Ok(format!(
-            "// FIX: Logic error in {}\n\
-             // Review and correct business logic\n",
-            failure.test_name
-        ))
-    }
-
-    /// Fix generic error
-    async fn fix_generic_error(&self, failure: &TestFailure, code: &GeneratedCode) -> Result<String> {
-        Ok(format!(
-            "// FIX: Error in {}\n\
-             // Error: {}\n\
-             // Review implementation\n",
-            failure.test_name,
-            failure.failure_message
-        ))
-    }
-
-    /// Calculate confidence in fix
-    fn calculate_fix_confidence(&self, strategy: &FixStrategy) -> f64 {
-        match strategy {
-            FixStrategy::AssertionMismatch => 0.7,
-            FixStrategy::NullPointerError => 0.8,
-            FixStrategy::TypeMismatch => 0.6,
-            FixStrategy::MissingFunction => 0.5,
-            FixStrategy::LogicError => 0.4,
-            FixStrategy::Generic => 0.3,
+        FixDescription {
+            failure_type: failure.test_name.clone(),
+            fix_strategy: "Heuristic fallback".to_string(),
+            code_change: fix_code,
+            llm_provider_used: None,
         }
     }
 
@@ -349,24 +336,20 @@ impl AutocorrectionCycle {
     async fn apply_fixes_to_code(
         &self,
         mut code: GeneratedCode,
-        fixes: Vec<ProposedFix>,
+        fixes: Vec<FixDescription>,
     ) -> Result<(GeneratedCode, Vec<FixDescription>)> {
-        let mut applied = Vec::new();
+        let mut applied_fixes = Vec::new();
 
         for fix in fixes {
-            info!("   Applying fix for: {}", fix.test_name);
-
-            // Append fix code (simplified - real implementation would be more sophisticated)
-            code.content.push_str(&format!("\n{}\n", fix.code_changes));
-
-            applied.push(FixDescription {
-                failure_type: fix.test_name,
-                fix_strategy: format!("{:?}", fix.strategy),
-                code_change: fix.code_changes,
-            });
+            // For now, replace entire code with fixed version
+            // In production, would do smarter merging
+            if !fix.code_change.is_empty() && fix.llm_provider_used.is_some() {
+                code.code = fix.code_change.clone();
+                applied_fixes.push(fix);
+            }
         }
 
-        Ok((code, applied))
+        Ok((code, applied_fixes))
     }
 
     /// Write code to project filesystem
@@ -376,70 +359,78 @@ impl AutocorrectionCycle {
         code: &GeneratedCode,
         language: &str,
     ) -> Result<()> {
-        let file_path = match language {
-            "rust" => project_path.join("src/lib.rs"),
-            "typescript" | "javascript" => project_path.join("src/index.ts"),
-            "python" => project_path.join("src/main.py"),
-            "go" => project_path.join("main.go"),
-            _ => project_path.join("src/main.rs"),
+        let file_extension = match language.to_lowercase().as_str() {
+            "rust" => "rs",
+            "typescript" | "javascript" => "ts",
+            "python" => "py",
+            "go" => "go",
+            _ => "txt",
         };
 
-        tokio::fs::write(&file_path, &code.content).await?;
-        debug!("   Wrote updated code to: {:?}", file_path);
+        let main_file = project_path.join(format!("src/main.{}", file_extension));
 
+        tokio::fs::create_dir_all(main_file.parent().unwrap()).await?;
+        tokio::fs::write(&main_file, &code.code).await
+            .context(format!("Failed to write code to {:?}", main_file))?;
+
+        debug!("✅ Wrote updated code to {:?}", main_file);
         Ok(())
     }
 }
 
-/// Proposed fix for a test failure
-#[derive(Debug, Clone)]
-struct ProposedFix {
-    test_name: String,
-    failure_message: String,
-    strategy: FixStrategy,
-    code_changes: String,
-    confidence: f64,
-}
+impl Default for AutocorrectionCycle {
+    fn default() -> Self {
+        Self::new().unwrap_or_else(|e| {
+            warn!("Failed to initialize autocorrection cycle with LLM: {}", e);
+            warn!("Continuing without LLM support (heuristic mode only)");
 
-/// Fix strategy types
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum FixStrategy {
-    AssertionMismatch,
-    NullPointerError,
-    TypeMismatch,
-    MissingFunction,
-    LogicError,
-    Generic,
+            Self {
+                test_engine: TestIntegrationEngine::new(),
+                max_iterations: MAX_AUTOCORRECTION_ITERATIONS,
+                llm: MultiProviderLLM::new(),
+            }
+        })
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::path::PathBuf;
 
     #[tokio::test]
-    async fn test_calculate_improvement() {
-        let cycle = AutocorrectionCycle::new();
+    #[ignore] // Requires LLM API keys
+    async fn test_autocorrection_with_llm() {
+        let cycle = AutocorrectionCycle::new().unwrap();
 
-        assert_eq!(cycle.calculate_improvement(10, 5), 50.0);
-        assert_eq!(cycle.calculate_improvement(10, 0), 100.0);
-        assert_eq!(cycle.calculate_improvement(10, 10), 0.0);
-    }
-
-    #[test]
-    fn test_determine_fix_strategy() {
-        let cycle = AutocorrectionCycle::new();
-
-        let failure = TestFailure {
-            test_name: "test_foo".to_string(),
-            file_path: None,
-            line_number: None,
-            failure_message: "assertion failed: expected 5, got 3".to_string(),
-            assertion_type: None,
-            expected: Some("5".to_string()),
-            actual: Some("3".to_string()),
-            stack_trace: None,
+        let buggy_code = GeneratedCode {
+            language: "rust".to_string(),
+            framework: Some("none".to_string()),
+            code: r#"
+                pub fn add(a: i32, b: i32) -> i32 {
+                    a - b  // BUG: should be +
+                }
+            "#.to_string(),
+            files: vec![],
+            tests: vec![],
         };
 
-        assert_eq!(cycle.determine_fix_strategy(&failure), FixStrategy::AssertionMismatch);
+        let project_path = PathBuf::from("/tmp/test_project");
+
+        let result = cycle.run_autocorrection(
+            &project_path,
+            "rust",
+            buggy_code,
+        ).await;
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        if cycle.llm.available_providers().is_empty() {
+            println!("Skipping LLM test - no providers configured");
+        } else {
+            assert!(result.iterations_completed > 0);
+            assert!(!result.corrections_applied.is_empty());
+        }
     }
 }

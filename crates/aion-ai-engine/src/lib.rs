@@ -37,6 +37,7 @@ pub mod test_integration;
 pub mod autocorrection_cycle;
 pub mod ast_parser;
 pub mod refactoring_operations;
+pub mod llm_providers;
 
 pub use inference::*;
 pub use models::*;
