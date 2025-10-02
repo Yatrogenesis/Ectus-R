@@ -1,0 +1,96 @@
+[package]
+name = "aion-compliance"
+version = "0.1.0"
+edition = "2021"
+authors = ["AION Team <team@aion.dev>"]
+description = "Comprehensive compliance framework implementation for AION (GDPR, HIPAA, SOC2, PCI-DSS)"
+license = "MIT OR Apache-2.0"
+
+[workspace]
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-trait = "0.1"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1.0"
+thiserror = "1.0"
+clap = { version = "4.0", features = ["derive"] }
+
+# Database and persistence
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "json", "uuid", "chrono"] }
+redis = { version = "0.24", features = ["tokio-comp", "json"] }
+
+# Encryption and security
+ring = { version = "0.17", optional = true }
+aes-gcm = { version = "0.10", optional = true }
+chacha20poly1305 = { version = "0.10", optional = true }
+argon2 = "0.5"
+base64 = "0.21"
+sha2 = "0.10"
+hmac = "0.12"
+
+# HTTP and web
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# Configuration and validation
+config = "0.14"
+validator = { version = "0.16", features = ["derive"] }
+regex = "1.10"
+
+# Date/time handling
+time = { version = "0.3", features = ["parsing", "formatting"] }
+
+# PDF generation for reports
+printpdf = { version = "0.6", optional = true }
+lopdf = { version = "0.31", optional = true }
+
+# Email notifications
+lettre = { version = "0.11", features = ["smtp-transport", "rustls-tls", "builder"], optional = true }
+
+# Audit logging
+# audit-log = { version = "0.2", optional = true }  # Crate not found on crates.io
+slog = { version = "2.7", optional = true }
+slog-json = { version = "2.6", optional = true }
+
+# File system operations
+walkdir = "2.4"
+tempfile = "3.8"
+
+# Parallel processing
+rayon = "1.8"
+
+# Template engine for reports
+tera = { version = "1.19", optional = true }
+handlebars = { version = "4.5", optional = true }
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockall = "0.12"
+testcontainers = "0.15"
+
+[features]
+default = ["all-frameworks"]
+all-frameworks = ["gdpr", "hipaa", "sox", "pci-dss", "iso27001", "nist"]
+gdpr = []
+hipaa = []
+sox = []
+pci-dss = []
+iso27001 = []
+nist = []
+encryption = ["ring", "aes-gcm", "chacha20poly1305"]
+audit = ["slog", "slog-json"]
+reporting = ["printpdf", "lopdf", "tera", "handlebars"]
+notifications = ["lettre"]
+
+# Binary temporarily disabled due to clap API compatibility issues
+# [[bin]]
+# name = "aion-compliance"
+# path = "src/bin/main.rs"

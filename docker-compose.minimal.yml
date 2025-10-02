@@ -1,0 +1,91 @@
+# AION-R Minimal Development Environment
+# Includes only essential services for basic development
+# Use this for quick local setup without full observability stack
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database (Essential)
+  postgres:
+    image: postgres:15-alpine
+    container_name: aion-postgres-minimal
+    environment:
+      POSTGRES_DB: aion_r
+      POSTGRES_USER: aion_user
+      POSTGRES_PASSWORD: aion_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_minimal_data:/var/lib/postgresql/data
+    networks:
+      - aion-minimal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aion_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Redis Cache (Essential)
+  redis:
+    image: redis:7-alpine
+    container_name: aion-redis-minimal
+    command: redis-server --appendonly yes --requirepass aion_redis_pass
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_minimal_data:/data
+    networks:
+      - aion-minimal
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "aion_redis_pass", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  postgres_minimal_data:
+    driver: local
+  redis_minimal_data:
+    driver: local
+
+networks:
+  aion-minimal:
+    driver: bridge
+
+# Usage Instructions:
+#
+# 1. Start services:
+#    docker-compose -f docker-compose.minimal.yml up -d
+#
+# 2. Stop services:
+#    docker-compose -f docker-compose.minimal.yml down
+#
+# 3. View logs:
+#    docker-compose -f docker-compose.minimal.yml logs -f
+#
+# 4. Clean data (WARNING: deletes all data):
+#    docker-compose -f docker-compose.minimal.yml down -v
+#
+# What's included:
+# ✅ PostgreSQL - Database for persistent data
+# ✅ Redis - Cache and session storage
+#
+# What's excluded (vs. full docker-compose.yml):
+# ❌ RabbitMQ - Message queue
+# ❌ MinIO - S3-compatible storage
+# ❌ Prometheus - Metrics collection
+# ❌ Grafana - Dashboards
+# ❌ Jaeger - Distributed tracing
+# ❌ Application services (run locally instead)
+#
+# Benefits:
+# • Faster startup (~5s vs ~30s)
+# • Lower memory usage (~300MB vs ~2GB)
+# • Simpler debugging
+# • Perfect for quick development
+#
+# When to upgrade to full docker-compose.yml:
+# • Need production-like environment
+# • Require monitoring/observability
+# • Testing distributed features
+# • Performance profiling needed

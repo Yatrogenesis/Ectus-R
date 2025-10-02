@@ -1,0 +1,335 @@
+# Production Docker Compose Configuration
+# High-availability, scalable deployment with monitoring
+
+version: '3.8'
+
+services:
+  # PostgreSQL Primary Database
+  postgres-primary:
+    image: postgres:15-alpine
+    container_name: ectus-postgres-primary
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ectus_r}
+      POSTGRES_USER: ${POSTGRES_USER:-ectus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_REPLICATION_USER: ${POSTGRES_REPLICATION_USER:-replicator}
+      POSTGRES_REPLICATION_PASSWORD: ${POSTGRES_REPLICATION_PASSWORD}
+    volumes:
+      - postgres_primary_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+      - ./database/postgresql.conf:/etc/postgresql/postgresql.conf
+    ports:
+      - "5432:5432"
+    command: >
+      postgres
+      -c config_file=/etc/postgresql/postgresql.conf
+      -c log_statement=all
+      -c log_min_duration_statement=1000
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ectus} -d ${POSTGRES_DB:-ectus_r}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ectus-backend
+    labels:
+      - "com.ectus.service=database"
+      - "com.ectus.component=postgres-primary"
+
+  # PostgreSQL Read Replica
+  postgres-replica:
+    image: postgres:15-alpine
+    container_name: ectus-postgres-replica
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ectus}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PRIMARY_HOST: postgres-primary
+      POSTGRES_REPLICATION_USER: ${POSTGRES_REPLICATION_USER:-replicator}
+      POSTGRES_REPLICATION_PASSWORD: ${POSTGRES_REPLICATION_PASSWORD}
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+      - ./scripts/setup-replica.sh:/docker-entrypoint-initdb.d/setup-replica.sh
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    networks:
+      - ectus-backend
+    restart: unless-stopped
+    labels:
+      - "com.ectus.service=database"
+      - "com.ectus.component=postgres-replica"
+
+  # Redis for Caching and Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: ectus-redis
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - ectus-backend
+    labels:
+      - "com.ectus.service=cache"
+      - "com.ectus.component=redis"
+
+  # Ectus-R Web API (Multiple instances for load balancing)
+  ectus-api-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: ectus-api-1
+    environment:
+      - RUST_LOG=${RUST_LOG:-info}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-ectus}:${POSTGRES_PASSWORD}@postgres-primary:5432/${POSTGRES_DB:-ectus_r}
+      - DATABASE_READ_URL=postgresql://${POSTGRES_USER:-ectus}:${POSTGRES_PASSWORD}@postgres-replica:5432/${POSTGRES_DB:-ectus_r}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - INSTANCE_ID=api-1
+    volumes:
+      - app_data_1:/app/data
+      - app_logs:/app/logs
+      - ai_models:/app/models
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ectus-backend
+      - ectus-frontend
+    labels:
+      - "com.ectus.service=api"
+      - "com.ectus.component=web-api"
+      - "com.ectus.instance=1"
+
+  ectus-api-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: ectus-api-2
+    environment:
+      - RUST_LOG=${RUST_LOG:-info}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-ectus}:${POSTGRES_PASSWORD}@postgres-primary:5432/${POSTGRES_DB:-ectus_r}
+      - DATABASE_READ_URL=postgresql://${POSTGRES_USER:-ectus}:${POSTGRES_PASSWORD}@postgres-replica:5432/${POSTGRES_DB:-ectus_r}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - INSTANCE_ID=api-2
+    volumes:
+      - app_data_2:/app/data
+      - app_logs:/app/logs
+      - ai_models:/app/models
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - ectus-backend
+      - ectus-frontend
+    labels:
+      - "com.ectus.service=api"
+      - "com.ectus.component=web-api"
+      - "com.ectus.instance=2"
+
+  # NGINX Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: ectus-nginx
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/ssl:/etc/nginx/ssl
+      - ./web-ui/dist:/usr/share/nginx/html
+      - nginx_logs:/var/log/nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - ectus-api-1
+      - ectus-api-2
+    restart: unless-stopped
+    networks:
+      - ectus-frontend
+    labels:
+      - "com.ectus.service=proxy"
+      - "com.ectus.component=nginx"
+
+  # Prometheus for Metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ectus-prometheus
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+    networks:
+      - ectus-monitoring
+      - ectus-backend
+    labels:
+      - "com.ectus.service=monitoring"
+      - "com.ectus.component=prometheus"
+
+  # Grafana for Visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ectus-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - ectus-monitoring
+    labels:
+      - "com.ectus.service=monitoring"
+      - "com.ectus.component=grafana"
+
+  # Elasticsearch for Log Aggregation
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: ectus-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    restart: unless-stopped
+    networks:
+      - ectus-monitoring
+    labels:
+      - "com.ectus.service=logging"
+      - "com.ectus.component=elasticsearch"
+
+  # Kibana for Log Visualization
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: ectus-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - ectus-monitoring
+    labels:
+      - "com.ectus.service=logging"
+      - "com.ectus.component=kibana"
+
+  # Filebeat for Log Shipping
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.11.0
+    container_name: ectus-filebeat
+    user: root
+    volumes:
+      - ./config/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - app_logs:/var/log/ectus
+      - nginx_logs:/var/log/nginx
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    networks:
+      - ectus-monitoring
+    labels:
+      - "com.ectus.service=logging"
+      - "com.ectus.component=filebeat"
+
+  # AlertManager for Alerts
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: ectus-alertmanager
+    volumes:
+      - ./config/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    ports:
+      - "9093:9093"
+    restart: unless-stopped
+    networks:
+      - ectus-monitoring
+    labels:
+      - "com.ectus.service=monitoring"
+      - "com.ectus.component=alertmanager"
+
+volumes:
+  postgres_primary_data:
+    driver: local
+  postgres_replica_data:
+    driver: local
+  redis_data:
+    driver: local
+  app_data_1:
+    driver: local
+  app_data_2:
+    driver: local
+  app_logs:
+    driver: local
+  ai_models:
+    driver: local
+  nginx_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+  alertmanager_data:
+    driver: local
+
+networks:
+  ectus-frontend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.1.0/24
+  ectus-backend:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.2.0/24
+  ectus-monitoring:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.3.0/24

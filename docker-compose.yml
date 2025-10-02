@@ -1,0 +1,246 @@
+# AION-R Enterprise Development Environment
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: aion-postgres
+    environment:
+      POSTGRES_DB: aion_r
+      POSTGRES_USER: aion_user
+      POSTGRES_PASSWORD: aion_pass
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - aion-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aion_user -d aion_r"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache & Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: aion-redis
+    command: redis-server --appendonly yes --requirepass aion_redis_pass
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - aion-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ Message Queue
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: aion-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: aion_user
+      RABBITMQ_DEFAULT_PASS: aion_pass
+      RABBITMQ_DEFAULT_VHOST: aion_vhost
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - aion-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # MinIO S3-compatible Storage
+  minio:
+    image: minio/minio:latest
+    container_name: aion-minio
+    environment:
+      MINIO_ROOT_USER: aion_access_key
+      MINIO_ROOT_PASSWORD: aion_secret_key
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # API port
+      - "9001:9001"   # Console port
+    volumes:
+      - minio_data:/data
+    networks:
+      - aion-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # Prometheus Metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: aion-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - aion-network
+    depends_on:
+      - postgres
+      - redis
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: aion-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: aion_grafana_pass
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - aion-network
+    depends_on:
+      - prometheus
+
+  # Jaeger Distributed Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: aion-jaeger
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "14268:14268" # HTTP collector
+      - "14250:14250" # gRPC collector
+    networks:
+      - aion-network
+
+  # AION Services (when running in containers)
+
+  # API Gateway
+  aion-gateway:
+    build:
+      context: .
+      dockerfile: services/gateway-service/Dockerfile
+    container_name: aion-gateway
+    environment:
+      RUST_LOG: info
+      DATABASE_URL: postgresql://aion_user:aion_pass@postgres:5432/aion_r
+      REDIS_URL: redis://:aion_redis_pass@redis:6379
+    ports:
+      - "8080:8080"
+    networks:
+      - aion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - services
+
+  # Auth Service
+  aion-auth:
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
+    container_name: aion-auth
+    environment:
+      RUST_LOG: info
+      DATABASE_URL: postgresql://aion_user:aion_pass@postgres:5432/aion_r
+      REDIS_URL: redis://:aion_redis_pass@redis:6379
+      JWT_SECRET: your-256-bit-secret-key-here
+    ports:
+      - "8081:8081"
+    networks:
+      - aion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - services
+
+  # AI Service
+  aion-ai:
+    build:
+      context: .
+      dockerfile: services/ai-service/Dockerfile
+    container_name: aion-ai
+    environment:
+      RUST_LOG: info
+      DATABASE_URL: postgresql://aion_user:aion_pass@postgres:5432/aion_r
+      REDIS_URL: redis://:aion_redis_pass@redis:6379
+    ports:
+      - "8082:8082"
+    networks:
+      - aion-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    profiles:
+      - services
+
+  # Monitoring Service
+  aion-monitoring:
+    build:
+      context: .
+      dockerfile: services/monitoring-service/Dockerfile
+    container_name: aion-monitoring
+    environment:
+      RUST_LOG: info
+      PROMETHEUS_URL: http://prometheus:9090
+    ports:
+      - "8083:8083"
+    networks:
+      - aion-network
+    depends_on:
+      - prometheus
+    profiles:
+      - services
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  rabbitmq_data:
+    driver: local
+  minio_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  aion-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

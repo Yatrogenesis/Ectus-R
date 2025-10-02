@@ -1,0 +1,61 @@
+[package]
+name = "aion-web-api"
+version = "1.0.0"
+edition = "2021"
+description = "Web API server for Ectus-R platform"
+
+[dependencies]
+aion-core = { path = "../aion-core" }
+aion-monitoring = { path = "../aion-monitoring" }
+# aion-ai-engine = { path = "../aion-ai-engine" }  # Comentado: candle-core tiene conflictos de versión
+# aion-optimization-engine = { path = "../aion-optimization-engine" }  # Comentado: depende de aion-ai-engine
+
+# Web framework
+axum = { version = "0.7", features = ["ws", "multipart", "macros"] }
+tower = { version = "0.4", features = ["full"] }
+tower-http = { version = "0.5", features = ["full"] }
+hyper = "1.0"
+
+# Async runtime
+tokio = { version = "1.0", features = ["full"] }
+futures = "0.3"
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Authentication and security
+jsonwebtoken = "9.2"
+argon2 = "0.5"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Configuration
+config = "0.14"
+
+# CORS and middleware
+tower-service = "0.3"
+
+# HTTP client for external services
+reqwest = { version = "0.11", features = ["json"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[[bin]]
+name = "aion-web-api"
+path = "src/main.rs"

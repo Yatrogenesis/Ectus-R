@@ -1,0 +1,27 @@
+# AION-R Locked Files Configuration
+# Files listed here will never be automatically modified by the AI
+# One file path per line (relative to project root)
+# Lines starting with # are comments
+
+# Protect critical configuration files
+.env
+.env.production
+wrangler.toml
+
+# Protect custom business logic
+src/custom_module.rs
+crates/aion-core/src/domain/custom_logic.rs
+
+# Protect manually-crafted tests
+tests/manual_integration_test.rs
+tests/custom_scenarios.rs
+
+# Protect documentation
+README.md
+CONTRIBUTING.md
+
+# Usage:
+# 1. Copy this file to .aion-locked (remove .example)
+# 2. Add your protected files (one per line)
+# 3. AION-R will create .aion-suggested files instead of overwriting
+# 4. Review suggestions and merge manually if needed

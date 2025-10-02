@@ -1,0 +1,75 @@
+name = "ectus-r-production"
+main = "src/worker-production.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "b11ab3fe6c1a3625b65cb22d170793b6"
+
+# Production Environment
+[env.production]
+name = "ectus-r-production"
+routes = [
+  "creator.avermex.com/*",
+  "ectus.avermex.com/*",
+  "api.avermex.com/ectus/*"
+]
+
+# Staging Environment
+[env.staging]
+name = "ectus-r-staging"
+routes = [
+  "staging.ectus.avermex.com/*"
+]
+
+# Development Environment
+[env.development]
+name = "ectus-r-dev"
+
+# Variables de entorno
+[vars]
+ENVIRONMENT = "production"
+API_VERSION = "v1"
+CORS_ORIGINS = "https://avermex.com,https://creator.avermex.com,https://ectus.avermex.com"
+GITHUB_PAGES_URL = "https://yatrogenesis.github.io/Ectus-R"
+
+# KV Namespaces - Sessions, Cache, Metadata
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "a2e4aefaa1c84d18a0e223ff2c1f18aa"
+preview_id = "a2e4aefaa1c84d18a0e223ff2c1f18aa"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "923a52080c0d411eba44864fa5935f69"
+preview_id = "923a52080c0d411eba44864fa5935f69"
+
+[[kv_namespaces]]
+binding = "METADATA"
+id = "4cead308076140fe80fa3e84714f9173"
+preview_id = "4cead308076140fe80fa3e84714f9173"
+
+# D1 Database - Persistent data
+[[d1_databases]]
+binding = "DB"
+database_name = "ectus-main-db"
+database_id = "4bf3d0a1-cff9-4fc2-9b4a-9ff85bdd3de3"
+
+# Cloudflare AI Workers
+[ai]
+binding = "AI"
+
+# Secrets (configurar con: wrangler secret put <NAME>)
+# Estos secrets se configuran en Cloudflare Dashboard o via CLI:
+#
+# wrangler secret put HUGGINGFACE_API_KEY --env production
+# wrangler secret put DEEPSEEK_API_KEY --env production
+# wrangler secret put OLLAMA_URL --env production
+# wrangler secret put OPENAI_API_KEY --env production
+# wrangler secret put GODADDY_API_KEY --env production
+# wrangler secret put GODADDY_API_SECRET --env production
+# wrangler secret put GITHUB_TOKEN --env production
+# wrangler secret put JWT_SECRET --env production
+
+# Rate Limiting
+[limits]
+# CPU time per request: 50ms (default)
+# Memory per request: 128MB (default)

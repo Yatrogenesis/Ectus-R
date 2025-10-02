@@ -1,0 +1,132 @@
+name: Deploy Ectus-R SaaS
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'src/**'
+      - 'wrangler-production.toml'
+      - 'package.json'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy to Cloudflare Workers (Staging)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config wrangler-production.toml --env staging
+
+      - name: Comment deployment URL
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Deployed to staging: https://staging.ectus.avermex.com'
+            })
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+        continue-on-error: true
+
+      - name: Deploy to Cloudflare Workers (Production)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config wrangler-production.toml --env production
+
+      - name: Verify deployment
+        run: |
+          sleep 10
+          curl -f https://creator.avermex.com/health || exit 1
+
+      - name: Create deployment tag
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git tag -a "deploy-$(date +%Y%m%d-%H%M%S)" -m "Production deployment"
+          git push origin --tags || echo "Could not push tags"
+
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "✅ Production deployment successful!"
+          echo "🌐 https://creator.avermex.com"
+          echo "🌐 https://ectus.avermex.com"
+
+  deploy-github-pages:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create apps directory
+        run: |
+          mkdir -p docs/apps
+          echo '<html><body><h1>Ectus-R Apps</h1><p>Deployments hosted here</p></body></html>' > docs/apps/index.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Output Pages URL
+        run: echo "📄 GitHub Pages deployed to ${{ steps.deployment.outputs.page_url }}"

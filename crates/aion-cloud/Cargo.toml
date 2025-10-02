@@ -1,0 +1,62 @@
+[package]
+name = "aion-cloud"
+version = "0.1.0"
+edition = "2021"
+authors = ["AION Team <team@aion.dev>"]
+description = "Multi-cloud provider integrations for AION"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-trait = "0.1"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+anyhow = "1.0"
+thiserror = "1.0"
+
+# AWS SDK
+aws-config = "1.8"
+aws-sdk-ec2 = "1.170"
+aws-sdk-s3 = "1.106"
+aws-sdk-lambda = "1.97"
+aws-sdk-iam = "1.89"
+aws-sdk-cloudformation = "1.94"
+aws-sdk-rds = "1.110"
+aws-sdk-ecs = "1.98"
+aws-sdk-eks = "1.108"
+
+# Google Cloud
+google-cloud-auth = "0.13"
+google-cloud-storage = "0.15"
+# google-cloud-compute = "0.4"  # Package not found on crates.io
+google-cloud-pubsub = "0.19"
+gcp_auth = "0.10"
+
+# Azure SDK
+azure_core = "0.28"
+azure_identity = "0.28"
+azure_mgmt_compute = "0.21"
+azure_mgmt_storage = "0.21"
+azure_mgmt_resources = "0.21"
+azure_storage = "0.21"
+azure_storage_blobs = "0.21"
+
+# Terraform integration
+hcl-rs = "0.16"
+# terraform-rs = "0.1"  # Package not found on crates.io
+
+# Kubernetes
+k8s-openapi = { version = "0.20", features = ["v1_28"] }
+kube = "0.87"
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockall = "0.12"
+
+# Temporarily commented out to avoid workspace conflicts
+# [[bin]]
+# name = "aion-cloud-cli"
+# path = "src/bin/main.rs"

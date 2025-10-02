@@ -1,0 +1,109 @@
+[package]
+name = "aion-licensing"
+version = "0.1.0"
+edition = "2021"
+authors = ["AION Team <team@aion.dev>"]
+description = "Enterprise-grade commercial licensing and billing system for AION platform"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-trait = "0.1"
+uuid = { version = "1.6", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Web server and API
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace", "fs"] }
+hyper = "1.0"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+
+# Database and persistence
+sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "json", "uuid", "chrono", "bigdecimal"] }
+redis = { version = "0.24", features = ["tokio-comp", "json"] }
+sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+
+# Payment processing (using async-stripe for Stripe API support)
+async-stripe = { version = "0.39", optional = true, features = ["runtime-tokio-hyper"] }
+# paypal = { version = "0.3", optional = true }  # Not available on crates.io
+# recurly = { version = "0.2", optional = true }  # Not available on crates.io
+# paddle = { version = "0.1", optional = true }  # Only beta versions available
+
+# Cryptography and security
+ring = "0.17"
+jsonwebtoken = "9.2"
+base64 = "0.21"
+sha2 = "0.10"
+hmac = "0.12"
+rsa = "0.9"
+aes-gcm = "0.10"
+
+# Decimal arithmetic for financial calculations
+rust_decimal = { version = "1.33", features = ["serde_json"] }
+rust_decimal_macros = "1.33"
+
+# Configuration and validation
+config = "0.14"
+validator = { version = "0.16", features = ["derive"] }
+regex = "1.10"
+
+# Email and notifications
+lettre = { version = "0.11", features = ["smtp-transport", "rustls-tls", "builder"] }
+# sendgrid = "0.19"  # Not available in this version
+
+# Template engines
+tera = "1.19"
+handlebars = "4.5"
+
+# PDF generation for invoices
+printpdf = "0.6"
+lopdf = "0.31"
+
+# Time and scheduling
+cron = "0.12"
+tokio-cron-scheduler = "0.9"
+
+# Metrics and monitoring
+prometheus = { version = "0.13", optional = true }
+metrics = { version = "0.21", optional = true }
+
+# Webhook handling
+# webhook = "0.3"  # Not available on crates.io
+
+# Rate limiting
+governor = "0.6"
+
+# Audit logging
+# audit-log = { version = "0.2", optional = true }  # Not available on crates.io
+
+# Testing and development
+mockall = "0.12"
+wiremock = "0.5"
+
+[dev-dependencies]
+tokio-test = "0.4"
+testcontainers = "0.15"
+tempfile = "3.8"
+
+[features]
+default = ["stripe"]
+all-providers = ["stripe"]
+stripe = ["async-stripe"]
+enterprise = ["advanced-analytics", "white-label"]
+audit = []
+advanced-analytics = ["prometheus", "metrics"]
+white-label = []
+compliance = ["pci-dss", "sox", "gdpr"]
+pci-dss = []
+sox = []
+gdpr = []
+
+[[bin]]
+name = "aion-licensing"
+path = "src/bin/main.rs"

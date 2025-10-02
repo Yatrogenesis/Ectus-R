@@ -1,0 +1,13 @@
+name = "creator-avermex-redirect"
+main = "src/redirect-worker.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "b11ab3fe6c1a3625b65cb22d170793b6"
+
+[env.production]
+name = "creator-avermex-redirect"
+routes = ["creator.avermex.com/*"]
+
+# Variables
+[vars]
+ENVIRONMENT = "production"

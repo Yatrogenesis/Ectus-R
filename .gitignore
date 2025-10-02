@@ -1,0 +1,90 @@
+# Rust
+/target/
+Cargo.lock
+*.pdb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.staging
+
+# Configuration files with secrets
+config/secrets.yaml
+config/production.yaml
+config/staging.yaml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Coverage reports
+coverage/
+*.profraw
+
+# Node modules (if any JS tooling)
+node_modules/
+
+# Docker
+.dockerignore
+
+# Kubernetes secrets
+deployment/kubernetes/secrets/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Enterprise secrets
+certificates/
+keys/
+*.pem
+*.key
+*.crt
+
+# Data files
+data/
+backups/
+exports/
+
+# Monitoring data
+prometheus_data/
+grafana_data/
+
+# Cache
+.cache/
+*.cache

@@ -1,0 +1,36 @@
+{
+  "name": "@ectus-r/plugin-sdk",
+  "version": "1.0.0",
+  "description": "Official TypeScript SDK for Ectus-R plugins",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ectus-r",
+    "plugin",
+    "code-generation",
+    "ai",
+    "automation"
+  ],
+  "author": "Yatrogenesis",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yatrogenesis/Ectus-R"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/jest": "^29.0.0",
+    "jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}

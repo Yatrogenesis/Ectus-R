@@ -1,0 +1,52 @@
+name = "ectus-r-demo"
+main = "src/worker-demo.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+account_id = "b11ab3fe6c1a3625b65cb22d170793b6"
+
+# Production environment
+[env.production]
+name = "ectus-r-demo-prod"
+routes = [
+  { pattern = "demo.ectus.ai/*", zone_name = "ectus.ai" },
+  { pattern = "api.ectus.ai/demo/*", zone_name = "ectus.ai" }
+]
+
+# Variables
+[vars]
+ENVIRONMENT = "production"
+DEMO_ENABLED = "true"
+API_VERSION = "v1"
+CORS_ORIGINS = "https://ectus.ai,https://demo.ectus.ai,https://yatrogenesis.github.io"
+
+# KV Namespaces for session and data storage
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "a2e4aefaa1c84d18a0e223ff2c1f18aa"
+preview_id = "a2e4aefaa1c84d18a0e223ff2c1f18aa"
+
+[[kv_namespaces]]
+binding = "METADATA"
+id = "4cead308076140fe80fa3e84714f9173"
+preview_id = "4cead308076140fe80fa3e84714f9173"
+
+# Cloudflare Workers AI binding
+[ai]
+binding = "AI"
+
+# D1 Database for persistent lead storage
+[[d1_databases]]
+binding = "DB"
+database_name = "ectus-demo-db"
+database_id = "4bf3d0a1-cff9-4fc2-9b4a-9ff85bdd3de3"
+
+# Secrets (set via: wrangler secret put <NAME>)
+# DEMO_USERNAME - Username for credential authentication
+# DEMO_PASSWORD - Password for credential authentication
+# SENDGRID_API_KEY - SendGrid API key for email notifications
+# NOTIFICATION_EMAIL - Email to receive lead notifications
+
+# Observability
+[observability]
+enabled = true
+head_sampling_rate = 1.0
