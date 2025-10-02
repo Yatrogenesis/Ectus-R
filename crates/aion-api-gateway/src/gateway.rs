@@ -1,0 +1,394 @@
+use crate::{LoadBalancer, Router, RateLimiter, HealthChecker};
+use aion_core::{PlatformService, ServiceHealth, HealthStatus};
+use anyhow::Result;
+use async_trait::async_trait;
+use axum::{
+    extract::{Request, State},
+    response::Response,
+    routing::any,
+    Router as AxumRouter,
+};
+use chrono::Utc;
+use serde::{Deserialize, Serialize};
+use std::net::SocketAddr;
+use std::sync::Arc;
+use std::time::Duration;
+use tower::ServiceBuilder;
+use tower_http::{
+    cors::CorsLayer,
+    trace::TraceLayer,
+    timeout::TimeoutLayer,
+    limit::RequestBodyLimitLayer,
+};
+use uuid::Uuid;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GatewayConfig {
+    pub listen_address: SocketAddr,
+    pub request_timeout_seconds: u64,
+    pub max_request_body_size: usize,
+    pub enable_cors: bool,
+    pub enable_rate_limiting: bool,
+    pub enable_circuit_breaker: bool,
+    pub enable_load_balancing: bool,
+    pub health_check_interval_seconds: u64,
+    pub upstream_services: Vec<UpstreamService>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpstreamService {
+    pub name: String,
+    pub base_url: String,
+    pub health_check_path: String,
+    pub weight: u32,
+    pub max_connections: u32,
+    pub timeout_seconds: u64,
+}
+
+pub struct EnterpriseApiGateway {
+    config: Arc<GatewayConfig>,
+    load_balancer: Arc<LoadBalancer>,
+    router: Arc<Router>,
+    rate_limiter: Arc<RateLimiter>,
+    health_checker: Arc<HealthChecker>,
+    start_time: std::time::Instant,
+}
+
+impl EnterpriseApiGateway {
+    pub async fn new(config: GatewayConfig) -> Result<Self> {
+        let config = Arc::new(config);
+
+        let load_balancer = Arc::new(LoadBalancer::new(config.upstream_services.clone()).await?);
+        let router = Arc::new(Router::new().await?);
+        let rate_limiter = Arc::new(RateLimiter::new().await?);
+        let health_checker = Arc::new(HealthChecker::new(config.clone()).await?);
+
+        Ok(Self {
+            config,
+            load_balancer,
+            router,
+            rate_limiter,
+            health_checker,
+            start_time: std::time::Instant::now(),
+        })
+    }
+
+    pub fn create_app(&self) -> AxumRouter {
+        let app = AxumRouter::new()
+            .route("/*path", any(Self::proxy_handler))
+            .route("/gateway/health", axum::routing::get(Self::health_handler))
+            .route("/gateway/metrics", axum::routing::get(Self::metrics_handler))
+            .route("/gateway/status", axum::routing::get(Self::status_handler))
+            .with_state(Arc::new(self.clone()));
+
+        // Add middleware layers
+        let app = app
+            .layer(TraceLayer::new_for_http())
+            .layer(TimeoutLayer::new(Duration::from_secs(self.config.request_timeout_seconds)))
+            .layer(RequestBodyLimitLayer::new(self.config.max_request_body_size));
+
+        // Add CORS if enabled
+        if self.config.enable_cors {
+            app.layer(CorsLayer::permissive())
+        } else {
+            app
+        }
+    }
+    async fn proxy_handler(
+        State(gateway): State<Arc<EnterpriseApiGateway>>,
+        request: Request,
+    ) -> Result<Response, axum::http::StatusCode> {
+        // Extract path and method
+        let path = request.uri().path();
+        let method = request.method().clone();
+
+        tracing::debug!("Proxying request: {} {}", method, path);
+
+        // Rate limiting check
+        if gateway.config.enable_rate_limiting {
+            if let Err(_) = gateway.rate_limiter.check_rate_limit(&request).await {
+                tracing::warn!("Rate limit exceeded for request: {} {}", method, path);
+                return Err(axum::http::StatusCode::TOO_MANY_REQUESTS);
+            }
+        }
+
+        // Route the request
+        let route_info = match gateway.router.resolve_route(path).await {
+            Ok(route) => route,
+            Err(e) => {
+                tracing::error!("Failed to resolve route for {}: {}", path, e);
+                return Err(axum::http::StatusCode::NOT_FOUND);
+            }
+        };
+
+        // Load balance to upstream service
+        let upstream_url = if gateway.config.enable_load_balancing {
+            match gateway.load_balancer.get_upstream(&route_info.service_name).await {
+                Ok(url) => url,
+                Err(e) => {
+                    tracing::error!("Failed to get upstream for service {}: {}", route_info.service_name, e);
+                    return Err(axum::http::StatusCode::SERVICE_UNAVAILABLE);
+                }
+            }
+        } else {
+            // Use first available upstream
+            gateway.config.upstream_services
+                .iter()
+                .find(|s| s.name == route_info.service_name)
+                .map(|s| s.base_url.clone())
+                .ok_or(axum::http::StatusCode::SERVICE_UNAVAILABLE)?
+        };
+
+        // Forward the request
+        match gateway.forward_request(request, &upstream_url).await {
+            Ok(response) => Ok(response),
+            Err(e) => {
+                tracing::error!("Failed to forward request: {}", e);
+                Err(axum::http::StatusCode::BAD_GATEWAY)
+            }
+        }
+    }
+
+    async fn forward_request(&self, request: Request, upstream_url: &str) -> Result<Response> {
+        let client = reqwest::Client::new();
+        let uri = request.uri();
+        let method = request.method().clone();
+        let headers = request.headers().clone();
+
+        // Build the upstream URL
+        let upstream_uri = format!("{}{}", upstream_url.trim_end_matches('/'), uri.path_and_query().map(|p| p.as_str()).unwrap_or(""));
+
+        // Convert axum request to reqwest request
+        let mut req_builder = client.request(
+            reqwest::Method::from_bytes(method.as_str().as_bytes()).map_err(|e| anyhow::anyhow!("Invalid method: {}", e))?,
+            &upstream_uri
+        );
+
+        // Copy headers (convert from axum to reqwest types)
+        for (name, value) in headers.iter() {
+            if let (Ok(header_name), Ok(header_value)) = (
+                reqwest::header::HeaderName::from_bytes(name.as_str().as_bytes()),
+                reqwest::header::HeaderValue::from_bytes(value.as_bytes())
+            ) {
+                req_builder = req_builder.header(header_name, header_value);
+            }
+        }
+
+        // Send the request
+        let response = req_builder
+            .timeout(Duration::from_secs(self.config.request_timeout_seconds))
+            .send()
+            .await
+            .map_err(|e| anyhow::anyhow!("Upstream request failed: {}", e))?;
+
+        // Convert reqwest response to axum response
+        let status = response.status();
+        let headers = response.headers().clone();
+        let body = response.bytes().await
+            .map_err(|e| anyhow::anyhow!("Failed to read response body: {}", e))?;
+
+        let mut response_builder = axum::response::Response::builder()
+            .status(axum::http::StatusCode::from_u16(status.as_u16())
+                .unwrap_or(axum::http::StatusCode::INTERNAL_SERVER_ERROR));
+
+        // Copy response headers (convert from reqwest to axum types)
+        for (name, value) in headers.iter() {
+            if let (Ok(header_name), Ok(header_value)) = (
+                axum::http::HeaderName::from_bytes(name.as_str().as_bytes()),
+                axum::http::HeaderValue::from_bytes(value.as_bytes())
+            ) {
+                response_builder = response_builder.header(header_name, header_value);
+            }
+        }
+
+        let response = response_builder
+            .body(axum::body::Body::from(body))
+            .map_err(|e| anyhow::anyhow!("Failed to build response: {}", e))?;
+
+        Ok(response)
+    }
+    async fn health_handler(
+        State(gateway): State<Arc<EnterpriseApiGateway>>,
+    ) -> axum::Json<serde_json::Value> {
+        let health_status = gateway.health_checker.check_gateway_health().await;
+        axum::Json(serde_json::to_value(health_status).unwrap_or_default())
+    }
+
+    async fn metrics_handler(
+        State(gateway): State<Arc<EnterpriseApiGateway>>,
+    ) -> axum::Json<serde_json::Value> {
+        let metrics = gateway.collect_metrics().await;
+        axum::Json(serde_json::to_value(metrics).unwrap_or_default())
+    }
+
+    async fn status_handler(
+        State(gateway): State<Arc<EnterpriseApiGateway>>,
+    ) -> axum::Json<serde_json::Value> {
+        let status = GatewayStatus {
+            name: "AION API Gateway".to_string(),
+            version: "1.0.0".to_string(),
+            uptime_seconds: gateway.start_time.elapsed().as_secs(),
+            timestamp: Utc::now(),
+            upstream_services: gateway.config.upstream_services.len(),
+            features: GatewayFeatures {
+                rate_limiting: gateway.config.enable_rate_limiting,
+                load_balancing: gateway.config.enable_load_balancing,
+                circuit_breaker: gateway.config.enable_circuit_breaker,
+                health_checks: true,
+            },
+        };
+
+        axum::Json(serde_json::to_value(status).unwrap_or_default())
+    }
+
+    async fn collect_metrics(&self) -> GatewayMetrics {
+        GatewayMetrics {
+            requests_total: 0, // Would be tracked by middleware
+            requests_per_second: 0.0,
+            average_response_time_ms: 0.0,
+            error_rate_percent: 0.0,
+            uptime_seconds: self.start_time.elapsed().as_secs(),
+            upstream_health: self.health_checker.get_upstream_health().await,
+        }
+    }
+
+    pub async fn start(&self) -> Result<()> {
+        let app = self.create_app();
+        let listener = tokio::net::TcpListener::bind(self.config.listen_address).await?;
+
+        tracing::info!("🚀 AION Enterprise API Gateway starting on {}", self.config.listen_address);
+        tracing::info!("📋 Gateway features:");
+        tracing::info!("   Rate Limiting: {}", self.config.enable_rate_limiting);
+        tracing::info!("   Load Balancing: {}", self.config.enable_load_balancing);
+        tracing::info!("   Circuit Breaker: {}", self.config.enable_circuit_breaker);
+        tracing::info!("   CORS: {}", self.config.enable_cors);
+        tracing::info!("📡 Upstream services: {}", self.config.upstream_services.len());
+
+        for service in &self.config.upstream_services {
+            tracing::info!("   - {} -> {}", service.name, service.base_url);
+        }
+
+        // Start health checker
+        self.health_checker.start_monitoring().await?;
+
+        axum::serve(listener, app).await?;
+
+        Ok(())
+    }
+}
+
+impl Clone for EnterpriseApiGateway {
+    fn clone(&self) -> Self {
+        Self {
+            config: self.config.clone(),
+            load_balancer: self.load_balancer.clone(),
+            router: self.router.clone(),
+            rate_limiter: self.rate_limiter.clone(),
+            health_checker: self.health_checker.clone(),
+            start_time: self.start_time,
+        }
+    }
+}
+
+#[async_trait]
+impl PlatformService for EnterpriseApiGateway {
+    async fn initialize(&self, _config: &aion_core::PlatformConfig) -> Result<()> {
+        tracing::info!("Initializing API Gateway");
+        Ok(())
+    }
+
+    async fn start(&self) -> Result<()> {
+        self.start().await
+    }
+
+    async fn stop(&self) -> Result<()> {
+        tracing::info!("Stopping API Gateway");
+        Ok(())
+    }
+
+    async fn health_check(&self) -> Result<ServiceHealth> {
+        Ok(ServiceHealth {
+            service_name: "api-gateway".to_string(),
+            status: HealthStatus::Healthy,
+            uptime_seconds: self.start_time.elapsed().as_secs(),
+            last_check: Utc::now(),
+            metrics: serde_json::json!({
+                "upstream_services": self.config.upstream_services.len(),
+                "features": {
+                    "rate_limiting": self.config.enable_rate_limiting,
+                    "load_balancing": self.config.enable_load_balancing,
+                    "circuit_breaker": self.config.enable_circuit_breaker
+                }
+            }),
+            dependencies: vec![],
+        })
+    }
+
+    fn service_name(&self) -> &'static str {
+        "api-gateway"
+    }
+
+    fn service_version(&self) -> &'static str {
+        "1.0.0"
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RouteInfo {
+    pub service_name: String,
+    pub target_path: String,
+    pub method_allowed: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GatewayStatus {
+    pub name: String,
+    pub version: String,
+    pub uptime_seconds: u64,
+    pub timestamp: chrono::DateTime<chrono::Utc>,
+    pub upstream_services: usize,
+    pub features: GatewayFeatures,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GatewayFeatures {
+    pub rate_limiting: bool,
+    pub load_balancing: bool,
+    pub circuit_breaker: bool,
+    pub health_checks: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GatewayMetrics {
+    pub requests_total: u64,
+    pub requests_per_second: f64,
+    pub average_response_time_ms: f64,
+    pub error_rate_percent: f64,
+    pub uptime_seconds: u64,
+    pub upstream_health: Vec<UpstreamHealth>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpstreamHealth {
+    pub service_name: String,
+    pub url: String,
+    pub status: String,
+    pub response_time_ms: u64,
+    pub last_check: chrono::DateTime<chrono::Utc>,
+}
+
+impl Default for GatewayConfig {
+    fn default() -> Self {
+        Self {
+            listen_address: "0.0.0.0:8080".parse().unwrap(),
+            request_timeout_seconds: 30,
+            max_request_body_size: 10 * 1024 * 1024, // 10MB
+            enable_cors: true,
+            enable_rate_limiting: true,
+            enable_circuit_breaker: true,
+            enable_load_balancing: true,
+            health_check_interval_seconds: 30,
+            upstream_services: vec![],
+        }
+    }
+}
