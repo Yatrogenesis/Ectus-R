@@ -1,0 +1,76 @@
+================================================================================
+INSTRUCCIONES PARA OTRA INSTANCIA DE CLAUDE CODE
+Compilación Remota - Proyecto AION/Ectus-R
+================================================================================
+
+COPIA ESTE TEXTO Y PÉGALO EN LA OTRA INSTANCIA DE CLAUDE CODE:
+
+---
+
+Hola! Necesito que continúes el trabajo de compilación del proyecto AION/Ectus-R.
+
+CONTEXTO RÁPIDO:
+- El workspace YA COMPILA 100% en el equipo original (1m 27s en release)
+- Se completaron reparaciones críticas (BillingEvent, type conversions, etc.)
+- Se pusheó todo a GitHub con documentación completa
+- Tu equipo tiene más recursos, así que puedes verificar crates pesados
+
+INICIO:
+1. Clona el repositorio:
+   git clone https://github.com/Yatrogenesis/Ectus-R.git
+   cd Ectus-R
+
+2. Lee PRIMERO estos archivos (en orden):
+   - SETUP-RAPIDO-COMPILACION-REMOTA.md (inicio rápido - 5 min)
+   - RESUMEN-FINAL-SESION-2025-10-02.md (estado actual)
+   - INSTRUCCIONES-COMPILACION-REMOTA.md (guía completa de tareas)
+
+3. Verifica que el workspace compile:
+   cargo build --release
+   (Debería funcionar sin problemas)
+
+TAREAS PRIORITARIAS:
+
+✅ ALTA PRIORIDAD:
+1. Verificar warnings future-incompatibility (redis, sqlx)
+2. Compilar aion-cloud individualmente (timeout >10min en equipo original)
+3. Ejecutar tests básicos: cargo test --lib
+
+⚠️ MEDIA PRIORIDAD:
+4. Verificar aion-ai-engine individual (437 errores potenciales)
+5. Verificar aion-enterprise individual (253 errores potenciales)
+
+📊 BAJA PRIORIDAD (si tienes tiempo):
+6. Benchmarks: cargo bench
+7. Tests integración: cargo test --test '*'
+
+AL FINALIZAR:
+- Crea un archivo: REPORTE-COMPILACION-REMOTA-[FECHA].md
+- Incluye: tiempos de compilación, errores encontrados, fixes aplicados
+- Commit y push a origin/master
+
+TROUBLESHOOTING:
+Todo está documentado en INSTRUCCIONES-COMPILACION-REMOTA.md
+Incluye: SQLX offline, AWS SDK timeout, out of memory, etc.
+
+ARCHIVOS DE REFERENCIA EN EL REPO:
+- INSTRUCCIONES-COMPILACION-REMOTA.md = Documento maestro (completo)
+- SETUP-RAPIDO-COMPILACION-REMOTA.md = Inicio rápido
+- RESUMEN-FINAL-SESION-2025-10-02.md = Estado actual
+- PROGRESO-COMPILACION-FINAL-2025-10-02.md = Análisis errores previos
+
+CHECKLIST MÍNIMO:
+[ ] Workspace compila en release
+[ ] aion-cloud compila individual (documenta tiempo)
+[ ] Tests básicos pasan
+[ ] Warnings documentados
+[ ] Reporte pusheado
+
+TIEMPO ESTIMADO: 30-60 minutos
+
+¡Comienza leyendo SETUP-RAPIDO-COMPILACION-REMOTA.md!
+
+---
+
+FIN DE INSTRUCCIONES PARA COPIAR
+================================================================================
