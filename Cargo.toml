@@ -30,8 +30,8 @@ members = [
 # Core framework
 tokio = { version = "1.0", features = ["full"] }
 axum = "0.7"
-tower = "0.4"
-tower-http = { version = "0.5", features = ["full"] }
+tower = "0.5"  # SECURITY: RUSTSEC-2024-0003 fix
+tower-http = { version = "0.6", features = ["full"] }
 
 # Serialization and data
 serde = { version = "1.0", features = ["derive"] }
@@ -62,7 +62,7 @@ anyhow = "1.0"
 thiserror = "1.0"
 
 # Networking and HTTP
-reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
 hyper = "1.0"
 
 # Async utilities

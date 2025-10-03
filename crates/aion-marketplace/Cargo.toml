@@ -39,8 +39,8 @@ mime_guess = "2.0"
 bytes = "1.5"
 dashmap = "5.5"
 async-trait = "0.1"
-tower = { version = "0.4", features = ["full"] }
-tower-http = { version = "0.4", features = ["full"] }
+tower = { version = "0.5", features = ["full"] }
+tower-http = { version = "0.6", features = ["full"] }
 axum = { version = "0.7", features = ["multipart", "json", "query"] }
 axum-extra = { version = "0.8", features = ["typed-routing"] }
 hyper = { version = "1.0", features = ["full"] }

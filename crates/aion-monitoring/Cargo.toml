@@ -21,7 +21,7 @@ thiserror = "1.0"
 
 # Web server for WebSocket
 axum = { version = "0.7", features = ["ws"] }
-tower = "0.4"
+tower = "0.5"
 futures = "0.3"
 rand = "0.8"
 
