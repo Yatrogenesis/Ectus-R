@@ -12,7 +12,7 @@ candle-core = { version = "0.9", optional = true }
 candle-nn = { version = "0.9", optional = true }
 candle-transformers = { version = "0.9", optional = true }
 torch = { version = "0.1", optional = true }
-tensorflow = { version = "0.21", optional = true }
+# tensorflow = { version = "0.21", optional = true }  # DISABLED: protobuf 2.27 vulnerability (RUSTSEC-2024-0437)
 ort = { version = "1.16", features = ["copy-dylibs"], optional = true }  # ONNX Runtime
 
 # Machine Learning utilities
@@ -90,7 +90,7 @@ tree-sitter-go = "0.20"
 default = []
 candle = ["dep:candle-core", "dep:candle-nn", "dep:candle-transformers"]
 torch = ["dep:torch"]
-tensorflow = ["dep:tensorflow"]
+# tensorflow = ["dep:tensorflow"]  # DISABLED: See dependency comment above
 onnx = ["dep:ort"]
 nlp = ["dep:tokenizers", "dep:hf-hub"]
 vision = ["dep:image", "dep:imageproc"]
