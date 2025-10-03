@@ -10,4 +10,5 @@ pub use enterprise::*;
 pub use metrics::*;
 pub use events::*;
 pub use cache::*;
-pub use health::*;
+pub use health::*;pub mod secrets_manager;
+pub use secrets_manager::*;
