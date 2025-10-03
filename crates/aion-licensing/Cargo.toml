@@ -50,7 +50,7 @@ rust_decimal_macros = "1.33"
 
 # Configuration and validation
 config = "0.14"
-validator = { version = "0.16", features = ["derive"] }
+validator = { version = "0.18", features = ["derive"] }
 regex = "1.10"
 
 # Email and notifications
@@ -70,7 +70,7 @@ cron = "0.12"
 tokio-cron-scheduler = "0.9"
 
 # Metrics and monitoring
-prometheus = { version = "0.13", optional = true }
+prometheus = { version = "0.14", optional = true }
 metrics = { version = "0.21", optional = true }
 
 # Webhook handling

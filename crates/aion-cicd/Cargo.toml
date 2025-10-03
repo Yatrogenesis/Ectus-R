@@ -89,7 +89,7 @@ zip = "0.6"
 # Configuration
 config = "0.14"
 clap = { version = "4.4", features = ["derive", "env"] }
-validator = { version = "0.16", features = ["derive"] }
+validator = { version = "0.18", features = ["derive"] }
 
 # Parallel execution
 rayon = "1.8"
@@ -109,7 +109,7 @@ tera = "1.19"
 handlebars = "4.5"
 
 # Metrics
-prometheus = "0.13"
+prometheus = "0.14"
 metrics = "0.21"
 
 # Workflow engines

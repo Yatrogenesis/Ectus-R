@@ -42,7 +42,7 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 
 # Configuration and validation
 config = "0.14"
-validator = { version = "0.16", features = ["derive"] }
+validator = { version = "0.18", features = ["derive"] }
 regex = "1.10"
 
 # Date/time handling
