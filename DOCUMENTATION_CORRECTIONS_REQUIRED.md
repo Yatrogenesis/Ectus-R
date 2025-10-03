@@ -17,8 +17,8 @@
 
 **Corrección**:
 ```markdown
-❌ ANTES: ⭐ **LÍDER ABSOLUTO**
-✅ DESPUÉS: **LÍDER EN EL SEGMENTO**
+ ANTES: ⭐ **LÍDER ABSOLUTO**
+ DESPUÉS: **LÍDER EN EL SEGMENTO**
 ```
 
 **Acción**: Buscar y eliminar TODOS los emojis de todos los `.md`
@@ -127,11 +127,11 @@ Nota operacional: Uso limitado a casos de alta complejidad (>100 regulaciones si
 
 **Corrección**:
 ```markdown
-❌ "IA avanzada"
-✅ "Redes neuronales transformers" o "LLM orchestration (GPT-4, Claude 3.5)"
+ "IA avanzada"
+ "Redes neuronales transformers" o "LLM orchestration (GPT-4, Claude 3.5)"
 
-❌ "Aprendizaje profundo"
-✅ "Redes neuronales profundas (arquitectura transformer, 70B parámetros)" o específico del modelo
+ "Aprendizaje profundo"
+ "Redes neuronales profundas (arquitectura transformer, 70B parámetros)" o específico del modelo
 ```
 
 ---
@@ -162,8 +162,8 @@ Nota operacional: Uso limitado a casos de alta complejidad (>100 regulaciones si
 
 **Corrección Requerida**:
 ```markdown
-❌ "ARR: $1.46M"
-✅ "ARR proyectado: $1.46M
+ "ARR: $1.46M"
+ "ARR proyectado: $1.46M
    Supuestos clave:
    - Clientes paying: 120 (conversión 2.4% de 5,000 freemium)
    - ARPU: $1,017/mes (mix: 40% Starter $99, 35% Professional $499, 20% Business $1,499, 5% Enterprise $2,499+)
@@ -225,20 +225,20 @@ Ajuste por diferenciación tecnológica: +20% = 15x múltiplo optimista"
 **Ejemplos y correcciones**:
 
 ```markdown
-❌ "HALLAZGOS CRÍTICOS" (all caps)
-✅ "Hallazgos Clave"
+ "HALLAZGOS CRÍTICOS" (all caps)
+ "Hallazgos Clave"
 
-❌ "productos comercializables de clase mundial"
-✅ "productos comercializables de nivel empresarial"
+ "productos comercializables de clase mundial"
+ "productos comercializables de nivel empresarial"
 
-❌ "score más alto jamás registrado"
-✅ "score más alto en benchmark interno (n=247, Oct 2025)"
+ "score más alto jamás registrado"
+ "score más alto en benchmark interno (n=247, Oct 2025)"
 
-❌ "revolución en el mercado"
-✅ "innovación significativa en el sector"
+ "revolución en el mercado"
+ "innovación significativa en el sector"
 
-❌ "capacidades sin precedentes"
-✅ "capacidades diferenciadas" o "capacidades avanzadas"
+ "capacidades sin precedentes"
+ "capacidades diferenciadas" o "capacidades avanzadas"
 ```
 
 #### 8.2 Adjetivos Innecesarios
@@ -260,23 +260,23 @@ Documento menciona "Quantum ML" y "Post-Quantum Crypto" como si fueran la misma 
 **SON DOS COSAS DIFERENTES**:
 
 1. **Post-Quantum Cryptography** (CRYSTALS-Dilithium, Kyber, Falcon, SPHINCS+):
-   - ✅ VERIFICADO 100% REAL
-   - ✅ Estándares NIST 2024 (FIPS 203/204/205)
-   - ✅ Protege contra ataques de computadoras cuánticas futuras
-   - ✅ NO requiere hardware cuántico
-   - ✅ USO: Seguridad y encriptación
+   -  VERIFICADO 100% REAL
+   -  Estándares NIST 2024 (FIPS 203/204/205)
+   -  Protege contra ataques de computadoras cuánticas futuras
+   -  NO requiere hardware cuántico
+   -  USO: Seguridad y encriptación
 
 2. **"Quantum ML"** (sin verificar):
-   - ⚠️ AMBIGUO - requiere verificación
-   - ⚠️ Puede ser: API cuántica real, quantum-inspired, o mislabeling
-   - ⚠️ USO (si existe): Optimización y ML
+   -  AMBIGUO - requiere verificación
+   -  Puede ser: API cuántica real, quantum-inspired, o mislabeling
+   -  USO (si existe): Optimización y ML
 
 **Corrección Requerida en Todos los Documentos**:
 
 Separar claramente en dos secciones:
 
 ```markdown
-### Seguridad: Criptografía Post-Cuántica ✅
+### Seguridad: Criptografía Post-Cuántica 
 AION-CR implementa estándares NIST 2024 para protección contra amenazas de computadoras cuánticas (previstas 2030-2035):
 - ML-KEM (CRYSTALS-Kyber): Encapsulación de claves
 - ML-DSA (CRYSTALS-Dilithium5): Firmas digitales
@@ -285,7 +285,7 @@ AION-CR implementa estándares NIST 2024 para protección contra amenazas de com
 
 Estos algoritmos NO requieren hardware cuántico. Son algoritmos clásicos diseñados para resistir ataques de computadoras cuánticas futuras.
 
-### Optimización: [PENDIENTE VERIFICACIÓN] ⚠️
+### Optimización: [PENDIENTE VERIFICACIÓN] 
 [Aquí iría "Quantum ML" SOLO si se verifica implementación real]
 [Mientras tanto, ELIMINAR o usar "Optimización avanzada" genérica]
 ```
@@ -342,7 +342,7 @@ C) Lanzamiento dual (Q3 2026) - requiere +40% recursos
 
 1. **ELIMINAR TODOS LOS EMOJIS**
    ```bash
-   find D:/Ectus-R -name "*.md" -exec sed -i 's/[⭐🚀💼📊🎯✅❌⚠️]//g' {} \;
+   find D:/Ectus-R -name "*.md" -exec sed -i 's/[⭐]//g' {} \;
    ```
 
 2. **ACLARAR "QUANTUM ML"**

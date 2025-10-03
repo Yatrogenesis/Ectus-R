@@ -41,7 +41,7 @@
       "score": 245,
       "max": 255,
       "percentage": 96.1,
-      "weight": 0.20,
+      "weight": 0.2,
       "weighted_contribution": 49.0,
       "level": "HyperAuto",
       "key_capabilities": [
@@ -129,7 +129,7 @@
       "score": 238,
       "max": 255,
       "percentage": 93.3,
-      "weight": 0.10,
+      "weight": 0.1,
       "weighted_contribution": 23.8,
       "level": "HyperAuto",
       "key_capabilities": [
