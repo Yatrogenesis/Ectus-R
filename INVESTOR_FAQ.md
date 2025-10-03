@@ -21,11 +21,11 @@
 
 ## PREGUNTAS TÉCNICAS
 
-### Q1: ¿Qué significa un score AGI-AEF de 241.5/255? ¿Es creíble?
+### Q1: ¿Qué significa un score AGI-AEF de 245-248/255? ¿Es creíble?
 
 **R**: El score AGI-AEF (Artificial General Intelligence - Autonomous Evaluation Framework) mide autonomía en 12 dimensiones ponderadas en escala 0-255.
 
-**Desglose AION-CR (241.5/255)**:
+**Desglose AION-CR (245-248/255)**:
 - Autonomía Operacional: 27.8/28 (99%)
 - Adaptabilidad Cognitiva: 26.9/27 (99.6%)
 - Razonamiento Simbólico: 24.7/25 (98.8%)
@@ -33,7 +33,7 @@
 - ... (12 dimensiones total)
 
 **Contexto de mercado**:
-- AION-CR: 241.5/255 (94.7%)
+- AION-CR: 245-248/255 (94.7%)
 - AION-R: 232.8/255 (91.3%)
 - Ectus-R: 173.0/255 (67.8%)
 - **Promedio competidores estimado**: 120-180 (basado en análisis público de capacidades)
@@ -82,14 +82,14 @@ No hacemos ese claim. Decimos: "Mayor score en nuestro benchmark interno (n=247,
 
 | Métrica | OneTrust | AION-CR | Ventaja |
 |---------|----------|---------|---------|
-| **Cobertura Regulatoria** | ~130 regulaciones | 647 regulaciones | 5x más |
+| **Cobertura Regulatoria** | ~130 regulaciones | ~900-1,000 regulaciones | 5x más |
 | **Jurisdicciones** | ~20 países | 25+ países | +25% |
 | **Arquitectura** | Monolito tradicional | Kubernetes microservices | Cloud-native |
 | **Lenguaje** | Java/Node.js | Rust | 3-10x performance |
 | **Post-Quantum Crypto** | No | Sí (NIST 2024) | 2-3 años ventaja |
 | **Quantum-Inspired Optimization** | No | Sí (VQE, QAOA) | Único en mercado |
 | **AI/ML** | Rule-based tradicional | LLM + ML avanzado | Generación AI-native |
-| **Score AGI-AEF** | No evaluado | 241.5/255 | N/A |
+| **Score AGI-AEF** | No evaluado | 245-248/255 | N/A |
 
 **Modelo de Negocio**:
 - OneTrust: Enterprise-only (> $50K/año deals)
@@ -107,7 +107,7 @@ No competimos head-to-head inicialmente. Target:
 
 ---
 
-### Q4: ¿624,024 LOC es mucho o poco? ¿Cómo se compara?
+### Q4: ¿639,409 LOC es mucho o poco? ¿Cómo se compara?
 
 **R**: **Es significativo para startup, validación de madurez técnica**.
 
@@ -123,12 +123,12 @@ No competimos head-to-head inicialmente. Target:
 
 **Desglose**:
 - AION-R: 294,187 LOC (plataforma base)
-- AION-CR: 187,471 LOC (compliance)
+- AION-CR: 202,856 LOC (compliance)
 - Ectus-R: 142,366 LOC (code gen)
 
 **Valoración por LOC**:
 - Industry benchmark: $50-100/LOC para Rust enterprise-grade (COCOMO II 2024)
-- AION: 624,024 LOC × $50-100 = **$31-62M en activo IP**
+- AION: 639,409 LOC × $50-100 = **$31-62M en activo IP**
 
 **Calidad > Cantidad**:
 - Rust: Menos LOC necesarias vs lenguajes de alto nivel (factor 0.5-0.7x vs Python)
@@ -253,7 +253,7 @@ No competimos head-to-head inicialmente. Target:
 |-------------------|-------------------|--------------------------|
 | Rule-based | ML-assisted | **AI-native** |
 | Monolitos | Cloud-first | **Kubernetes-native** |
-| Manual workflows | Semi-automation | **Hyper-autonomous (241.5/255)** |
+| Manual workflows | Semi-automation | **Hyper-autonomous (245-248/255)** |
 | Reactive compliance | Proactive monitoring | **Predictive + Auto-remediation** |
 | Classical crypto | Standard encryption | **Post-quantum crypto (NIST 2024)** |
 | Classical algorithms | Basic optimization | **Quantum-inspired optimization** |
@@ -480,7 +480,7 @@ Algoritmos basados en principios de mecánica cuántica (superposition, entangle
 
 **Aplicación en AION-CR**:
 - **Problema**: Resolver conflictos regulatorios multi-jurisdiccionales (NP-hard)
-- **Ejemplo**: 647 regulaciones × 25 jurisdicciones = espacio de soluciones exponencial
+- **Ejemplo**: ~900-1,000 regulaciones × 90-100 jurisdicciones = espacio de soluciones exponencial
 - **Solución clásica**: Heurísticas (subóptimas), genetic algorithms (lentos)
 - **Solución quantum-inspired**: VQE/QAOA simulado (10-100x más rápido, soluciones near-optimal)
 
@@ -939,7 +939,7 @@ Priority 4: Self-hosted Llama 3 (if all external fail)
 
 **R**:
 
-**AION-CR score 241.5/255 (94.7%) en framework AGI-AEF, 5-6x más regulaciones que competidores (647 vs ~100-130), post-quantum crypto (NIST 2024), y quantum-inspired optimization (1,112 LOC verificadas). Esto no es una startup de software normal. Es un technological leap en un mercado de $50B+ que está explotando por regulación AI/data privacy.**
+**AION-CR score 245-248/255 (94.7%) en framework AGI-AEF, 5-6x más regulaciones que competidores (647 vs ~100-130), post-quantum crypto (NIST 2024), y quantum-inspired optimization (1,112 LOC verificadas). Esto no es una startup de software normal. Es un technological leap en un mercado de $50B+ que está explotando por regulación AI/data privacy.**
 
 **Si crees que**:
 1. AI-native compliance va a comer compliance tradicional (estamos seguros que sí)
