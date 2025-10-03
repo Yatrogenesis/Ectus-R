@@ -22,7 +22,7 @@ thiserror = "1.0"
 clap = { version = "4.0", features = ["derive"] }
 
 # Database and persistence
-sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "json", "uuid", "chrono"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-native-tls", "postgres", "json", "uuid", "chrono"] }
 redis = { version = "0.24", features = ["tokio-comp", "json"] }
 
 # Encryption and security
@@ -42,7 +42,7 @@ reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 
 # Configuration and validation
 config = "0.14"
-validator = { version = "0.18", features = ["derive"] }
+validator = { version = "0.20", features = ["derive"] }
 regex = "1.10"
 
 # Date/time handling

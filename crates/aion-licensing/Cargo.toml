@@ -25,9 +25,9 @@ hyper = "1.0"
 reqwest = { version = "0.11", features = ["json", "rustls-tls"] }
 
 # Database and persistence
-sqlx = { version = "0.7", features = ["runtime-tokio-native-tls", "postgres", "json", "uuid", "chrono", "bigdecimal"] }
+sqlx = { version = "0.8", features = ["runtime-tokio-native-tls", "postgres", "json", "uuid", "chrono", "bigdecimal"] }
 redis = { version = "0.24", features = ["tokio-comp", "json"] }
-sea-orm = { version = "0.12", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
+sea-orm = { version = "2.0.0-rc", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"] }
 
 # Payment processing (using async-stripe for Stripe API support)
 async-stripe = { version = "0.39", optional = true, features = ["runtime-tokio-hyper"] }
@@ -50,7 +50,7 @@ rust_decimal_macros = "1.33"
 
 # Configuration and validation
 config = "0.14"
-validator = { version = "0.18", features = ["derive"] }
+validator = { version = "0.20", features = ["derive"] }
 regex = "1.10"
 
 # Email and notifications
