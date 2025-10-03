@@ -29,10 +29,10 @@ aws-sdk-ecs = "1.98"
 aws-sdk-eks = "1.108"
 
 # Google Cloud
-google-cloud-auth = "0.13"
-google-cloud-storage = "0.15"
+google-cloud-auth = "1.0"
+google-cloud-storage = "1.0"
 # google-cloud-compute = "0.4"  # Package not found on crates.io
-google-cloud-pubsub = "0.19"
+google-cloud-pubsub = "0.30"
 gcp_auth = "0.10"
 
 # Azure SDK
