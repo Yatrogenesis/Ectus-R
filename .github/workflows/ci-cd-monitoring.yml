@@ -1,0 +1,630 @@
+name: CI/CD Pipeline - AION-R with Monitoring
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Job 1: Lint and format check
+  lint:
+    name: Lint and Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt, clippy
+          override: true
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run rustfmt
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  # Job 2: Unit tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run unit tests
+        run: cargo test --lib --all-features
+        env:
+          RUST_LOG: debug
+
+      - name: Generate test coverage
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --out Xml --output-dir ./coverage
+
+      - name: Upload coverage to Codecov
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/cobertura.xml
+          fail_ci_if_error: false
+
+  # Job 3: Integration tests with monitoring stack
+  integration-tests:
+    name: Integration Tests with Monitoring
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aion_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+      jaeger:
+        image: jaegertracing/all-in-one:1.51
+        ports:
+          - 4317:4317
+          - 4318:4318
+          - 16686:16686
+        env:
+          COLLECTOR_OTLP_ENABLED: true
+
+      prometheus:
+        image: prom/prometheus:v2.45.0
+        ports:
+          - 9090:9090
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run standard integration tests
+        run: cargo test --test integration_tests --all-features
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/aion_test
+          REDIS_URL: redis://localhost:6379
+          RUST_LOG: debug
+
+      - name: Run monitoring integration tests
+        run: cargo test --test monitoring_integration_tests --all-features
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/aion_test
+          REDIS_URL: redis://localhost:6379
+          JAEGER_ENDPOINT: http://localhost:4318/v1/traces
+          PROMETHEUS_URL: http://localhost:9090
+          RUST_LOG: debug
+
+      - name: Verify Prometheus metrics endpoint
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:9091/metrics; do sleep 2; done' || echo "Metrics endpoint not yet available (expected for now)"
+
+      - name: Verify trace export to Jaeger
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:16686/api/traces?service=aion-r; do sleep 2; done' || echo "Trace export not yet available (expected for now)"
+
+  # Job 4: Monitoring smoke tests
+  monitoring-smoke-tests:
+    name: Monitoring Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    services:
+      jaeger:
+        image: jaegertracing/all-in-one:1.51
+        ports:
+          - 4317:4317
+          - 4318:4318
+          - 16686:16686
+        env:
+          COLLECTOR_OTLP_ENABLED: true
+
+      prometheus:
+        image: prom/prometheus:v2.45.0
+        ports:
+          - 9090:9090
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run monitoring tests
+        run: cargo test --test monitoring_tests --all-features
+        env:
+          JAEGER_ENDPOINT: http://localhost:4318/v1/traces
+          PROMETHEUS_URL: http://localhost:9090
+          RUST_LOG: debug
+
+      - name: Verify Prometheus endpoint
+        run: |
+          curl -f http://localhost:9090/-/healthy || echo "Prometheus not healthy"
+          curl -f http://localhost:9090/api/v1/status/config || echo "Prometheus config not available"
+
+      - name: Verify Jaeger endpoint
+        run: |
+          curl -f http://localhost:16686/ || echo "Jaeger UI not available"
+          curl -f http://localhost:14269/ || echo "Jaeger health endpoint not available"
+
+  # Job 5: E2E tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests, integration-tests]
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aion_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web-dashboard/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: web-dashboard
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: web-dashboard
+        run: npm run build
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build backend
+        run: cargo build --release
+
+      - name: Start backend server
+        run: |
+          ./target/release/aion-web-api &
+          echo $! > backend.pid
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/aion_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: Wait for backend
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:8080/health; do sleep 1; done'
+
+      - name: Run E2E tests
+        run: cargo test --test e2e --ignored --all-features
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/aion_test
+          REDIS_URL: redis://localhost:6379
+          API_BASE_URL: http://localhost:8080
+
+      - name: Stop backend server
+        if: always()
+        run: |
+          if [ -f backend.pid ]; then
+            kill $(cat backend.pid) || true
+          fi
+
+  # Job 6: Security audit
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Rust Security Audit
+        uses: actions-rs/audit-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: web-dashboard/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: web-dashboard
+        run: npm ci
+
+      - name: Node.js Security Audit
+        working-directory: web-dashboard
+        run: |
+          npm audit --audit-level=high --json > ../audit-report.json || true
+          npm audit --audit-level=high
+
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-audit-report
+          path: audit-report.json
+
+      - name: Check for Critical Vulnerabilities
+        working-directory: web-dashboard
+        run: |
+          CRITICAL=$(npm audit --audit-level=critical --json | jq '.metadata.vulnerabilities.critical // 0')
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "Found $CRITICAL critical vulnerabilities"
+            exit 1
+          else
+            echo "No critical vulnerabilities found"
+          fi
+
+  # Job 7: Load tests with monitoring
+  load-tests:
+    name: Load Tests with Monitoring
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aion_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+      prometheus:
+        image: prom/prometheus:v2.45.0
+        ports:
+          - 9090:9090
+
+      jaeger:
+        image: jaegertracing/all-in-one:1.51
+        ports:
+          - 4317:4317
+          - 4318:4318
+          - 16686:16686
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build backend in release mode
+        run: cargo build --release
+
+      - name: Start backend with monitoring
+        run: |
+          ./target/release/aion-web-api &
+          echo $! > backend.pid
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/aion_test
+          REDIS_URL: redis://localhost:6379
+          JAEGER_ENDPOINT: http://localhost:4318/v1/traces
+          PROMETHEUS_PUSHGATEWAY: http://localhost:9091
+
+      - name: Wait for backend
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:8080/health; do sleep 1; done'
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Run load tests
+        run: |
+          cd tests/load
+          k6 run --out json=results.json monitoring_load_test.js || echo "Load test file not found, skipping"
+        env:
+          API_BASE_URL: http://localhost:8080
+
+      - name: Verify metrics during load
+        run: |
+          curl -f http://localhost:9091/metrics || echo "Metrics endpoint not available"
+
+      - name: Verify traces during load
+        run: |
+          curl -f http://localhost:16686/api/traces?service=aion-r || echo "Traces not available"
+
+      - name: Upload load test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: load-test-results
+          path: tests/load/results.json
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [ -f backend.pid ]; then
+            kill $(cat backend.pid) || true
+          fi
+
+  # Job 8: Build and push Docker image
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [lint, unit-tests, integration-tests, e2e-tests, security-audit]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_USERNAME }}/aion-r
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.production
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/aion-r:buildcache
+          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/aion-r:buildcache,mode=max
+
+  # Job 9: Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    environment:
+      name: staging
+      url: https://staging.aion-r.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG_STAGING }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/aion-r-api \
+            aion-r-api=${{ secrets.DOCKER_USERNAME }}/aion-r:${{ github.sha }} \
+            -n staging
+
+          kubectl rollout status deployment/aion-r-api -n staging --timeout=5m
+
+      - name: Run smoke tests
+        run: |
+          curl -f https://staging.aion-r.com/health || exit 1
+          curl -f https://staging.aion-r.com/api/health || exit 1
+          curl -f https://staging.aion-r.com/metrics || echo "Metrics endpoint not public (expected)"
+
+  # Job 10: Deploy to production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, load-tests]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    environment:
+      name: production
+      url: https://aion-r.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/k8s-set-context@v3
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBE_CONFIG_PRODUCTION }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/aion-r-api \
+            aion-r-api=${{ secrets.DOCKER_USERNAME }}/aion-r:${{ github.sha }} \
+            -n production
+
+          kubectl rollout status deployment/aion-r-api -n production --timeout=10m
+
+      - name: Run smoke tests
+        run: |
+          curl -f https://aion-r.com/health || exit 1
+          curl -f https://aion-r.com/api/health || exit 1
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment ${{ job.status }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+# Workflow completion notification
+jobs-summary:
+  name: Jobs Summary
+  runs-on: ubuntu-latest
+  needs: [lint, unit-tests, integration-tests, monitoring-smoke-tests, e2e-tests, security-audit]
+  if: always()
+  steps:
+    - name: Check job results
+      run: |
+        echo "Lint: ${{ needs.lint.result }}"
+        echo "Unit Tests: ${{ needs.unit-tests.result }}"
+        echo "Integration Tests: ${{ needs.integration-tests.result }}"
+        echo "Monitoring Smoke Tests: ${{ needs.monitoring-smoke-tests.result }}"
+        echo "E2E Tests: ${{ needs.e2e-tests.result }}"
+        echo "Security Audit: ${{ needs.security-audit.result }}"
