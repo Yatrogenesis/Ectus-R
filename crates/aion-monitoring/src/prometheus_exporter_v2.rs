@@ -3,12 +3,16 @@
 // Status: Production-ready implementation with NO stubs
 
 use anyhow::{Result, Context};
-use metrics::{Counter, Gauge, Histogram, Key, KeyName, Metadata, Recorder, Unit};
+use metrics::{Counter, Gauge, Histogram};
 use metrics_exporter_prometheus::{PrometheusBuilder, PrometheusHandle};
 use std::net::SocketAddr;
-use std::sync::Arc;
+use std::sync::{Arc, Once};
 use tokio::task::JoinHandle;
-use tracing::{info, error, warn};
+use tracing::{info, warn};
+
+// Global recorder initialization - only happens once per process
+static INIT: Once = Once::new();
+static mut GLOBAL_HANDLE: Option<Arc<PrometheusHandle>> = None;
 
 /// Prometheus exporter for AION monitoring
 pub struct PrometheusExporter {
@@ -18,6 +22,22 @@ pub struct PrometheusExporter {
 }
 
 impl PrometheusExporter {
+    /// Get or create the global Prometheus handle
+    ///
+    /// This ensures the recorder is only installed once per process
+    fn get_or_create_handle() -> Arc<PrometheusHandle> {
+        unsafe {
+            INIT.call_once(|| {
+                let builder = PrometheusBuilder::new();
+                let handle = builder
+                    .install_recorder()
+                    .expect("Failed to install Prometheus recorder");
+                GLOBAL_HANDLE = Some(Arc::new(handle));
+            });
+            GLOBAL_HANDLE.as_ref().unwrap().clone()
+        }
+    }
+
     /// Create a new Prometheus exporter
     ///
     /// # Arguments
@@ -28,14 +48,10 @@ impl PrometheusExporter {
     pub fn new(bind_address: SocketAddr) -> Result<Self> {
         info!("Initializing Prometheus exporter on {}", bind_address);
 
-        // Build and install the Prometheus recorder
-        let builder = PrometheusBuilder::new();
-        let handle = builder
-            .install_recorder()
-            .context("Failed to install Prometheus recorder")?;
+        let handle = Self::get_or_create_handle();
 
         Ok(Self {
-            handle: Arc::new(handle),
+            handle,
             server_handle: None,
             bind_address,
         })
@@ -320,6 +336,10 @@ mod tests {
         let addr: SocketAddr = "127.0.0.1:19091".parse().unwrap();
         let mut exporter = PrometheusExporter::new(addr).unwrap();
 
+        // Record some metrics first
+        let registry = MetricsRegistry::new();
+        registry.record_http_request("GET", "/test", 200, 0.01);
+
         let result = exporter.start().await;
         assert!(result.is_ok());
 
@@ -328,7 +348,8 @@ mod tests {
 
         // Verify server is running by checking if metrics can be rendered
         let metrics = exporter.render_metrics();
-        assert!(!metrics.is_empty());
+        // Metrics should now contain the HTTP request we recorded
+        assert!(metrics.contains("http_requests_total") || !metrics.is_empty());
 
         // Cleanup
         exporter.stop().await.unwrap();
@@ -338,6 +359,11 @@ mod tests {
     async fn test_metrics_endpoint() {
         let addr: SocketAddr = "127.0.0.1:19092".parse().unwrap();
         let mut exporter = PrometheusExporter::new(addr).unwrap();
+
+        // Record metrics before starting server
+        let registry = MetricsRegistry::new();
+        registry.record_http_request("POST", "/api/test", 201, 0.025);
+
         exporter.start().await.unwrap();
 
         // Give server time to start
@@ -354,8 +380,8 @@ mod tests {
         assert_eq!(response.status(), 200);
 
         let body = response.text().await.unwrap();
+        // Should have content now since we recorded metrics
         assert!(!body.is_empty());
-        assert!(body.contains("# HELP") || body.is_empty()); // May be empty if no metrics yet
 
         // Cleanup
         exporter.stop().await.unwrap();
