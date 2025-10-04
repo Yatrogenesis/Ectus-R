@@ -19,16 +19,32 @@ tracing-subscriber = { version = "0.3", features = ["env-filter", "json", "chron
 anyhow = "1.0"
 thiserror = "1.0"
 
-# Web server for WebSocket
+# Web server for WebSocket and HTTP metrics
 axum = { version = "0.7", features = ["ws"] }
 tower = "0.5"
 futures = "0.3"
 rand = "0.8"
 
-# Collections - using standard library
+# Prometheus metrics - ROADMAP Task 1.1
+metrics = "0.22"
+metrics-exporter-prometheus = "0.13"
+
+# OpenTelemetry tracing - ROADMAP Task 1.5 (Phase 2)
+# Note: OpenTelemetry integration deferred to Phase 2
+# opentelemetry = { version = "0.21", features = ["rt-tokio"] }
+# opentelemetry-jaeger = "0.20"
+# tracing-opentelemetry = "0.21"
+
+# HTTP client for tests
+reqwest = { version = "0.12", optional = true }
 
 [dev-dependencies]
 tokio-test = "0.4"
+reqwest = "0.12"
+
+[features]
+default = []
+testing = ["reqwest"]
 
 [[bin]]
 name = "aion-test-runner"
