@@ -43,6 +43,7 @@ pub struct AppState {
     pub ai_service: Arc<AIService>,
     pub deployment_service: Arc<DeploymentService>,
     pub auth_service: Arc<AuthService>,
+    pub metrics_registry: Arc<aion_monitoring::MetricsRegistry>,
     // pub optimization_engine: Arc<RwLock<OptimizationEngine>>,
     pub config: AppConfig,
 }
@@ -128,6 +129,16 @@ async fn main() -> anyhow::Result<()> {
         }
     );
 
+    // Initialize Prometheus exporter for metrics collection
+    println!("📊 Initializing Prometheus metrics exporter...");
+    let prometheus_addr: SocketAddr = "0.0.0.0:9090".parse()?;
+    let mut prometheus_exporter = aion_monitoring::PrometheusExporter::new(prometheus_addr)?;
+    prometheus_exporter.start().await?;
+
+    let metrics_registry = Arc::new(aion_monitoring::MetricsRegistry::new());
+
+    println!("✅ Prometheus metrics exporter started on http://0.0.0.0:9090/metrics");
+
     // Initialize optimization engine
     // println!("🧠 Initializing optimization engine...");
     // let optimization_config = OptimizationConfig::default();
@@ -143,6 +154,7 @@ async fn main() -> anyhow::Result<()> {
         ai_service,
         deployment_service,
         auth_service,
+        metrics_registry,
         // optimization_engine,
         config: config.clone(),
     };
@@ -200,6 +212,10 @@ fn create_router(state: AppState) -> Router {
                         .make_span_with(DefaultMakeSpan::default().include_headers(true)),
                 )
         )
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            middleware::metrics_middleware,
+        ))
         .with_state(state)
 }
 

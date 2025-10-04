@@ -50,9 +50,9 @@ impl SecretsManager {
     pub async fn initialize(&mut self) -> Result<()> {
         info!("Initializing secrets manager with provider: {:?}", self.provider);
 
-        match &self.provider {
+        match self.provider.clone() {
             SecretProvider::Environment => self.load_from_environment()?,
-            SecretProvider::File(path) => self.load_from_file(path).await?,
+            SecretProvider::File(path) => self.load_from_file(&path).await?,
             #[cfg(feature = "aws")]
             SecretProvider::AwsSecretsManager => self.load_from_aws().await?,
             #[cfg(feature = "vault")]
