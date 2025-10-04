@@ -79,6 +79,130 @@ Input → Preprocessing → Model Selection → Inference → Postprocessing →
 Validation → Tokenization → Load Model → Execute → Format Result → Cache
 ```
 
+## Monitoring & Observability Architecture
+
+### Monitoring Stack
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    AION-R Observability Platform                     │
+├─────────────────────────────────────────────────────────────────────┤
+│  Metrics (Prometheus) │ Traces (Jaeger) │ Logs (Structured Logging) │
+├─────────────────────────────────────────────────────────────────────┤
+│             Visualization & Alerting (Grafana)                       │
+├─────────────────────────────────────────────────────────────────────┤
+│  PagerDuty │ Slack │ Email  ← AlertManager ← Alert Rules           │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Metrics Collection (`aion-monitoring`)
+**Production-Ready Prometheus Integration:**
+- **HTTP Metrics:** Request count, duration, error rate, active connections
+- **AI Metrics:** Inference requests, duration, token usage, model loading, active sessions
+- **Database Metrics:** Query duration, connection pool stats, slow queries, transactions
+- **System Metrics:** CPU, memory, disk usage
+
+**Automatic Instrumentation:**
+- RAII-based trackers for automatic metrics recording
+- InferenceTracker: Tracks AI inference lifecycle
+- QueryTracker: Tracks database query execution
+- TransactionTracker: Tracks database transactions
+
+**Metrics Endpoint:** `http://localhost:9090/metrics`
+
+### Distributed Tracing (`aion-monitoring::tracing`)
+**OpenTelemetry + Jaeger Integration:**
+- **Trace Export:** OTLP protocol (gRPC/HTTP)
+- **Sampling:** Configurable per-service (1%-100%)
+- **Context Propagation:** Automatic trace context propagation
+- **Span Types:** HTTP requests, database queries, AI inference, external API calls
+
+**Span Helpers:**
+```rust
+create_http_span(method, path, status)
+create_db_span(operation, table)
+create_ai_span(model, input_type)
+create_external_api_span(service, operation)
+```
+
+**Jaeger UI:** `http://jaeger.aion.internal:16686`
+
+### Structured Logging (`aion-core::logging`)
+**Multi-Format Logging:**
+- **Formats:** JSON (production), Pretty (development), Compact
+- **Correlation IDs:** UUID-based request and correlation tracking
+- **Sensitive Filtering:** Automatic redaction of passwords, tokens, API keys
+- **Log Sampling:** Configurable sampling for high-volume endpoints
+
+**Log Configuration:**
+```rust
+LoggingConfig {
+    level: "info",
+    format: LogFormat::Json,
+    sensitive_fields: ["password", "token", "api_key"],
+    sample_rate: 1.0  // 100%
+}
+```
+
+### Alerting System
+**15 Production-Ready Alert Rules:**
+
+**API Alerts:**
+- HighHTTPErrorRate (>5% for 5min) - Critical
+- HighAPILatency (p95 >1s for 10min) - Warning
+- ServiceDown (2min) - Critical
+
+**Database Alerts:**
+- DatabaseConnectionPoolExhausted (>90%) - Critical
+- SlowDatabaseQueries (p95 >2s) - Warning
+- HighDatabaseErrorRate (>1%) - Critical
+
+**AI Engine Alerts:**
+- HighAIInferenceErrors (>10%) - Warning
+- SlowAIInference (p95 >30s) - Warning
+- HighActiveSessions (>100) - Warning
+
+**System Alerts:**
+- HighMemoryUsage (>90%) - Warning
+- HighCPUUsage (>80%) - Warning
+- DiskSpaceLow (<10%) - Critical
+
+**Alert Channels:**
+- PagerDuty: Critical alerts (SEV-1)
+- Slack: All alerts (#platform-alerts)
+- Email: Warning and above
+
+### Dashboards (Grafana)
+**AION Overview Dashboard:**
+- Request Rate (gauge)
+- Error Rate (gauge with thresholds)
+- API Latency (p50/p95/p99 time series)
+- Database Connections (time series)
+- AI Inference Duration by model (time series)
+- CPU Usage (gauge)
+- Memory Usage (gauge)
+
+**Access:** `http://grafana.aion.internal:3000`
+
+### Incident Response
+**Complete Incident Management:**
+- 4-tier severity system (SEV-1 to SEV-4)
+- Response procedures (Detection → Triage → Mitigation → Resolution)
+- Escalation paths (4-tier technical and management)
+- Communication protocols (internal and external)
+- Post-incident review templates with 5 Whys
+
+**Documentation:** `/docs/operations/incident-response.md`
+
+### On-Call Procedures
+**24/7 Coverage:**
+- 1-week rotation schedule
+- Response time SLAs by severity
+- 4-tier escalation structure
+- Handoff procedures with checklists
+- Compensation and time-off policies
+
+**Documentation:** `/docs/operations/on-call.md`
+
 ## Deployment Architecture
 
 ### Container Architecture
@@ -91,6 +215,8 @@ Validation → Tokenization → Load Model → Execute → Format Result → Cac
 │ AION Server Pods (3+) │ AION Worker Pods (2+) │ Background Services │
 ├─────────────────────────────────────────────────────────────────────┤
 │ Stateful Services: PostgreSQL │ Redis │ Elasticsearch │ Monitoring  │
+├─────────────────────────────────────────────────────────────────────┤
+│ Monitoring Stack: Prometheus │ Jaeger │ Grafana │ AlertManager     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -98,6 +224,7 @@ Validation → Tokenization → Load Model → Execute → Format Result → Cac
 - Application Tier: Multiple server instances with auto-scaling
 - Database Tier: PostgreSQL with replication and failover
 - Cache Tier: Redis with clustering and persistence
+- Monitoring Tier: Prometheus with 30-day retention, Jaeger with 7-day retention
 - Load Balancing: NGINX with health checks and circuit breakers
 
 ## Security Architecture
