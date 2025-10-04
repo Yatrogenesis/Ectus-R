@@ -1,17 +1,17 @@
-# 🚀 Links para Probar - Ectus-R
+#  Links para Probar - Ectus-R
 
-## ✅ URLs Funcionando AHORA (Cloudflare Pages)
+##  URLs Funcionando AHORA (Cloudflare Pages)
 
 ### Landing Page Comercial
 ```
-✅ https://ectus-r-creator.pages.dev/landing.html
+ https://ectus-r-creator.pages.dev/landing.html
 ```
 **Status**: LIVE y FUNCIONANDO
 **Uso**: Comparte este link para demos y promoción
 
 ### Demo Privado Funcional
 ```
-✅ https://ectus-r-creator.pages.dev/demo.html
+ https://ectus-r-creator.pages.dev/demo.html
 ```
 **Status**: LIVE y FUNCIONANDO
 **Acceso directo**: https://ectus-r-creator.pages.dev/demo
@@ -22,9 +22,9 @@ Usuario: demo_user
 Password: SecureDemo2025!
 ```
 
-### 🧪 Test de Conexión Demo
+###  Test de Conexión Demo
 ```
-✅ https://ectus-r-creator.pages.dev/test-demo-connection.html
+ https://ectus-r-creator.pages.dev/test-demo-connection.html
 ```
 **Status**: LIVE - Diagnóstico automático
 **Uso**: Verifica que API y demo estén conectados correctamente
@@ -39,7 +39,7 @@ Password: SecureDemo2025!
 
 ---
 
-## 🔗 URLs Alternativas (GitHub Pages)
+##  URLs Alternativas (GitHub Pages)
 
 ```
 https://yatrogenesis.github.io/Ectus-R/landing.html
@@ -48,11 +48,11 @@ https://yatrogenesis.github.io/Ectus-R/demo.html
 
 ---
 
-## 🌐 Custom Domains (DNS Configurado)
+##  Custom Domains (DNS Configurado)
 
 ### ectus.avermex.com
 ```
-DNS: ✅ Configurado (CNAME → ectus-r-creator.pages.dev)
+DNS:  Configurado (CNAME → ectus-r-creator.pages.dev)
 Propagación: ⏳ 0-48 horas (usualmente <1 hora)
 
 Probar:
@@ -62,7 +62,7 @@ https://ectus.avermex.com/demo.html
 
 ### creator.avermex.com
 ```
-DNS: ✅ Configurado (CNAME → yatrogenesis.github.io)
+DNS:  Configurado (CNAME → yatrogenesis.github.io)
 Status: ⏳ Requiere configuración en Cloudflare Dashboard
 
 Actualmente redirige a worker anterior
@@ -70,7 +70,7 @@ Actualmente redirige a worker anterior
 
 ---
 
-## 🧪 Test de API Backend
+##  Test de API Backend
 
 ### Health Check
 ```bash
@@ -91,11 +91,11 @@ curl -X POST https://ectus-r-demo.pako-molina.workers.dev/api/demo/auth \
 
 ---
 
-## 📱 Links para Compartir
+##  Links para Compartir
 
 ### Para Clientes (USAR ESTE)
 ```
-🚀 Demo de Ectus-R - Generación de Código con IA
+ Demo de Ectus-R - Generación de Código con IA
 https://ectus-r-creator.pages.dev/landing.html
 
 Prueba el demo en vivo:
@@ -105,11 +105,11 @@ Usuario: demo_user | Password: SecureDemo2025!
 
 ### Para Promoción en Redes
 ```
-🎯 Transforma ideas en código production-ready con IA
+ Transforma ideas en código production-ready con IA
 
-✅ 10x más rápido
-✅ 95% test coverage
-✅ 100% seguridad OWASP
+ 10x más rápido
+ 95% test coverage
+ 100% seguridad OWASP
 
 Demo: https://ectus-r-creator.pages.dev/landing.html
 ```
@@ -133,7 +133,7 @@ Saludos,
 
 ---
 
-## 🎬 Cómo Hacer una Demo
+##  Cómo Hacer una Demo
 
 ### Demo Rápida (2 minutos)
 
@@ -163,7 +163,7 @@ Saludos,
 
 ---
 
-## 📊 Monitoreo
+##  Monitoreo
 
 ### Ver Logs del Worker
 ```bash
@@ -183,7 +183,7 @@ Workers & Pages > ectus-r-creator > Analytics
 
 ---
 
-## 🔄 Verificar DNS Propagación
+##  Verificar DNS Propagación
 
 ```bash
 # Desde cualquier terminal
@@ -201,20 +201,20 @@ https://dnschecker.org/#CNAME/ectus.avermex.com
 
 ---
 
-## ⚡ Quick Links
+##  Quick Links
 
 | Descripción | URL | Status |
 |------------|-----|--------|
-| **Landing Page** | https://ectus-r-creator.pages.dev/landing.html | ✅ LIVE |
-| **Demo Privado** | https://ectus-r-creator.pages.dev/demo.html | ✅ LIVE |
-| **API Status** | https://ectus-r-demo.pako-molina.workers.dev/api/demo/status | ✅ LIVE |
+| **Landing Page** | https://ectus-r-creator.pages.dev/landing.html |  LIVE |
+| **Demo Privado** | https://ectus-r-creator.pages.dev/demo.html |  LIVE |
+| **API Status** | https://ectus-r-demo.pako-molina.workers.dev/api/demo/status |  LIVE |
 | **Custom Domain 1** | https://ectus.avermex.com/landing.html | ⏳ DNS Propagating |
 | **Custom Domain 2** | https://creator.avermex.com/landing.html | ⏳ Needs Config |
-| **GitHub Pages** | https://yatrogenesis.github.io/Ectus-R/landing.html | ✅ LIVE |
+| **GitHub Pages** | https://yatrogenesis.github.io/Ectus-R/landing.html |  LIVE |
 
 ---
 
-## 🎯 LINK PRINCIPAL PARA USAR
+##  LINK PRINCIPAL PARA USAR
 
 ### **Para compartir ahora mismo**:
 ```
@@ -228,4 +228,4 @@ Credenciales: demo_user / SecureDemo2025!
 ```
 
 **Última Actualización**: 2025-09-30 21:45 UTC
-**Status**: ✅ TODOS LOS LINKS OPERACIONALES
+**Status**:  TODOS LOS LINKS OPERACIONALES

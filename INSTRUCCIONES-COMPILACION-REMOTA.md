@@ -5,22 +5,22 @@
 
 ---
 
-## 🎯 OBJETIVO
+##  OBJETIVO
 
 Completar la compilación y testing del workspace AION/Ectus-R en un equipo con más recursos de hardware, específicamente para los crates que requieren compilaciones pesadas o extensas.
 
-## 📊 ESTADO ACTUAL DEL PROYECTO
+##  ESTADO ACTUAL DEL PROYECTO
 
-### ✅ Completado (100% funcional)
+###  Completado (100% funcional)
 El workspace **compila completamente** en modo release:
 ```bash
 cargo build --release
-# ✅ Finished `release` profile [optimized] target(s) in 1m 27s
+#  Finished `release` profile [optimized] target(s) in 1m 27s
 ```
 
 **Todos los 15 crates compilan exitosamente** cuando se compilan juntos como workspace.
 
-### ⚠️ Tareas Pendientes
+### ️ Tareas Pendientes
 
 Aunque el workspace compila, hay **verificaciones y optimizaciones** que necesitan hacerse:
 
@@ -40,7 +40,7 @@ Aunque el workspace compila, hay **verificaciones y optimizaciones** que necesit
 
 ---
 
-## 🚀 SETUP INICIAL
+##  SETUP INICIAL
 
 ### 1. Clonar el repositorio
 
@@ -106,7 +106,7 @@ aion-web-api/
 
 ---
 
-## 🔧 PREREQUISITOS DE SISTEMA
+##  PREREQUISITOS DE SISTEMA
 
 ### Herramientas requeridas:
 
@@ -151,7 +151,7 @@ brew install cmake postgresql openssl
 
 ---
 
-## 📝 TAREAS A REALIZAR
+##  TAREAS A REALIZAR
 
 ### PASO 1: Compilación completa del workspace
 
@@ -162,8 +162,8 @@ cargo clean
 # Compilación release (debería funcionar)
 cargo build --release
 
-# ✅ Esperado: Compilación exitosa en ~2-5 minutos
-# ⚠️ Si falla: Documentar errores y reportar
+#  Esperado: Compilación exitosa en ~2-5 minutos
+# ️ Si falla: Documentar errores y reportar
 ```
 
 ### PASO 2: Verificar warnings future-incompatibility
@@ -300,7 +300,7 @@ cargo build --all-features --release
 
 ---
 
-## 🐛 TROUBLESHOOTING
+##  TROUBLESHOOTING
 
 ### Error: SQLX offline mode
 
@@ -357,7 +357,7 @@ cargo build --release -p aion-auth
 
 ---
 
-## 📋 CHECKLIST DE VERIFICACIÓN
+##  CHECKLIST DE VERIFICACIÓN
 
 Marca cada ítem cuando lo completes:
 
@@ -383,7 +383,7 @@ Marca cada ítem cuando lo completes:
 
 ---
 
-## 📤 REPORTAR RESULTADOS
+##  REPORTAR RESULTADOS
 
 ### 1. Crear archivo de reporte
 
@@ -442,7 +442,7 @@ git push origin master
 
 ---
 
-## 🔄 FIXES COMUNES
+##  FIXES COMUNES
 
 ### Patrón 1: Struct corruption (como BillingEvent)
 
@@ -505,11 +505,11 @@ error[E0502]: cannot borrow as mutable because also borrowed as immutable
 ```rust
 // Antes:
 let value = request.headers().get("Key");
-request.headers_mut().insert("Key", value);  // ❌
+request.headers_mut().insert("Key", value);  // 
 
 // Después:
 let value = request.headers().get("Key")
-    .map(|v| v.to_owned());  // ✅ Clone drops borrow
+    .map(|v| v.to_owned());  //  Clone drops borrow
 request.headers_mut().insert("Key", value);
 ```
 
@@ -517,20 +517,20 @@ request.headers_mut().insert("Key", value);
 
 ---
 
-## 🎓 LECCIONES APRENDIDAS DE SESIÓN ANTERIOR
+##  LECCIONES APRENDIDAS DE SESIÓN ANTERIOR
 
-### ❌ NO HACER:
+###  NO HACER:
 1. **NO usar `sed` para edits multi-línea en Rust** - Corrompe sintaxis y crea duplicados
 2. **NO compilar crates pesados con timeout corto** - AWS SDK necesita >15min
 3. **NO asumir que SQLX offline funciona sin cache** - Requiere PostgreSQL real
 
-### ✅ HACER:
+###  HACER:
 1. **Usar Edit tool de Claude Code** para cambios complejos
 2. **Compilar workspace completo primero** - Resuelve dependencias mejor que individual
 3. **Documentar todo en tiempo real** - Crear archivos .md durante el proceso
 4. **Commit frecuentemente** - Cada fix exitoso merece un commit
 
-### 📊 Métricas de referencia (equipo original):
+###  Métricas de referencia (equipo original):
 - Workspace completo: **1m 27s** (release)
 - aion-plugin-system: **42.75s** (individual)
 - aion-server: **2m 28s** (individual)
@@ -540,7 +540,7 @@ request.headers_mut().insert("Key", value);
 
 ---
 
-## 📞 CONTACTO / PREGUNTAS
+##  CONTACTO / PREGUNTAS
 
 Si encuentras problemas no documentados aquí:
 
@@ -551,30 +551,30 @@ Si encuentras problemas no documentados aquí:
 
 ---
 
-## ✅ ÉXITO ESPERADO
+##  ÉXITO ESPERADO
 
 Al final de tu sesión deberías tener:
 
 ### Código:
-- ✅ Workspace compilando sin warnings
-- ✅ Todos los crates individuales compilando
-- ✅ Tests pasando
-- ✅ Benchmarks ejecutados
+-  Workspace compilando sin warnings
+-  Todos los crates individuales compilando
+-  Tests pasando
+-  Benchmarks ejecutados
 
 ### Documentación:
-- ✅ Archivo de reporte creado
-- ✅ Tiempos documentados
-- ✅ Issues nuevos documentados
-- ✅ Fixes aplicados documentados
+-  Archivo de reporte creado
+-  Tiempos documentados
+-  Issues nuevos documentados
+-  Fixes aplicados documentados
 
 ### Git:
-- ✅ Commits con cambios claros
-- ✅ Push a origin/master
-- ✅ PR creado (opcional pero recomendado)
+-  Commits con cambios claros
+-  Push a origin/master
+-  PR creado (opcional pero recomendado)
 
 ---
 
-## 🚀 BONUS: Testing end-to-end
+##  BONUS: Testing end-to-end
 
 Si todo compila exitosamente y tienes tiempo:
 
@@ -597,7 +597,7 @@ k6 run tests/load/api-load-test.js
 
 ---
 
-**¡Buena suerte con las compilaciones! 🦀**
+**¡Buena suerte con las compilaciones! **
 
 *Generado automáticamente - Sesión 2025-10-02*
 *Equipo: AION Autonomous Software Engineering Platform*

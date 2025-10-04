@@ -237,18 +237,18 @@ Después de configuración completa:
 
 ### 13. Seguridad
 
-- ✅ HTTPS en todas las URLs
-- ✅ CORS configurado
-- ✅ Rate limiting en Workers
-- ✅ Secrets en Wrangler (no en código)
-- ✅ Validación de inputs
-- ✅ Session tokens con expiración
-- ✅ SAT certificate validation
+-  HTTPS en todas las URLs
+-  CORS configurado
+-  Rate limiting en Workers
+-  Secrets en Wrangler (no en código)
+-  Validación de inputs
+-  Session tokens con expiración
+-  SAT certificate validation
 
 ### 14. Próximos Pasos
 
-1. ✅ Configurar secrets de Wrangler
-2. ✅ Desplegar worker a Cloudflare
+1.  Configurar secrets de Wrangler
+2.  Desplegar worker a Cloudflare
 3. ⏳ Configurar DNS (GoDaddy/Cloudflare)
 4. ⏳ Habilitar GitHub Pages
 5. ⏳ Crear video de demostración

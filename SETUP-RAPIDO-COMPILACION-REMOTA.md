@@ -4,10 +4,10 @@
 
 ---
 
-## 🎯 OBJETIVO
+##  OBJETIVO
 Compilar y verificar el workspace AION/Ectus-R en equipo remoto con más recursos.
 
-## ⚡ INICIO RÁPIDO
+##  INICIO RÁPIDO
 
 ### 1. Clonar (30 segundos)
 ```bash
@@ -38,15 +38,15 @@ cat INSTRUCCIONES-COMPILACION-REMOTA.md  # Documento completo de tareas
 # El workspace DEBERÍA compilar sin problemas
 cargo build --release
 
-# ✅ Esperado: Éxito en ~2-5 min
-# ❌ Si falla: Revisar INSTRUCCIONES-COMPILACION-REMOTA.md sección Troubleshooting
+#  Esperado: Éxito en ~2-5 min
+#  Si falla: Revisar INSTRUCCIONES-COMPILACION-REMOTA.md sección Troubleshooting
 ```
 
 ---
 
-## 📋 TAREAS PRIORITARIAS
+##  TAREAS PRIORITARIAS
 
-### ✅ Alta Prioridad (Hacer PRIMERO)
+###  Alta Prioridad (Hacer PRIMERO)
 
 1. **Verificar warnings future-incompatibility**
    ```bash
@@ -70,7 +70,7 @@ cargo build --release
    cargo clippy -- -D warnings
    ```
 
-### ⚠️ Media Prioridad (Si tienes tiempo)
+### ️ Media Prioridad (Si tienes tiempo)
 
 4. **Verificar aion-ai-engine individual**
    ```bash
@@ -86,7 +86,7 @@ cargo build --release
    # 253 errores potenciales - documentar módulos faltantes
    ```
 
-### 📊 Baja Prioridad (Bonus)
+###  Baja Prioridad (Bonus)
 
 6. **Benchmarks**
    ```bash
@@ -100,7 +100,7 @@ cargo build --release
 
 ---
 
-## 📤 REPORTAR RESULTADOS
+##  REPORTAR RESULTADOS
 
 ### Al finalizar, crear reporte:
 
@@ -131,7 +131,7 @@ git push origin master
 
 ---
 
-## ✅ CHECKLIST MÍNIMO
+##  CHECKLIST MÍNIMO
 
 - [ ] Workspace compila en release
 - [ ] aion-cloud compila individual (tiempo documentado)
@@ -141,7 +141,7 @@ git push origin master
 
 ---
 
-## 📞 ARCHIVOS DE REFERENCIA
+##  ARCHIVOS DE REFERENCIA
 
 - `INSTRUCCIONES-COMPILACION-REMOTA.md` - **Documento maestro** (completo)
 - `RESUMEN-FINAL-SESION-2025-10-02.md` - Estado actual del proyecto
@@ -151,4 +151,4 @@ git push origin master
 
 **Tiempo estimado total: 30-60 minutos**
 
-*Buena suerte! 🦀*
+*Buena suerte! *

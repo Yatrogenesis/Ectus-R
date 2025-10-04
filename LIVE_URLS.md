@@ -1,15 +1,15 @@
-# 🚀 Ectus-R - URLs Activas y Operacionales
+#  Ectus-R - URLs Activas y Operacionales
 
-## ✅ TODAS LAS PLATAFORMAS DESPLEGADAS Y FUNCIONANDO
+##  TODAS LAS PLATAFORMAS DESPLEGADAS Y FUNCIONANDO
 
 ---
 
-## 🌐 URLs Públicas
+##  URLs Públicas
 
 ### Landing Page Comercial
 ```
 URL: https://yatrogenesis.github.io/Ectus-R/landing.html
-Status: ✅ LIVE (HTTP 200)
+Status:  LIVE (HTTP 200)
 ```
 
 **Características**:
@@ -29,7 +29,7 @@ Status: ✅ LIVE (HTTP 200)
 ### Demo Privado Funcional
 ```
 URL: https://yatrogenesis.github.io/Ectus-R/demo.html
-Status: ✅ LIVE (HTTP 200)
+Status:  LIVE (HTTP 200)
 ```
 
 **Credenciales de Acceso**:
@@ -56,12 +56,12 @@ Contraseña: SecureDemo2025!
 
 ---
 
-## 🔧 API Backend (Cloudflare Worker)
+##  API Backend (Cloudflare Worker)
 
 ### Worker Principal
 ```
 URL: https://ectus-r-demo.pako-molina.workers.dev
-Status: ✅ DEPLOYED
+Status:  DEPLOYED
 ```
 
 ### Endpoints Disponibles
@@ -160,13 +160,13 @@ Response:
 
 ---
 
-## 📊 GitHub Repository
+##  GitHub Repository
 
 ```
 Repo: https://github.com/Yatrogenesis/Ectus-R
 Branch: main
-Status: ✅ PUBLIC
-Pages: ✅ ENABLED (from /docs)
+Status:  PUBLIC
+Pages:  ENABLED (from /docs)
 ```
 
 **Últimos Commits**:
@@ -177,7 +177,7 @@ Pages: ✅ ENABLED (from /docs)
 
 ---
 
-## 🎯 Flujo Completo de Usuario
+##  Flujo Completo de Usuario
 
 ### 1. Landing Page → Lead Capture
 ```
@@ -217,7 +217,7 @@ Métricas mostradas en UI
 
 ---
 
-## 🧪 Testing en Vivo
+##  Testing en Vivo
 
 ### Test 1: Landing Page
 ```bash
@@ -247,7 +247,7 @@ curl -X POST https://ectus-r-demo.pako-molina.workers.dev/api/demo/auth \
 
 ---
 
-## 📱 Compartir con Clientes
+##  Compartir con Clientes
 
 ### Para Promoción General
 ```
@@ -255,9 +255,9 @@ curl -X POST https://ectus-r-demo.pako-molina.workers.dev/api/demo/auth \
 https://yatrogenesis.github.io/Ectus-R/landing.html
 
 Plataforma de Ingeniería de Software Autónoma con IA
-✅ 10x más rápido
-✅ 95% test coverage
-✅ 100% seguridad OWASP
+ 10x más rápido
+ 95% test coverage
+ 100% seguridad OWASP
 ```
 
 ### Para Demo en Vivo
@@ -274,24 +274,24 @@ Prueba la generación de código con IA en tiempo real
 
 ---
 
-## 🔐 Seguridad y Privacidad
+##  Seguridad y Privacidad
 
 ### Datos Protegidos
-- ✅ Contraseñas en Cloudflare Secrets (no en código)
-- ✅ HTTPS en todas las URLs
-- ✅ CORS configurado
-- ✅ Session tokens con expiración
-- ✅ No hay binarios descargables en landing
+-  Contraseñas en Cloudflare Secrets (no en código)
+-  HTTPS en todas las URLs
+-  CORS configurado
+-  Session tokens con expiración
+-  No hay binarios descargables en landing
 
 ### Acceso Privado
-- ✅ Demo requiere autenticación
-- ✅ Credenciales únicas por usuario
-- ✅ Soporte para certificados SAT
-- ✅ Sessions expiran en 24h
+-  Demo requiere autenticación
+-  Credenciales únicas por usuario
+-  Soporte para certificados SAT
+-  Sessions expiran en 24h
 
 ---
 
-## 📈 Monitoreo
+##  Monitoreo
 
 ### Cloudflare Dashboard
 ```
@@ -319,7 +319,7 @@ Keys: lead:*
 
 ---
 
-## 🎥 Próximos Pasos
+##  Próximos Pasos
 
 ### 1. Agregar Video Demo
 Edita `docs/landing.html` línea ~120:
@@ -351,7 +351,7 @@ api.ectus.ai -> ectus-r-demo.pako-molina.workers.dev
 
 ---
 
-## ✅ Checklist de Lanzamiento
+##  Checklist de Lanzamiento
 
 - [x] Landing page desplegada
 - [x] Demo privado funcional
@@ -368,14 +368,14 @@ api.ectus.ai -> ectus-r-demo.pako-molina.workers.dev
 
 ---
 
-## 🎉 ¡TODO ESTÁ LIVE!
+##  ¡TODO ESTÁ LIVE!
 
 Tu plataforma comercial de Ectus-R está **100% operacional**:
 
-✅ **Landing**: https://yatrogenesis.github.io/Ectus-R/landing.html
-✅ **Demo**: https://yatrogenesis.github.io/Ectus-R/demo.html
-✅ **API**: https://ectus-r-demo.pako-molina.workers.dev
-✅ **Repo**: https://github.com/Yatrogenesis/Ectus-R
+ **Landing**: https://yatrogenesis.github.io/Ectus-R/landing.html
+ **Demo**: https://yatrogenesis.github.io/Ectus-R/demo.html
+ **API**: https://ectus-r-demo.pako-molina.workers.dev
+ **Repo**: https://github.com/Yatrogenesis/Ectus-R
 
 **Acceso Demo**:
 - Usuario: `demo_user`

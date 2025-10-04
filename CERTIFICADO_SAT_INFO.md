@@ -1,4 +1,4 @@
-# 🔐 Certificado SAT - Acceso Seguro
+#  Certificado SAT - Acceso Seguro
 
 ## Certificado Autorizado
 
@@ -20,16 +20,16 @@ Serial Number: 00001000000702080308
 
 ---
 
-## ✅ Configuración Implementada
+##  Configuración Implementada
 
 El sistema de autenticación ahora valida específicamente tu certificado SAT:
 
 ### Validaciones Aplicadas:
-1. ✅ **RFC Autorizado**: `MOBF8108153Q5`
-2. ✅ **CURP Autorizada**: `MOBF810815HYNLRR00`
-3. ✅ **Emisor**: SAT (Servicio de Administración Tributaria)
-4. ✅ **Vigencia**: Válido hasta Sep 1, 2027
-5. ✅ **Formato**: X.509 DER/PEM
+1.  **RFC Autorizado**: `MOBF8108153Q5`
+2.  **CURP Autorizada**: `MOBF810815HYNLRR00`
+3.  **Emisor**: SAT (Servicio de Administración Tributaria)
+4.  **Vigencia**: Válido hasta Sep 1, 2027
+5.  **Formato**: X.509 DER/PEM
 
 ### Worker Security:
 ```javascript
@@ -45,7 +45,7 @@ if (rfc === AUTHORIZED_RFC) {
 
 ---
 
-## 🎯 Cómo Usar tu Certificado
+##  Cómo Usar tu Certificado
 
 ### Opción 1: Desde la Página Demo
 
@@ -75,7 +75,7 @@ Password: SecureDemo2025!
 
 ---
 
-## 🔒 Seguridad
+##  Seguridad
 
 ### Validaciones del Certificado
 
@@ -104,7 +104,7 @@ wrangler tail ectus-r-demo
 
 ---
 
-## 🧪 Testing del Certificado
+##  Testing del Certificado
 
 ### Test Local (PowerShell/CMD)
 
@@ -125,7 +125,7 @@ openssl x509 -in D:\00001000000702080308.cer -inform DER -text -noout
 
 ---
 
-## 📋 Extracción de Datos del Certificado
+##  Extracción de Datos del Certificado
 
 El sistema extrae automáticamente:
 
@@ -149,7 +149,7 @@ Extraído: MOBF810815HYNLRR00
 
 ---
 
-## ⚠️ Importante
+## ️ Importante
 
 ### Certificados NO Autorizados
 
@@ -166,13 +166,13 @@ Cualquier otro certificado SAT será rechazado:
 ### Backup de Certificado
 
 **Recomendación**: Mantén una copia segura del certificado en:
-- ✅ Disco local: `D:\00001000000702080308.cer`
-- ✅ USB backup
-- ✅ Nube encriptada (OneDrive, Google Drive)
+-  Disco local: `D:\00001000000702080308.cer`
+-  USB backup
+-  Nube encriptada (OneDrive, Google Drive)
 
 ---
 
-## 🚀 URLs de Acceso
+##  URLs de Acceso
 
 ### Con Certificado SAT
 ```
@@ -191,7 +191,7 @@ https://ectus-r-creator.pages.dev/demo.html
 
 ---
 
-## 🔄 Renovación del Certificado
+##  Renovación del Certificado
 
 **Vigencia actual**: Hasta Sep 1, 2027
 
@@ -202,7 +202,7 @@ Cuando renueves tu e.firma SAT:
 
 ---
 
-## 📞 Soporte
+##  Soporte
 
 Si tienes problemas con el certificado:
 
@@ -220,13 +220,13 @@ Si tienes problemas con el certificado:
 
 ---
 
-## ✅ Estado
+##  Estado
 
-- **Certificado**: ✅ Configurado y Autorizado
+- **Certificado**:  Configurado y Autorizado
 - **RFC**: `MOBF8108153Q5`
-- **Vigencia**: ✅ Válido hasta 2027
-- **Worker**: ✅ Desplegado con validación
-- **Demo**: ✅ Listo para usar
+- **Vigencia**:  Válido hasta 2027
+- **Worker**:  Desplegado con validación
+- **Demo**:  Listo para usar
 
 **Última Actualización**: 2025-09-30 22:00 UTC
 **Status**: 🟢 CERTIFICADO SAT CONFIGURADO Y OPERACIONAL

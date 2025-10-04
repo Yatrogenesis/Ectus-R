@@ -72,27 +72,27 @@ Subject to the terms of this Agreement and payment of applicable fees, Licensor 
 
 ## 4. What You CAN Do
 
-✅ Use in commercial production environments
-✅ Deploy on cloud providers (AWS, GCP, Azure, Cloudflare)
-✅ Integrate with proprietary systems
-✅ Modify source code for internal use
-✅ Use in SaaS products
-✅ Use in consulting/agency work (with appropriate tier)
-✅ Create internal forks
-✅ Run on unlimited servers
+ Use in commercial production environments
+ Deploy on cloud providers (AWS, GCP, Azure, Cloudflare)
+ Integrate with proprietary systems
+ Modify source code for internal use
+ Use in SaaS products
+ Use in consulting/agency work (with appropriate tier)
+ Create internal forks
+ Run on unlimited servers
 
 ---
 
 ## 5. What You CANNOT Do
 
-❌ Resell the Software as a competing product
-❌ Offer "AION-R as a Service" without written permission
-❌ Remove or modify copyright notices
-❌ Redistribute modified versions publicly
-❌ Sublicense to third parties
-❌ Use in ways that violate export control laws
-❌ Create "white-label" versions for resale
-❌ Use to generate training data for competing AI models
+ Resell the Software as a competing product
+ Offer "AION-R as a Service" without written permission
+ Remove or modify copyright notices
+ Redistribute modified versions publicly
+ Sublicense to third parties
+ Use in ways that violate export control laws
+ Create "white-label" versions for resale
+ Use to generate training data for competing AI models
 
 ---
 
@@ -222,9 +222,9 @@ Neither party is liable for delays caused by circumstances beyond reasonable con
 
 **To purchase a Commercial License:**
 
-📧 **Email**: commercial@ectus-r.com (or pako.molina@gmail.com)
-🌐 **Website**: https://creator.avermex.com/pricing
-💬 **Sales**: Schedule call at https://calendly.com/ectus-r/commercial
+ **Email**: commercial@ectus-r.com (or pako.molina@gmail.com)
+ **Website**: https://creator.avermex.com/pricing
+ **Sales**: Schedule call at https://calendly.com/ectus-r/commercial
 
 **Purchase Process:**
 1. Contact sales with your company details and ARR
@@ -296,10 +296,10 @@ A: License covers AION-R software only. LLM API costs (Groq, OpenAI, etc.) are s
 ## 14. Open Source Contribution
 
 Even with a Commercial License, you may:
-- ✅ Contribute improvements back to the project
-- ✅ Report bugs and security issues
-- ✅ Participate in community forums
-- ✅ Receive recognition in CONTRIBUTORS.md
+-  Contribute improvements back to the project
+-  Report bugs and security issues
+-  Participate in community forums
+-  Receive recognition in CONTRIBUTORS.md
 
 Contributions remain under MIT License (dual-licensed).
 

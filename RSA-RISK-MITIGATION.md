@@ -3,11 +3,11 @@
 **Date**: 2025-10-02  
 **Advisory**: RUSTSEC-2023-0071  
 **Severity**: MEDIUM (CVSS 5.9)  
-**Status**: ⚠️ NO FIX AVAILABLE - ACCEPTED RISK WITH MITIGATIONS
+**Status**: ️ NO FIX AVAILABLE - ACCEPTED RISK WITH MITIGATIONS
 
 ---
 
-## 🔍 VULNERABILITY DESCRIPTION
+##  VULNERABILITY DESCRIPTION
 
 ### Technical Details:
 - **Crate**: rsa 0.9.8
@@ -27,7 +27,7 @@ The Marvin Attack exploits timing differences in RSA decryption operations to po
 
 ---
 
-## 📊 CURRENT EXPOSURE
+##  CURRENT EXPOSURE
 
 ### Affected Components:
 
@@ -53,7 +53,7 @@ rsa 0.9.8
 
 ---
 
-## ✅ MITIGATIONS IMPLEMENTED
+##  MITIGATIONS IMPLEMENTED
 
 ### 1. Rate Limiting (CRITICAL)
 
@@ -87,9 +87,9 @@ rsa 0.9.8
 ### 3. Constant-Time Operations Preference
 
 Where possible, authentication uses:
-- ✅ **Ed25519** signatures (constant-time, preferred)
-- ✅ **HMAC-SHA256** for API tokens
-- ⚠️ RSA only for legacy OAuth/OIDC compatibility
+-  **Ed25519** signatures (constant-time, preferred)
+-  **HMAC-SHA256** for API tokens
+- ️ RSA only for legacy OAuth/OIDC compatibility
 
 ### 4. Network Security
 
@@ -99,7 +99,7 @@ Where possible, authentication uses:
 
 ---
 
-## 📈 MONITORING PLAN
+##  MONITORING PLAN
 
 ### Daily Checks:
 ```bash
@@ -122,7 +122,7 @@ grep "RSA_AUTH_FAIL" /var/log/aion/auth.log | wc -l
 
 ---
 
-## 🔄 FUTURE MIGRATION PATH
+##  FUTURE MIGRATION PATH
 
 ### Short-term (Q1 2026):
 - [ ] Migrate aion-licensing to **Ed25519** for new licenses
@@ -140,15 +140,15 @@ grep "RSA_AUTH_FAIL" /var/log/aion/auth.log | wc -l
 
 ---
 
-## 🎯 ACCEPTANCE CRITERIA
+##  ACCEPTANCE CRITERIA
 
 This risk is **ACCEPTED** based on:
 
-1. ✅ **Low likelihood**: Attack requires 10000+ attempts
-2. ✅ **Strong mitigations**: Rate limiting prevents attack feasibility
-3. ✅ **Limited exposure**: RSA usage minimal and monitored
-4. ✅ **No fix available**: rsa crate maintainers aware, no patch yet
-5. ✅ **Migration planned**: Ed25519 transition in progress
+1.  **Low likelihood**: Attack requires 10000+ attempts
+2.  **Strong mitigations**: Rate limiting prevents attack feasibility
+3.  **Limited exposure**: RSA usage minimal and monitored
+4.  **No fix available**: rsa crate maintainers aware, no patch yet
+5.  **Migration planned**: Ed25519 transition in progress
 
 **Approved by**: [Pending Security Team Review]  
 **Review Date**: 2025-10-02  
@@ -156,7 +156,7 @@ This risk is **ACCEPTED** based on:
 
 ---
 
-## 📚 REFERENCES
+##  REFERENCES
 
 - [RUSTSEC-2023-0071](https://rustsec.org/advisories/RUSTSEC-2023-0071)
 - [Marvin Attack Paper](https://people.redhat.com/~hkario/marvin/)
@@ -169,4 +169,4 @@ This risk is **ACCEPTED** based on:
 **Last Updated**: 2025-10-02  
 **Owner**: Security Team
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
+ Generated with [Claude Code](https://claude.com/claude-code)

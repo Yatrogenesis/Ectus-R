@@ -1,11 +1,11 @@
 # Progreso de Compilación - Sesión 2025-10-02
 
-## ✅ Progreso Realizado
+##  Progreso Realizado
 
 ### Crates Compilados Exitosamente (3)
-1. **aion-core** ✅ - Compilado previamente
-2. **aion-monitoring** ✅ - Compilado previamente
-3. **aion-auth** ✅ - Compilado previamente
+1. **aion-core**  - Compilado previamente
+2. **aion-monitoring**  - Compilado previamente
+3. **aion-auth**  - Compilado previamente
 
 ### Crates Reparados en Esta Sesión
 
@@ -38,7 +38,7 @@
 - Causa: Compilación de dependencias pesadas (tokio, sqlx, axum, etc.)
 - Impacto: Timeouts en comandos de compilación
 
-## 📊 Estado General del Workspace
+##  Estado General del Workspace
 
 **Total crates:** 15
 
@@ -65,7 +65,7 @@
 - aion-cli
 - aion-enterprise
 
-## 🔧 Correcciones Aplicadas Previamente
+##  Correcciones Aplicadas Previamente
 
 ### aion-ai-engine
 - Creado template faltante: `templates/rust/Cargo.toml.hbs`
@@ -77,7 +77,7 @@
 - Espacio recuperado en C:\: 3.14 GB
 - Target directory: `D:\Ectus-R\target\`
 
-## 🎯 Próximos Pasos
+##  Próximos Pasos
 
 1. **Esperar compilaciones actuales**
    - aion-licensing (debería completarse)

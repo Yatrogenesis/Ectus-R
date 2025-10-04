@@ -1,6 +1,6 @@
 # Ectus-R SaaS - Guía de Despliegue Completa
 
-## 🚀 Infraestructura
+##  Infraestructura
 
 ```
 Usuario → Cloudflare SSL → creator.avermex.com → Cloudflare Workers → GitHub Pages
@@ -13,7 +13,7 @@ Usuario → Cloudflare SSL → creator.avermex.com → Cloudflare Workers → Gi
                                            • OpenAI (API)
 ```
 
-## ✨ Características
+##  Características
 
 ### Multi-AI Provider System
 - **5 proveedores AI** con fallback automático
@@ -22,20 +22,20 @@ Usuario → Cloudflare SSL → creator.avermex.com → Cloudflare Workers → Gi
 - **Alta disponibilidad** - si uno falla, usa el siguiente
 
 ### Integración Completa
-- ✅ Cloudflare Workers (Edge Computing)
-- ✅ Cloudflare AI (Modelos gratis)
-- ✅ KV Storage (Sessions, Cache, Metadata)
-- ✅ D1 Database (SQL persistente)
-- ✅ GitHub Pages (Static hosting)
-- ✅ GoDaddy DNS (vía godo-r CLI)
-- ✅ SSL/TLS automático (Cloudflare)
+-  Cloudflare Workers (Edge Computing)
+-  Cloudflare AI (Modelos gratis)
+-  KV Storage (Sessions, Cache, Metadata)
+-  D1 Database (SQL persistente)
+-  GitHub Pages (Static hosting)
+-  GoDaddy DNS (vía godo-r CLI)
+-  SSL/TLS automático (Cloudflare)
 
-## 📋 Requisitos Previos
+##  Requisitos Previos
 
 ### 1. Cuenta Cloudflare
-- Account ID: `b11ab3fe6c1a3625b65cb22d170793b6` ✓
-- Workers habilitados ✓
-- AI Workers habilitados ✓
+- Account ID: `b11ab3fe6c1a3625b65cb22d170793b6` 
+- Workers habilitados 
+- AI Workers habilitados 
 
 ### 2. Wrangler CLI
 ```bash
@@ -49,10 +49,10 @@ wrangler whoami  # Verificar autenticación
 - GitHub Pages habilitado en `/docs` o branch `gh-pages`
 
 ### 4. GoDaddy DNS (Opcional)
-- CLI instalado: `godo-r` ✓
+- CLI instalado: `godo-r` 
 - API credentials configuradas
 
-## 🔧 Configuración de Secrets
+##  Configuración de Secrets
 
 Los secrets se configuran una sola vez en Cloudflare:
 
@@ -98,7 +98,7 @@ wrangler secret put JWT_SECRET --env production
 2. Crear API key
 3. Configurar: `wrangler secret put OPENAI_API_KEY`
 
-## 🚀 Despliegue
+##  Despliegue
 
 ### Paso 1: Instalar Dependencias
 ```bash
@@ -133,7 +133,7 @@ wrangler deploy --config wrangler-production.toml --env production
 # https://ectus.avermex.com/health
 ```
 
-## 🌐 Configuración DNS con GoDaddy
+##  Configuración DNS con GoDaddy
 
 ### Opción 1: Usar godo-r CLI (Recomendado)
 
@@ -162,9 +162,9 @@ cargo build --release
    - Type: `CNAME`
    - Name: `creator`
    - Target: `yatrogenesis.github.io`
-   - Proxy: ✓ (Orange cloud)
+   - Proxy:  (Orange cloud)
 
-## 📊 Endpoints API
+##  Endpoints API
 
 ### Health Check
 ```bash
@@ -245,7 +245,7 @@ curl -X POST https://creator.avermex.com/api/v1/dns/setup \
   }'
 ```
 
-## 🧪 Testing
+##  Testing
 
 ### Test Health
 ```bash
@@ -270,7 +270,7 @@ curl -X POST https://creator.avermex.com/api/v1/deployments/magic-loop \
   -d '{"prompt": "timer app"}' | jq
 ```
 
-## 📈 Monitoreo
+##  Monitoreo
 
 ### Cloudflare Dashboard
 - Workers Analytics: https://dash.cloudflare.com/
@@ -292,12 +292,12 @@ wrangler tail --config wrangler-production.toml --env staging
 curl https://creator.avermex.com/api/v1/analytics | jq
 ```
 
-## 🔒 Seguridad
+##  Seguridad
 
 ### SSL/TLS
-- ✅ SSL automático vía Cloudflare
-- ✅ HTTPS enforced
-- ✅ TLS 1.3
+-  SSL automático vía Cloudflare
+-  HTTPS enforced
+-  TLS 1.3
 
 ### CORS
 - Configurado para dominios específicos
@@ -308,7 +308,7 @@ curl https://creator.avermex.com/api/v1/analytics | jq
 - Workers CPU limit: 50ms por request
 - Memory limit: 128MB por request
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Error: "AI generation failed"
 **Solución**: El sistema usará fallback automático. Si todos fallan, usará templates.
@@ -333,7 +333,7 @@ wrangler deployments list --config wrangler-production.toml
 wrangler deploy --config wrangler-production.toml --env production
 ```
 
-## 📚 Recursos
+##  Recursos
 
 ### Documentación
 - Cloudflare Workers: https://developers.cloudflare.com/workers/
@@ -349,29 +349,29 @@ wrangler deploy --config wrangler-production.toml --env production
 - Email: pako.molina@gmail.com
 - Issues: https://github.com/Yatrogenesis/Ectus-R/issues
 
-## 🎯 Próximos Pasos
+##  Próximos Pasos
 
-1. ✅ **Configurar AI Providers** - Obtener API keys
-2. ✅ **Desplegar a Staging** - Probar en staging.ectus.avermex.com
-3. ✅ **Configurar DNS** - Usar godo-r para crear registros
-4. ✅ **Desplegar a Production** - creator.avermex.com
+1.  **Configurar AI Providers** - Obtener API keys
+2.  **Desplegar a Staging** - Probar en staging.ectus.avermex.com
+3.  **Configurar DNS** - Usar godo-r para crear registros
+4.  **Desplegar a Production** - creator.avermex.com
 5. ⏳ **Setup GitHub Actions** - CI/CD automático
 6. ⏳ **Monitoreo** - Configurar alertas
 
-## 🏆 Features Completadas
+##  Features Completadas
 
-- ✅ Multi-AI Provider System (5 proveedores)
-- ✅ Fallback automático inteligente
-- ✅ Templates perfectos de respaldo
-- ✅ Cloudflare Workers + AI
-- ✅ KV Storage
-- ✅ D1 Database
-- ✅ GitHub Pages integration
-- ✅ GoDaddy DNS management
-- ✅ SSL/TLS automático
-- ✅ CORS configurado
-- ✅ Analytics básico
-- ✅ Production-ready
+-  Multi-AI Provider System (5 proveedores)
+-  Fallback automático inteligente
+-  Templates perfectos de respaldo
+-  Cloudflare Workers + AI
+-  KV Storage
+-  D1 Database
+-  GitHub Pages integration
+-  GoDaddy DNS management
+-  SSL/TLS automático
+-  CORS configurado
+-  Analytics básico
+-  Production-ready
 
 ---
 

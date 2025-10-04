@@ -1,15 +1,15 @@
-# 🔧 Diagnóstico de Conexión Demo - Ectus-R
+#  Diagnóstico de Conexión Demo - Ectus-R
 
-## ✅ Estado del Sistema
+##  Estado del Sistema
 
 **Fecha**: 2025-09-30 22:00 UTC
 **Status**: 🟢 OPERACIONAL
 
 ---
 
-## 📊 Verificación Completa
+##  Verificación Completa
 
-### 1. Backend Worker ✅
+### 1. Backend Worker 
 ```bash
 URL: https://ectus-r-demo.pako-molina.workers.dev
 Status: OPERACIONAL
@@ -30,7 +30,7 @@ curl -X POST https://ectus-r-demo.pako-molina.workers.dev/api/demo/auth \
 # Response: {"success":true,"sessionId":"...","user":{...}}
 ```
 
-### 2. Frontend Pages ✅
+### 2. Frontend Pages 
 ```
 URL: https://ectus-r-creator.pages.dev
 Deployment: Production (25 minutos ago)
@@ -38,30 +38,30 @@ Commit: 2883006
 ```
 
 **Páginas Activas**:
-- ✅ `/landing.html` - Landing comercial
-- ✅ `/demo.html` - Demo con autenticación
-- ✅ `/demo` - Alias sin extensión (Cloudflare Pages auto-redirect)
-- ✅ `/test-demo-connection.html` - Diagnóstico automático
+-  `/landing.html` - Landing comercial
+-  `/demo.html` - Demo con autenticación
+-  `/demo` - Alias sin extensión (Cloudflare Pages auto-redirect)
+-  `/test-demo-connection.html` - Diagnóstico automático
 
-### 3. CORS Headers ✅
+### 3. CORS Headers 
 ```
 Access-Control-Allow-Origin: *
 Access-Control-Allow-Methods: GET, POST, OPTIONS
 Access-Control-Allow-Headers: Content-Type, Authorization
 ```
 
-### 4. API Endpoints ✅
+### 4. API Endpoints 
 
 | Endpoint | Método | Status | Descripción |
 |----------|--------|--------|-------------|
-| `/api/demo/status` | GET | ✅ | Health check |
-| `/api/demo/auth` | POST | ✅ | Autenticación |
-| `/api/demo/generate` | POST | ✅ | Generación código IA |
-| `/api/leads` | POST | ✅ | Captura de leads |
+| `/api/demo/status` | GET |  | Health check |
+| `/api/demo/auth` | POST |  | Autenticación |
+| `/api/demo/generate` | POST |  | Generación código IA |
+| `/api/leads` | POST |  | Captura de leads |
 
 ---
 
-## 🧪 Cómo Probar la Conexión
+##  Cómo Probar la Conexión
 
 ### Opción 1: Test Automático (RECOMENDADO)
 
@@ -71,10 +71,10 @@ Access-Control-Allow-Headers: Content-Type, Authorization
    ```
 
 2. **Verifica que todos los tests pasen**:
-   - ✅ Health Check
-   - ✅ CORS Headers
-   - ✅ Authentication (Credentials)
-   - ✅ Code Generation (with session)
+   -  Health Check
+   -  CORS Headers
+   -  Authentication (Credentials)
+   -  Code Generation (with session)
 
 3. **Si algún test falla**: Ver sección de troubleshooting
 
@@ -123,7 +123,7 @@ curl -X POST https://ectus-r-demo.pako-molina.workers.dev/api/demo/generate \
 
 ---
 
-## 🔍 Troubleshooting
+##  Troubleshooting
 
 ### Problema: "No se puede conectar al servidor"
 
@@ -204,7 +204,7 @@ curl -X POST https://ectus-r-demo.pako-molina.workers.dev/api/demo/generate \
 
 ---
 
-## 📞 Tests de Conectividad
+##  Tests de Conectividad
 
 ### Test 1: Worker Responde
 ```bash
@@ -236,7 +236,7 @@ curl -I https://ectus-r-creator.pages.dev/demo
 
 ---
 
-## 🎯 URLs Importantes
+##  URLs Importantes
 
 | Recurso | URL |
 |---------|-----|
@@ -247,14 +247,14 @@ curl -I https://ectus-r-creator.pages.dev/demo
 
 ---
 
-## ✅ Confirmación Final
+##  Confirmación Final
 
 **Todo está operacional cuando**:
-1. ✅ Health check devuelve `{"status":"operational"}`
-2. ✅ Autenticación con credenciales devuelve `sessionId`
-3. ✅ Demo page carga sin errores en consola
-4. ✅ Generación de código funciona y devuelve código + tests
-5. ✅ Test automático pasa todos los checks
+1.  Health check devuelve `{"status":"operational"}`
+2.  Autenticación con credenciales devuelve `sessionId`
+3.  Demo page carga sin errores en consola
+4.  Generación de código funciona y devuelve código + tests
+5.  Test automático pasa todos los checks
 
 **Si todo lo anterior está OK**: El sistema está completamente funcional.
 

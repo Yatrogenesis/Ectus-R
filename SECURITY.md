@@ -44,7 +44,7 @@
 
 ### Authentication & Authorization
 
-✅ **Implemented:**
+ **Implemented:**
 - Argon2 password hashing (OWASP recommended)
 - JWT tokens with expiration
 - Session management via Redis
@@ -64,7 +64,7 @@ impl SecretsManager {
 
 ### Input Validation
 
-✅ **Implemented:**
+ **Implemented:**
 - SQL parameterization (no raw queries)
 - XSS prevention (sanitized outputs)
 - CSRF tokens on state-changing operations
@@ -81,7 +81,7 @@ sqlx::query!(
 
 ### Network Security
 
-✅ **Implemented:**
+ **Implemented:**
 - HTTPS/TLS enforced in production
 - CORS configuration (restrict origins in prod)
 - HTTP security headers:
@@ -92,13 +92,13 @@ sqlx::query!(
 
 ### Secret Management
 
-✅ **Implemented:**
+ **Implemented:**
 - Environment variables (never hardcoded)
 - Encrypted storage (ChaCha20-Poly1305)
 - Cloudflare Workers secrets (encrypted at rest)
 - Automatic secret rotation (planned for v1.1)
 
-⚠️ **Your Responsibility:**
+️ **Your Responsibility:**
 - Rotate API keys every 90 days
 - Use strong JWT secrets (32+ bytes)
 - Never commit `.env` to git
@@ -148,7 +148,7 @@ chmod 600 LICENSE-COMMERCIAL.md  # Contains contact info only
 
 **Warning in README:**
 ```markdown
-⚠️ Development docker-compose.yml is for local dev only.
+️ Development docker-compose.yml is for local dev only.
    DO NOT use in production. Use docker-compose.production.yml.
 ```
 
@@ -303,29 +303,29 @@ git push --force --tags
 
 | Risk | Status | Notes |
 |------|--------|-------|
-| A01:2021 – Broken Access Control | ✅ Mitigated | JWT + Role-based auth |
-| A02:2021 – Cryptographic Failures | ✅ Mitigated | ChaCha20-Poly1305, TLS |
-| A03:2021 – Injection | ✅ Mitigated | Parameterized queries |
-| A04:2021 – Insecure Design | ✅ Addressed | Threat modeling done |
-| A05:2021 – Security Misconfiguration | ⚠️ Partial | User must configure |
-| A06:2021 – Vulnerable Components | ✅ Automated | Dependabot + audits |
-| A07:2021 – Auth & Session Failures | ✅ Mitigated | Argon2 + secure sessions |
-| A08:2021 – Software & Data Integrity | ✅ Mitigated | Signed releases |
-| A09:2021 – Logging Failures | ✅ Implemented | Structured logging |
-| A10:2021 – SSRF | ✅ Mitigated | URL validation |
+| A01:2021 – Broken Access Control |  Mitigated | JWT + Role-based auth |
+| A02:2021 – Cryptographic Failures |  Mitigated | ChaCha20-Poly1305, TLS |
+| A03:2021 – Injection |  Mitigated | Parameterized queries |
+| A04:2021 – Insecure Design |  Addressed | Threat modeling done |
+| A05:2021 – Security Misconfiguration | ️ Partial | User must configure |
+| A06:2021 – Vulnerable Components |  Automated | Dependabot + audits |
+| A07:2021 – Auth & Session Failures |  Mitigated | Argon2 + secure sessions |
+| A08:2021 – Software & Data Integrity |  Mitigated | Signed releases |
+| A09:2021 – Logging Failures |  Implemented | Structured logging |
+| A10:2021 – SSRF |  Mitigated | URL validation |
 
 **Overall:** 100% addressed (8/10 fully mitigated, 2/10 require user config)
 
 ### GDPR Compliance
 
-✅ **Features:**
+ **Features:**
 - User data deletion API
 - Data export functionality
 - Consent management
 - Data encryption at rest
 - Right to be forgotten
 
-⚠️ **User Responsibility:**
+️ **User Responsibility:**
 - Implement privacy policy
 - Handle consent in your app
 - Configure data retention
@@ -403,10 +403,10 @@ git push --force --tags
 ## Security Roadmap
 
 ### Q1 2025 (Completed)
-- ✅ OWASP Top 10 compliance
-- ✅ Automated security scanning
-- ✅ Encrypted secret storage
-- ✅ Rate limiting
+-  OWASP Top 10 compliance
+-  Automated security scanning
+-  Encrypted secret storage
+-  Rate limiting
 
 ### Q2 2025 (Planned)
 - ⏳ 2FA/MFA support

@@ -8,19 +8,19 @@ AION-R now includes **real LLM integration** with automatic fallback across mult
 
 | Provider | Speed | Quality | Cost | Free Tier | Recommended For |
 |----------|-------|---------|------|-----------|-----------------|
-| **Groq** | ⚡⚡⚡ Very Fast | High | Free/Paid | ✅ Yes | Primary - Fast iteration |
-| **OpenAI** | ⚡⚡ Fast | Very High | Paid | ⚠️ Trial | High-quality fixes |
-| **GitHub Models** | ⚡⚡ Fast | High | FREE | ✅ Yes | Free alternative |
-| **Hugging Face** | ⚡ Medium | Medium-High | Free/Paid | ✅ Yes | Open models |
-| **Cloudflare AI** | ⚡⚡ Fast | Medium | Pay-per-use | ✅ Yes | Serverless |
+| **Groq** |  Very Fast | High | Free/Paid |  Yes | Primary - Fast iteration |
+| **OpenAI** |  Fast | Very High | Paid | ️ Trial | High-quality fixes |
+| **GitHub Models** |  Fast | High | FREE |  Yes | Free alternative |
+| **Hugging Face** |  Medium | Medium-High | Free/Paid |  Yes | Open models |
+| **Cloudflare AI** |  Fast | Medium | Pay-per-use |  Yes | Serverless |
 
 ### Key Features
 
-- ✅ **Automatic Fallback**: If one provider fails, automatically tries the next
-- ✅ **Zero Configuration**: Works with just environment variables
-- ✅ **Multi-Provider**: Use multiple providers simultaneously for redundancy
-- ✅ **Type-Safe**: Full Rust type safety with async/await
-- ✅ **Production-Ready**: Retry logic, timeout handling, error recovery
+-  **Automatic Fallback**: If one provider fails, automatically tries the next
+-  **Zero Configuration**: Works with just environment variables
+-  **Multi-Provider**: Use multiple providers simultaneously for redundancy
+-  **Type-Safe**: Full Rust type safety with async/await
+-  **Production-Ready**: Retry logic, timeout handling, error recovery
 
 ---
 
@@ -73,9 +73,9 @@ The LLM integration activates automatically:
 cargo run --bin aion-web-api
 
 # You'll see:
-# 🚀 Initializing Groq LLM client
-# 🚀 Initializing OpenAI LLM client
-# ✅ Available LLM providers: [Groq, OpenAI]
+#  Initializing Groq LLM client
+#  Initializing OpenAI LLM client
+#  Available LLM providers: [Groq, OpenAI]
 ```
 
 ### 4. Test Autocorrection
@@ -141,7 +141,7 @@ Apply Fixes to Code
     ▼
 Re-run Tests
     │
-    ├─► All Pass? → ✅ Success
+    ├─► All Pass? →  Success
     └─► Still Failing? → Iterate (max 5 times)
 ```
 
@@ -380,7 +380,7 @@ async fn main() -> Result<()> {
     ).await?;
 
     if result.success {
-        println!("✅ Fixed in {} iterations", result.iterations_completed);
+        println!(" Fixed in {} iterations", result.iterations_completed);
         println!("Final code:\n{}", result.final_code);
     }
 
@@ -481,7 +481,7 @@ Per fix iteration (assuming 3 failures × 2000 tokens each):
 
 **Error:**
 ```
-⚠️  No LLM providers configured. Set API keys in environment variables.
+️  No LLM providers configured. Set API keys in environment variables.
 ```
 
 **Solution:**
@@ -628,4 +628,4 @@ let response = openai_client.analyze_image(...).await?;
 
 **Last Updated:** 2025-10-01
 **Version:** 1.0.0
-**Status:** ✅ Production Ready
+**Status:**  Production Ready

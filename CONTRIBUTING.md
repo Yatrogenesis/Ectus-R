@@ -137,7 +137,7 @@ use super::utils;
 #### Error Handling
 
 ```rust
-// ✅ Good: Use custom error types
+//  Good: Use custom error types
 pub type Result<T> = std::result::Result<T, AppError>;
 
 #[derive(Debug, thiserror::Error)]
@@ -149,7 +149,7 @@ pub enum AppError {
     Validation { message: String },
 }
 
-// ✅ Good: Propagate errors with context
+//  Good: Propagate errors with context
 pub async fn create_user(data: UserData) -> Result<User> {
     let user = validate_user_data(data)
         .with_context("Invalid user data")?;
@@ -158,7 +158,7 @@ pub async fn create_user(data: UserData) -> Result<User> {
         .with_context("Failed to create user")
 }
 
-// ❌ Bad: Don't panic or unwrap in production code
+//  Bad: Don't panic or unwrap in production code
 let user = database::get_user(id).unwrap(); // Never do this!
 ```
 
@@ -250,7 +250,7 @@ mod tests {
 #### Input Validation
 
 ```rust
-// ✅ Good: Validate all inputs
+//  Good: Validate all inputs
 use validator::{Validate, ValidationError};
 
 #[derive(Debug, Validate, Deserialize)]
@@ -277,7 +277,7 @@ fn validate_password(password: &str) -> Result<(), ValidationError> {
 #### SQL Injection Prevention
 
 ```rust
-// ✅ Good: Use parameterized queries
+//  Good: Use parameterized queries
 pub async fn get_user_by_email(email: &str) -> Result<Option<User>> {
     let user = sqlx::query_as!(
         User,
@@ -290,14 +290,14 @@ pub async fn get_user_by_email(email: &str) -> Result<Option<User>> {
     Ok(user)
 }
 
-// ❌ Bad: String concatenation
+//  Bad: String concatenation
 let query = format!("SELECT * FROM users WHERE email = '{}'", email); // NEVER!
 ```
 
 #### Authentication & Authorization
 
 ```rust
-// ✅ Good: Always check permissions
+//  Good: Always check permissions
 pub async fn update_user(
     user_id: Uuid,
     current_user: &AuthenticatedUser,
@@ -318,7 +318,7 @@ pub async fn update_user(
 #### Async Best Practices
 
 ```rust
-// ✅ Good: Use concurrent operations when possible
+//  Good: Use concurrent operations when possible
 pub async fn get_user_dashboard(user_id: Uuid) -> Result<Dashboard> {
     let (user, projects, notifications) = tokio::try_join!(
         get_user(user_id),
@@ -333,7 +333,7 @@ pub async fn get_user_dashboard(user_id: Uuid) -> Result<Dashboard> {
     })
 }
 
-// ❌ Bad: Sequential operations
+//  Bad: Sequential operations
 pub async fn get_user_dashboard_slow(user_id: Uuid) -> Result<Dashboard> {
     let user = get_user(user_id).await?;
     let projects = get_user_projects(user_id).await?;
@@ -350,7 +350,7 @@ pub async fn get_user_dashboard_slow(user_id: Uuid) -> Result<Dashboard> {
 #### Memory Management
 
 ```rust
-// ✅ Good: Use references when possible
+//  Good: Use references when possible
 pub fn process_large_dataset(data: &[DataPoint]) -> ProcessingResult {
     data.iter()
         .filter(|point| point.is_valid())
@@ -358,7 +358,7 @@ pub fn process_large_dataset(data: &[DataPoint]) -> ProcessingResult {
         .collect()
 }
 
-// ✅ Good: Use streaming for large datasets
+//  Good: Use streaming for large datasets
 pub async fn process_large_file(
     file_path: &Path,
 ) -> Result<impl Stream<Item = Result<ProcessedData>>> {

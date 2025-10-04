@@ -1,6 +1,6 @@
 # ACCESO DIRECTO POR RED - ECTUS-R
 
-## 🌐 RUTA DE RED
+##  RUTA DE RED
 
 ```
 \\D3S1GN01\D\Ectus-R
@@ -8,7 +8,7 @@
 
 ---
 
-## 🚀 INICIO RÁPIDO PARA OTRA INSTANCIA CLAUDE CODE
+##  INICIO RÁPIDO PARA OTRA INSTANCIA CLAUDE CODE
 
 ### 1. Acceder al proyecto
 
@@ -48,12 +48,12 @@ cat INSTRUCCIONES-COMPILACION-REMOTA.md
 
 ---
 
-## ✅ TAREAS PRIORITARIAS
+##  TAREAS PRIORITARIAS
 
 ### PASO 1: Compilar workspace (2-5 min)
 ```bash
 cargo build --release
-# ✅ Debería funcionar sin problemas
+#  Debería funcionar sin problemas
 ```
 
 ### PASO 2: Verificar warnings (5 min)
@@ -79,7 +79,7 @@ cargo clippy -- -D warnings
 
 ---
 
-## 📝 CREAR REPORTE
+##  CREAR REPORTE
 
 Al finalizar:
 
@@ -101,7 +101,7 @@ git push origin master
 
 ---
 
-## 🔧 TROUBLESHOOTING
+##  TROUBLESHOOTING
 
 ### Si hay problemas de permisos de red:
 ```bash
@@ -123,7 +123,7 @@ cargo build --release
 
 ---
 
-## 📋 CHECKLIST MÍNIMO
+##  CHECKLIST MÍNIMO
 
 - [ ] Acceso a `\\D3S1GN01\D\Ectus-R` OK
 - [ ] Workspace compila en release
@@ -133,7 +133,7 @@ cargo build --release
 
 ---
 
-## 📞 ARCHIVOS DE REFERENCIA
+##  ARCHIVOS DE REFERENCIA
 
 Todos están en: `\\D3S1GN01\D\Ectus-R\`
 

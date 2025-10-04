@@ -1,6 +1,6 @@
 # Ectus-R - Acceso al Demo Privado
 
-## 🚀 Infraestructura Desplegada
+##  Infraestructura Desplegada
 
 ### URLs Activas
 
@@ -23,7 +23,7 @@
   - `POST /api/demo/generate` - Generación de código con IA
   - `GET /api/demo/status` - Health check
 
-## 🔐 Credenciales de Acceso
+##  Credenciales de Acceso
 
 ### Opción 1: Credenciales de Usuario (Recomendado para demos)
 
@@ -39,7 +39,7 @@ Contraseña: SecureDemo2025!
 - Extraerá tu RFC y nombre del certificado
 - Autenticación automática
 
-## 📋 Cómo Usar el Demo
+##  Cómo Usar el Demo
 
 ### 1. Acceder al Demo
 
@@ -66,15 +66,15 @@ Una vez autenticado:
 ### 3. Resultados
 
 El demo mostrará:
-- ✅ **Código Generado**: Implementación completa production-ready
-- ✅ **Tests Generados**: Suite de tests unitarios e integración
-- ✅ **Métricas**:
+-  **Código Generado**: Implementación completa production-ready
+-  **Tests Generados**: Suite de tests unitarios e integración
+-  **Métricas**:
   - Líneas de código
   - Test coverage (%)
   - Tiempo de generación (segundos)
   - Security score (OWASP compliance)
 
-## 🧪 Ejemplos de Prompts
+##  Ejemplos de Prompts
 
 ### API REST Básica
 ```
@@ -96,7 +96,7 @@ Create a GraphQL API for an e-commerce platform with products, orders, and inven
 Build a real-time chat server with WebSocket support, user presence, and message history
 ```
 
-## 🔧 Tecnologías Utilizadas
+##  Tecnologías Utilizadas
 
 **Frontend (Demo)**:
 - HTML5, CSS3, JavaScript vanilla
@@ -116,7 +116,7 @@ Build a real-time chat server with WebSocket support, user presence, and message
 - SAT certificate validation (X.509)
 - Secrets management (Wrangler)
 
-## 📊 Monitoreo
+##  Monitoreo
 
 **Ver Logs en Tiempo Real**:
 ```bash
@@ -128,7 +128,7 @@ wrangler tail ectus-r-demo
 - Workers > ectus-r-demo
 - Ver métricas, requests, errores
 
-## 🎯 Próximos Pasos
+##  Próximos Pasos
 
 ### Para Habilitar GitHub Pages:
 
@@ -190,7 +190,7 @@ godo add ectus.ai CNAME demo yatrogenesis.github.io 3600
 - Debe ser certificado válido X.509
 - Debe ser emitido por SAT CA
 
-## 📞 Contacto
+##  Contacto
 
 Para demos personalizadas o consultas:
 - Email: info@yatrogenesis.com
@@ -198,7 +198,7 @@ Para demos personalizadas o consultas:
 
 ---
 
-**Status**: ✅ DEPLOYED AND OPERATIONAL
+**Status**:  DEPLOYED AND OPERATIONAL
 
 **Last Updated**: 2025-09-30
 

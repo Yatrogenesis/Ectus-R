@@ -6,22 +6,22 @@
 
 ---
 
-## 🚨 RESUMEN EJECUTIVO
+##  RESUMEN EJECUTIVO
 
-**Severidad**: 🔴 **CRÍTICO**
+**Severidad**:  **CRÍTICO**
 
 | Categoría | Cantidad | Severidad |
 |-----------|----------|-----------|
-| **Vulnerabilidades** | 8 | 🔴 CRÍTICO |
+| **Vulnerabilidades** | 8 |  CRÍTICO |
 | **Warnings** | 11 | 🟡 ALTA |
 | **Total issues** | **19** | **Requiere acción inmediata** |
 
 ---
 
-## 🔴 VULNERABILIDADES CRÍTICAS (8)
+##  VULNERABILIDADES CRÍTICAS (8)
 
 ### 1. idna v0.4.0 - RUSTSEC-2024-0421
-**Severidad**: 🔴 CRÍTICO
+**Severidad**:  CRÍTICO
 **Título**: Punycode labels acceptance vulnerability
 **Fecha**: 2024-12-09
 **Solución**: Upgrade to >=1.0.0
@@ -37,7 +37,7 @@ validator = "0.18"  # Actualizar en Cargo.toml
 ---
 
 ### 2. protobuf v2.27.1 - RUSTSEC-2024-0437
-**Severidad**: 🔴 CRÍTICO
+**Severidad**:  CRÍTICO
 **Título**: Crash due to uncontrolled recursion
 **Fecha**: 2024-12-12
 **Solución**: Upgrade to >=3.7.2
@@ -55,7 +55,7 @@ prometheus = "0.14"  # Actualizar en aion-licensing
 ---
 
 ### 3-4. ring v0.16.20 + v0.17.9 - RUSTSEC-2025-0009
-**Severidad**: 🔴 CRÍTICO
+**Severidad**:  CRÍTICO
 **Título**: AES functions panic when overflow checking is enabled
 **Fecha**: 2025-03-06
 **Solución**: Upgrade to >=0.17.12
@@ -77,7 +77,7 @@ tokio-rustls = "0.26"
 ---
 
 ### 5-8. tower v0.4.13 (4 instancias) - RUSTSEC-2024-0003
-**Severidad**: 🔴 CRÍTICO
+**Severidad**:  CRÍTICO
 **Título**: Data race in tower when buffer is at capacity
 **Fecha**: 2024-05-02
 **Solución**: Upgrade to >=0.5.0
@@ -127,15 +127,15 @@ tonic = "0.12"  # Requiere tower 0.5+
 
 ---
 
-## 📊 ANÁLISIS DE IMPACTO POR CRATE
+##  ANÁLISIS DE IMPACTO POR CRATE
 
 | Crate | Vulnerabilidades | Warnings | Prioridad |
 |-------|------------------|----------|-----------|
-| **aion-cloud** | 4 (ring, tower) | 1 | 🔴 CRÍTICO |
-| **aion-auth** | 4 (ring, tower) | 0 | 🔴 CRÍTICO |
-| **aion-api-gateway** | 4 (ring, tower) | 0 | 🔴 CRÍTICO |
-| **aion-web-api** | 4 (tower) | 0 | 🔴 CRÍTICO |
-| **aion-licensing** | 3 (idna, protobuf, tower) | 2 | 🔴 CRÍTICO |
+| **aion-cloud** | 4 (ring, tower) | 1 |  CRÍTICO |
+| **aion-auth** | 4 (ring, tower) | 0 |  CRÍTICO |
+| **aion-api-gateway** | 4 (ring, tower) | 0 |  CRÍTICO |
+| **aion-web-api** | 4 (tower) | 0 |  CRÍTICO |
+| **aion-licensing** | 3 (idna, protobuf, tower) | 2 |  CRÍTICO |
 | **aion-marketplace** | 2 (idna, tower) | 2 | 🟠 ALTA |
 | **aion-ai-engine** | 2 (protobuf, tower) | 1 | 🟠 ALTA |
 | **aion-plugin-system** | 1 (tower) | 2 | 🟠 ALTA |
@@ -143,12 +143,12 @@ tonic = "0.12"  # Requiere tower 0.5+
 
 ---
 
-## 🔧 PLAN DE REMEDIACIÓN PRIORITARIO
+##  PLAN DE REMEDIACIÓN PRIORITARIO
 
 ### FASE 1: Actualizaciones Críticas (Semana 1)
 
 #### 1.1 Tower upgrade (Afecta TODOS los crates)
-**Prioridad**: 🔴 INMEDIATA
+**Prioridad**:  INMEDIATA
 
 ```bash
 # Actualizar en workspace Cargo.toml
@@ -158,16 +158,16 @@ tonic = "0.12"  # Requiere tower 0.5
 ```
 
 **Testing requerido**:
-- ✅ Compilación workspace completo
-- ✅ Tests unitarios de HTTP/gRPC
-- ✅ Integration tests de API Gateway
+-  Compilación workspace completo
+-  Tests unitarios de HTTP/gRPC
+-  Integration tests de API Gateway
 
 **Estimación**: 2-3 días
 
 ---
 
 #### 1.2 Ring + Rustls upgrade (Afecta crates con TLS/JWT)
-**Prioridad**: 🔴 INMEDIATA
+**Prioridad**:  INMEDIATA
 
 ```toml
 [workspace.dependencies]
@@ -223,12 +223,12 @@ wasmtime-wasi = "20"
 
 ---
 
-## 📈 MÉTRICAS POST-REMEDIACIÓN
+##  MÉTRICAS POST-REMEDIACIÓN
 
 **Objetivo**:
-- ✅ 0 vulnerabilidades críticas
-- ✅ 0-2 warnings aceptables (documentados)
-- ✅ Todas las dependencias maintained (<1 año sin updates)
+-  0 vulnerabilidades críticas
+-  0-2 warnings aceptables (documentados)
+-  Todas las dependencias maintained (<1 año sin updates)
 
 **Verificación**:
 ```bash
@@ -238,7 +238,7 @@ cargo deny check
 
 ---
 
-## 🔒 RECOMENDACIONES ADICIONALES
+##  RECOMENDACIONES ADICIONALES
 
 1. **CI/CD Integration**:
    ```yaml
@@ -266,7 +266,7 @@ cargo deny check
 
 ---
 
-## 📝 NOTAS
+##  NOTAS
 
 - Este audit fue ejecutado contra Cargo.lock actual
 - Vulnerabilidades RUSTSEC-2025-* son MUY recientes (marzo 2025)

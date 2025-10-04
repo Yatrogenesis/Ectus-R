@@ -2,11 +2,11 @@
 **Fecha:** 2025-10-02 00:20 UTC
 **Acción Crítica:** Proyecto movido completamente a D:\ por falta de espacio en C:\
 
-## 📍 NUEVA UBICACIÓN
-**Proyecto:** `D:\Ectus-R` ✅
+##  NUEVA UBICACIÓN
+**Proyecto:** `D:\Ectus-R` 
 **Anterior:** `C:\Users\Propietario\Ectus-R` (eliminado)
 
-## 🚨 PROBLEMA RESUELTO
+##  PROBLEMA RESUELTO
 
 ### Causa
 - C:\ se llenó completamente (0 GB libres)
@@ -25,7 +25,7 @@
 - **Proyecto en D:\:** Sin restricciones de espacio
 - **Compilaciones futuras:** Directamente en D:\
 
-## 📋 PRÓXIMOS PASOS
+##  PRÓXIMOS PASOS
 
 ### 1. Compilar desde D:\Ectus-R
 ```bash
@@ -41,7 +41,7 @@ cargo build -p aion-ai-engine
 - Compilar todos los crates desde D:\
 - Sin preocupación por espacio en disco
 
-## ⚠️ IMPORTANTE
+## ️ IMPORTANTE
 **SIEMPRE compilar desde D:\Ectus-R** para evitar problemas de espacio
 
 ---

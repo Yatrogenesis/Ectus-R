@@ -1,11 +1,11 @@
-# 🌐 Demo Público - Acceso Libre
+#  Demo Público - Acceso Libre
 
 **Actualizado**: 2025-09-30 23:00 UTC
 **Status**: 🟢 ACCESO PÚBLICO SIN RESTRICCIONES
 
 ---
 
-## 🎯 Acceso Directo
+##  Acceso Directo
 
 ```
 https://ectus-r-creator.pages.dev/demo
@@ -17,7 +17,7 @@ El demo ahora carga **directamente** y permite probar la generación de código 
 
 ---
 
-## ⚡ Quick Start (15 segundos)
+##  Quick Start (15 segundos)
 
 1. **Abre**: https://ectus-r-creator.pages.dev/demo
 2. **Escribe prompt**: "Create a REST API for blog posts"
@@ -27,25 +27,25 @@ El demo ahora carga **directamente** y permite probar la generación de código 
 
 ---
 
-## ✅ Cambios Realizados
+##  Cambios Realizados
 
 ### Se Eliminaron
-- ❌ Página de login
-- ❌ Validación de credenciales
-- ❌ Validación de certificado SAT
-- ❌ Verificación de sesión
-- ❌ Restricciones de acceso
+-  Página de login
+-  Validación de credenciales
+-  Validación de certificado SAT
+-  Verificación de sesión
+-  Restricciones de acceso
 
 ### Ahora Funciona
-- ✅ Carga directa al demo
-- ✅ Generación sin autenticación
-- ✅ Acceso público completo
-- ✅ Sin límites de uso
-- ✅ IA disponible para todos
+-  Carga directa al demo
+-  Generación sin autenticación
+-  Acceso público completo
+-  Sin límites de uso
+-  IA disponible para todos
 
 ---
 
-## 🤖 Modelo de IA
+##  Modelo de IA
 
 **Modelo**: Llama 3.3 70B Instruct (fp8-fast)
 **Provider**: Cloudflare Workers AI (Free Tier)
@@ -54,13 +54,13 @@ El demo ahora carga **directamente** y permite probar la generación de código 
 
 ---
 
-## 🎨 Lenguajes y Frameworks Disponibles
+##  Lenguajes y Frameworks Disponibles
 
 ### Lenguajes
-- 🦀 **Rust** (Default)
-- 📘 **TypeScript**
-- 🐍 **Python**
-- 🔷 **Go**
+-  **Rust** (Default)
+-  **TypeScript**
+-  **Python**
+-  **Go**
 
 ### Frameworks
 #### Rust
@@ -85,7 +85,7 @@ El demo ahora carga **directamente** y permite probar la generación de código 
 
 ---
 
-## 💡 Ejemplos de Prompts
+##  Ejemplos de Prompts
 
 ### Básico
 ```
@@ -111,30 +111,30 @@ email verification, password reset, and rate limiting
 
 ---
 
-## 📊 Lo Que Obtienes
+##  Lo Que Obtienes
 
 ### Código Generado
-- ✅ Production-ready
-- ✅ Best practices aplicadas
-- ✅ Error handling incluido
-- ✅ Logging configurado
-- ✅ Documentación en comentarios
+-  Production-ready
+-  Best practices aplicadas
+-  Error handling incluido
+-  Logging configurado
+-  Documentación en comentarios
 
 ### Tests Automáticos
-- ✅ Unit tests
-- ✅ Integration tests
-- ✅ 95% coverage target
-- ✅ Ejemplos de uso
+-  Unit tests
+-  Integration tests
+-  95% coverage target
+-  Ejemplos de uso
 
 ### Métricas
-- 📏 **LOC**: Líneas de código
-- 🧪 **Coverage**: 95% típico
-- ⚡ **Tiempo**: 2-5 segundos
-- 🔒 **Security**: Score 100
+-  **LOC**: Líneas de código
+-  **Coverage**: 95% típico
+-  **Tiempo**: 2-5 segundos
+-  **Security**: Score 100
 
 ---
 
-## 🌐 Arquitectura
+##  Arquitectura
 
 ```
 Usuario → Demo Page → Cloudflare Worker → Workers AI (Llama 3.3 70B) → Código
@@ -146,7 +146,7 @@ Usuario → Demo Page → Cloudflare Worker → Workers AI (Llama 3.3 70B) → C
 
 ---
 
-## 🔧 API Endpoint Público
+##  API Endpoint Público
 
 ### Endpoint
 ```
@@ -192,44 +192,44 @@ curl -X POST https://ectus-r-demo.pako-molina.workers.dev/api/demo/generate \
 
 ---
 
-## 🎯 Casos de Uso
+##  Casos de Uso
 
 ### Para Desarrolladores
-- 🚀 Prototipado rápido
-- 📚 Aprender nuevos frameworks
-- 🔍 Explorar best practices
-- 💡 Generar código boilerplate
+-  Prototipado rápido
+-  Aprender nuevos frameworks
+-  Explorar best practices
+-  Generar código boilerplate
 
 ### Para Educación
-- 👨‍🎓 Enseñar patrones de diseño
-- 📖 Ejemplos de código limpio
-- 🧪 Testing patterns
-- 🔒 Security best practices
+- ‍ Enseñar patrones de diseño
+-  Ejemplos de código limpio
+-  Testing patterns
+-  Security best practices
 
 ### Para Evaluación
-- ⚡ Demo rápido del producto
-- 🎨 Showcase de capacidades
-- 🤖 Calidad del modelo IA
-- 📊 Performance metrics
+-  Demo rápido del producto
+-  Showcase de capacidades
+-  Calidad del modelo IA
+-  Performance metrics
 
 ---
 
-## 📈 Limitaciones (Free Tier)
+##  Limitaciones (Free Tier)
 
 ### Workers AI (Cloudflare)
-- ✅ Requests ilimitados
-- ✅ Sin costo
-- ⚠️ Rate limiting automático (si abuse)
+-  Requests ilimitados
+-  Sin costo
+- ️ Rate limiting automático (si abuse)
 
 ### Recomendaciones
-- 💡 Prompts claros y específicos
-- 🎯 Proyectos pequeños a medianos
-- 📝 Review del código generado
-- 🧪 Testing del código antes de prod
+-  Prompts claros y específicos
+-  Proyectos pequeños a medianos
+-  Review del código generado
+-  Testing del código antes de prod
 
 ---
 
-## 🔄 Flujo de Uso
+##  Flujo de Uso
 
 1. **Abre demo** → Interfaz carga inmediatamente
 2. **Escribe prompt** → Describe tu proyecto
@@ -241,7 +241,7 @@ curl -X POST https://ectus-r-demo.pako-molina.workers.dev/api/demo/generate \
 
 ---
 
-## 🚀 URLs del Sistema
+##  URLs del Sistema
 
 | Recurso | URL | Acceso |
 |---------|-----|--------|
@@ -252,7 +252,7 @@ curl -X POST https://ectus-r-demo.pako-molina.workers.dev/api/demo/generate \
 
 ---
 
-## 📞 Soporte
+##  Soporte
 
 **Issues?**
 - Verifica que el prompt sea claro
@@ -266,22 +266,22 @@ curl https://ectus-r-demo.pako-molina.workers.dev/api/demo/status
 
 ---
 
-## 🎉 Resumen
+##  Resumen
 
-### ✅ Lo Que Cambió
+###  Lo Que Cambió
 - **Antes**: Login requerido → Credenciales o certificado SAT
 - **Ahora**: Acceso directo → Sin autenticación
 
-### ✅ Por Qué
+###  Por Qué
 - **Facilitar pruebas**: Sin barreras de entrada
 - **Demo público**: Cualquiera puede probar
 - **Evaluación rápida**: 15 segundos para ver resultados
 
-### ✅ Resultado
-- 🌐 **Demo público**: Acceso libre inmediato
-- ⚡ **Sin fricción**: Carga directa
-- 🤖 **IA gratis**: Cloudflare Workers AI
-- 📊 **Full features**: Todas las capacidades disponibles
+###  Resultado
+-  **Demo público**: Acceso libre inmediato
+-  **Sin fricción**: Carga directa
+-  **IA gratis**: Cloudflare Workers AI
+-  **Full features**: Todas las capacidades disponibles
 
 ---
 

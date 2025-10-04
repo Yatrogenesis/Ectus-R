@@ -1,8 +1,8 @@
-# ✅ Dominio Personalizado Configurado
+#  Dominio Personalizado Configurado
 
-## 🌐 Custom Domain: creator.avermex.com
+##  Custom Domain: creator.avermex.com
 
-### Status: ✅ OPERACIONAL
+### Status:  OPERACIONAL
 
 ---
 
@@ -12,16 +12,16 @@
 ```
 URL Principal: https://creator.avermex.com/landing.html
 URL Alternativa: https://yatrogenesis.github.io/Ectus-R/landing.html
-Status: ✅ LIVE
-HTTPS: ✅ Habilitado (vía Cloudflare)
+Status:  LIVE
+HTTPS:  Habilitado (vía Cloudflare)
 ```
 
 ### Demo Privado Funcional
 ```
 URL Principal: https://creator.avermex.com/demo.html
 URL Alternativa: https://yatrogenesis.github.io/Ectus-R/demo.html
-Status: ✅ LIVE
-HTTPS: ✅ Habilitado (vía Cloudflare)
+Status:  LIVE
+HTTPS:  Habilitado (vía Cloudflare)
 
 Credenciales:
 Usuario: demo_user
@@ -30,7 +30,7 @@ Password: SecureDemo2025!
 
 ---
 
-## 🔧 Configuración DNS
+##  Configuración DNS
 
 ### Registro CNAME (GoDaddy)
 ```
@@ -38,61 +38,61 @@ Tipo: CNAME
 Nombre: creator
 Destino: yatrogenesis.github.io
 TTL: 3600
-Status: ✅ Configurado
+Status:  Configurado
 ```
 
 ### GitHub Pages
 ```
 Custom Domain: creator.avermex.com
 Source: main branch, /docs folder
-CNAME File: ✅ Creado en docs/CNAME
+CNAME File:  Creado en docs/CNAME
 HTTPS: ⏳ En proceso (puede tardar hasta 24h para certificado)
-Status: ✅ Configurado
+Status:  Configurado
 ```
 
 ### Cloudflare
 ```
-DNS Proxy: ✅ Activo (ícono naranja)
+DNS Proxy:  Activo (ícono naranja)
 SSL/TLS: Flexible o Full
-Status: ✅ Funcionando
-Redirect HTTP → HTTPS: ✅ Automático
+Status:  Funcionando
+Redirect HTTP → HTTPS:  Automático
 ```
 
 ---
 
-## 🧪 Tests de Verificación
+##  Tests de Verificación
 
 ### Test 1: Resolución DNS
 ```bash
 nslookup creator.avermex.com
 # Response: Cloudflare IPs (2606:4700:3036::ac43:8424)
-# ✅ DNS propagado correctamente
+#  DNS propagado correctamente
 ```
 
 ### Test 2: Landing Page
 ```bash
 curl -L https://creator.avermex.com/landing.html
 # Response: HTTP 200 + HTML content
-# ✅ Landing page accesible
+#  Landing page accesible
 ```
 
 ### Test 3: Demo Page
 ```bash
 curl -L https://creator.avermex.com/demo.html
 # Response: HTTP 200 + HTML content
-# ✅ Demo page accesible
+#  Demo page accesible
 ```
 
 ### Test 4: HTTP → HTTPS Redirect
 ```bash
 curl -I http://creator.avermex.com/landing.html
 # Response: HTTP 301 → https://creator.avermex.com/landing.html
-# ✅ Redirect automático funcionando
+#  Redirect automático funcionando
 ```
 
 ---
 
-## 📱 URLs para Compartir
+##  URLs para Compartir
 
 ### Para Promoción y Marketing
 ```
@@ -100,9 +100,9 @@ Landing Page Principal:
 https://creator.avermex.com/landing.html
 
 Mensaje de Promoción:
-"🚀 Descubre Ectus-R - Plataforma de Ingeniería de Software con IA
-✅ 10x más rápido | 95% test coverage | 100% seguridad OWASP
-👉 https://creator.avermex.com/landing.html"
+" Descubre Ectus-R - Plataforma de Ingeniería de Software con IA
+ 10x más rápido | 95% test coverage | 100% seguridad OWASP
+ https://creator.avermex.com/landing.html"
 ```
 
 ### Para Demos en Vivo
@@ -115,25 +115,25 @@ Usuario: demo_user
 Password: SecureDemo2025!
 
 Mensaje para Clientes:
-"🎯 Accede al demo privado de Ectus-R
+" Accede al demo privado de Ectus-R
 Genera código production-ready con IA en tiempo real
-👉 https://creator.avermex.com/demo.html"
+ https://creator.avermex.com/demo.html"
 ```
 
 ---
 
-## 🔐 Configuración de Seguridad
+##  Configuración de Seguridad
 
 ### HTTPS/SSL
-- ✅ Certificado SSL vía Cloudflare
-- ✅ Redirect automático HTTP → HTTPS
-- ✅ TLS 1.2/1.3 soportado
+-  Certificado SSL vía Cloudflare
+-  Redirect automático HTTP → HTTPS
+-  TLS 1.2/1.3 soportado
 - ⏳ GitHub Pages SSL (puede tardar hasta 24h en activarse)
 
 ### DNS
-- ✅ DNSSEC: Disponible vía Cloudflare
-- ✅ CAA Records: Configurables
-- ✅ Cloudflare proxy activo (protección DDoS)
+-  DNSSEC: Disponible vía Cloudflare
+-  CAA Records: Configurables
+-  Cloudflare proxy activo (protección DDoS)
 
 ### Headers de Seguridad
 ```
@@ -145,7 +145,7 @@ X-Content-Type-Options: nosniff
 
 ---
 
-## 🎯 Estructura de URLs
+##  Estructura de URLs
 
 ### Sitio Principal
 ```
@@ -166,12 +166,12 @@ https://ectus-r-demo.pako-molina.workers.dev/api/
 
 ---
 
-## 🔄 Propagación DNS
+##  Propagación DNS
 
 ### Status Actual
-- ✅ GoDaddy DNS: Configurado
-- ✅ Cloudflare: Proxy activo
-- ✅ GitHub Pages: CNAME configurado
+-  GoDaddy DNS: Configurado
+-  Cloudflare: Proxy activo
+-  GitHub Pages: CNAME configurado
 - ⏳ Propagación global: 0-48 horas (usualmente <1 hora)
 
 ### Verificar Propagación
@@ -186,7 +186,7 @@ nslookup creator.avermex.com 208.67.222.222 # OpenDNS
 
 ---
 
-## 🚀 Siguiente Pasos Opcionales
+##  Siguiente Pasos Opcionales
 
 ### 1. Configurar Subdominio API
 ```bash
@@ -223,7 +223,7 @@ creator.avermex.com
 
 ---
 
-## 📊 Monitoreo
+##  Monitoreo
 
 ### Cloudflare Analytics
 ```
@@ -254,7 +254,7 @@ https://ectus-r-demo.pako-molina.workers.dev/api/demo/status
 
 ---
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Problema: Certificado SSL no aparece
 **Solución**:
@@ -292,7 +292,7 @@ https://creator.avermex.com/landing.html?v=2
 
 ---
 
-## ✅ Checklist de Configuración
+##  Checklist de Configuración
 
 - [x] DNS CNAME configurado en GoDaddy
 - [x] CNAME file creado en GitHub repo
@@ -308,20 +308,20 @@ https://creator.avermex.com/landing.html?v=2
 
 ---
 
-## 🎉 ¡Dominio Custom Activo!
+##  ¡Dominio Custom Activo!
 
 Tu plataforma Ectus-R ahora está disponible en:
 
 ### URLs Principales
-✅ **Landing**: https://creator.avermex.com/landing.html
-✅ **Demo**: https://creator.avermex.com/demo.html
-✅ **API**: https://ectus-r-demo.pako-molina.workers.dev
+ **Landing**: https://creator.avermex.com/landing.html
+ **Demo**: https://creator.avermex.com/demo.html
+ **API**: https://ectus-r-demo.pako-molina.workers.dev
 
 ### URLs Alternativas (siguen funcionando)
-✅ **Landing**: https://yatrogenesis.github.io/Ectus-R/landing.html
-✅ **Demo**: https://yatrogenesis.github.io/Ectus-R/demo.html
+ **Landing**: https://yatrogenesis.github.io/Ectus-R/landing.html
+ **Demo**: https://yatrogenesis.github.io/Ectus-R/demo.html
 
 **Última Actualización**: 2025-09-30 21:00 UTC
 **Status**: 🟢 DOMINIO CUSTOM OPERACIONAL
-**DNS**: ✅ Propagado
-**HTTPS**: ✅ Activo (Cloudflare)
+**DNS**:  Propagado
+**HTTPS**:  Activo (Cloudflare)

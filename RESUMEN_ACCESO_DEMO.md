@@ -1,6 +1,6 @@
-# 🚀 Acceso al Demo Ectus-R - Guía Rápida
+#  Acceso al Demo Ectus-R - Guía Rápida
 
-## ✅ URL Principal del Demo
+##  URL Principal del Demo
 
 ```
 https://ectus-r-creator.pages.dev/demo
@@ -8,7 +8,7 @@ https://ectus-r-creator.pages.dev/demo
 
 ---
 
-## 🔐 Credenciales de Acceso
+##  Credenciales de Acceso
 
 ### Opción 1: Usuario y Contraseña
 ```
@@ -25,7 +25,7 @@ Titular: Francisco Molina Burgos
 
 ---
 
-## 🎯 Cómo Acceder (3 Pasos)
+##  Cómo Acceder (3 Pasos)
 
 ### 1. Abre el Demo
 Navega a: **https://ectus-r-creator.pages.dev/demo**
@@ -43,7 +43,7 @@ Navega a: **https://ectus-r-creator.pages.dev/demo**
 
 ---
 
-## 💡 Ejemplos de Prompts
+##  Ejemplos de Prompts
 
 ### REST API Blog
 ```
@@ -71,7 +71,7 @@ orders, and inventory management
 
 ---
 
-## 🧪 Verificar Conexión
+##  Verificar Conexión
 
 Si tienes problemas para acceder, usa el test automático:
 
@@ -80,14 +80,14 @@ https://ectus-r-creator.pages.dev/test-demo-connection.html
 ```
 
 Este test verifica:
-- ✅ Conexión con backend API
-- ✅ Headers CORS
-- ✅ Autenticación funcional
-- ✅ Generación de código con IA
+-  Conexión con backend API
+-  Headers CORS
+-  Autenticación funcional
+-  Generación de código con IA
 
 ---
 
-## 📊 Métricas que Verás
+##  Métricas que Verás
 
 Después de generar código, el sistema muestra:
 
@@ -100,7 +100,7 @@ Después de generar código, el sistema muestra:
 
 ---
 
-## 🔧 Troubleshooting Rápido
+##  Troubleshooting Rápido
 
 ### "No puedo acceder"
 → Usa: https://ectus-r-creator.pages.dev/test-demo-connection.html
@@ -119,7 +119,7 @@ curl https://ectus-r-demo.pako-molina.workers.dev/api/demo/status
 
 ---
 
-## 🌐 URLs Completas del Sistema
+##  URLs Completas del Sistema
 
 | Recurso | URL |
 |---------|-----|
@@ -131,11 +131,11 @@ curl https://ectus-r-demo.pako-molina.workers.dev/api/demo/status
 
 ---
 
-## 📱 Para Compartir el Demo
+##  Para Compartir el Demo
 
 ### Mensaje Corto
 ```
-🚀 Ectus-R - Generación de Código con IA
+ Ectus-R - Generación de Código con IA
 
 Demo: https://ectus-r-creator.pages.dev/demo
 Usuario: demo_user
@@ -149,25 +149,25 @@ Genera código production-ready en segundos.
 Te invito a probar Ectus-R, nuestra plataforma de ingeniería
 de software autónoma con IA.
 
-🔗 Demo en vivo: https://ectus-r-creator.pages.dev/demo
+ Demo en vivo: https://ectus-r-creator.pages.dev/demo
 
 Credenciales:
 - Usuario: demo_user
 - Contraseña: SecureDemo2025!
 
 Características:
-✅ Código production-ready generado por IA
-✅ Tests automáticos incluidos (95% coverage)
-✅ Soporte multi-lenguaje (Rust, TS, Python, Go)
-✅ 100% seguridad OWASP
-✅ Generación en 2-5 segundos
+ Código production-ready generado por IA
+ Tests automáticos incluidos (95% coverage)
+ Soporte multi-lenguaje (Rust, TS, Python, Go)
+ 100% seguridad OWASP
+ Generación en 2-5 segundos
 
 Pruébalo con: "Create a REST API for user authentication"
 ```
 
 ---
 
-## ⚡ Quick Start (30 Segundos)
+##  Quick Start (30 Segundos)
 
 1. **Abre**: https://ectus-r-creator.pages.dev/demo
 2. **Login**: `demo_user` / `SecureDemo2025!`
@@ -178,7 +178,7 @@ Pruébalo con: "Create a REST API for user authentication"
 
 ---
 
-## 📞 Soporte
+##  Soporte
 
 Si encuentras algún problema:
 

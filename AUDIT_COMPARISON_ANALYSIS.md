@@ -83,11 +83,11 @@
 
 | Issue | Auditor 2 | Nuestra Eval | Prioridad |
 |-------|-----------|--------------|-----------|
-| **sqlx 0.7 advisory** | ✓ Detectado | ✓ Confirmado | P0 |
-| **Duplicate versions** | ✓ 17 crates | ✓ Confirmado | P1 |
-| **No cargo-audit in CI** | ✓ Detectado | ✓ Confirmado | P1 |
-| **Truncated code** | ✓ 32.3% files | ✗ No existe (GitHub live) | N/A (artifact de snapshot) |
-| **Low test coverage** | ✓ Implícito | ✓ 5% (explícito) | P1 |
+| **sqlx 0.7 advisory** |  Detectado |  Confirmado | P0 |
+| **Duplicate versions** |  17 crates |  Confirmado | P1 |
+| **No cargo-audit in CI** |  Detectado |  Confirmado | P1 |
+| **Truncated code** |  32.3% files |  No existe (GitHub live) | N/A (artifact de snapshot) |
+| **Low test coverage** |  Implícito |  5% (explícito) | P1 |
 
 **VEREDICTO SEGURIDAD**: **ALTA CONSISTENCIA** - Ambos auditores encontraron los mismos issues críticos.
 
@@ -104,7 +104,7 @@
 | **Nuestra Evaluación** | **294,187** | **~310K** | **~200+** | **GitHub live clone** (código completo) |
 
 **VEREDICTO LOC**:
-- **DISCREPANCIA MASIVA DETECTADA** 🚨
+- **DISCREPANCIA MASIVA DETECTADA** 
 - Auditor 2: **23,349 LOC** (snapshot severamente incompleto)
 - Nuestra: **294,187 LOC** (GitHub completo)
 - **Diferencia**: **+270,838 LOC** (+1,160% MÁS código real)
@@ -216,15 +216,15 @@ El Auditor 2 contó:
 
 | Métrica | Auditor 1 | Auditor 2 | Nuestra | Winner |
 |---------|-----------|-----------|---------|--------|
-| **Ectus-R LOC** | ❌ No spec |  110K (subestimado 29%) |  142K | **Nuestra** |
-| **AION-R LOC** | ❌ No spec | ❌ 23K (subestimado 1,160%) |  294K | **Nuestra** |
-| **AION-CR LOC** | ❌ No eval |  214K (sobreestimado 5.5%) |  203K | **Nuestra** |
-| **AGI-AEF Score Ectus-R** | ❌ 85 (error -50.9%) | N/A |  173 | **Nuestra** |
-| **AGI-AEF Score AION-R** | ❌ 78 (error -66.5%) | N/A |  232.8 | **Nuestra** |
-| **AGI-AEF Score AION-CR** | ❌ No eval | N/A |  241.5 | **Nuestra** |
-| **Security Issues** | ❌ No detectado |  Completo |  Completo | **Empate** (A2 + Nuestra) |
-| **Dependencies** | ❌ No analizado |  SBOM completo |  Parcial | **Auditor 2** |
-| **Quantum ML** | ❌ No verificado | ❌ No verificado |  1,112 LOC verificado | **Nuestra** |
+| **Ectus-R LOC** |  No spec |  110K (subestimado 29%) |  142K | **Nuestra** |
+| **AION-R LOC** |  No spec |  23K (subestimado 1,160%) |  294K | **Nuestra** |
+| **AION-CR LOC** |  No eval |  214K (sobreestimado 5.5%) |  203K | **Nuestra** |
+| **AGI-AEF Score Ectus-R** |  85 (error -50.9%) | N/A |  173 | **Nuestra** |
+| **AGI-AEF Score AION-R** |  78 (error -66.5%) | N/A |  232.8 | **Nuestra** |
+| **AGI-AEF Score AION-CR** |  No eval | N/A |  241.5 | **Nuestra** |
+| **Security Issues** |  No detectado |  Completo |  Completo | **Empate** (A2 + Nuestra) |
+| **Dependencies** |  No analizado |  SBOM completo |  Parcial | **Auditor 2** |
+| **Quantum ML** |  No verificado |  No verificado |  1,112 LOC verificado | **Nuestra** |
 
 **WINNER OVERALL**: **Nuestra Evaluación** (6/9 métricas más precisas)
 
@@ -250,10 +250,10 @@ El Auditor 2 contó:
 ### Factores de Incertidumbre
 
 **Auditor 1 (AGI-AEF)**:
-- ❌ Snapshots incompletos (32.3% redacted Ectus-R, 12.8% AION-R)
-- ❌ No verificó código fuente real
-- ❌ Metodología AGI-AEF aplicada conservadoramente (scores 50-66% subestimados)
-- ❌ No evaluó AION-CR completamente
+-  Snapshots incompletos (32.3% redacted Ectus-R, 12.8% AION-R)
+-  No verificó código fuente real
+-  Metodología AGI-AEF aplicada conservadoramente (scores 50-66% subestimados)
+-  No evaluó AION-CR completamente
 
 **Auditor 2 (Molecular)**:
 -  Snapshots con código redactado (ellipsis `...`)

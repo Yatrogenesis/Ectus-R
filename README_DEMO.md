@@ -1,17 +1,17 @@
-# 🚀 Ectus-R - Demo en Vivo
+#  Ectus-R - Demo en Vivo
 
 > **Plataforma de Ingeniería de Software Autónoma con IA**
 
 ---
 
-## ⚡ Acceso Inmediato
+##  Acceso Inmediato
 
-### 🎯 URL del Demo
+###  URL del Demo
 ```
 https://ectus-r-creator.pages.dev/demo
 ```
 
-### 🔐 Credenciales
+###  Credenciales
 ```
 Usuario:    demo_user
 Contraseña: SecureDemo2025!
@@ -19,7 +19,7 @@ Contraseña: SecureDemo2025!
 
 ---
 
-## 🎬 Quick Start (30 segundos)
+##  Quick Start (30 segundos)
 
 1. **Abre** → https://ectus-r-creator.pages.dev/demo
 2. **Login** → `demo_user` / `SecureDemo2025!`
@@ -27,24 +27,24 @@ Contraseña: SecureDemo2025!
 4. **Selecciona** → Rust + Axum
 5. **Genera** → Click "Generar Código"
 
-**Resultado**: Código production-ready + tests en 2-5 segundos ⚡
+**Resultado**: Código production-ready + tests en 2-5 segundos 
 
 ---
 
-## ✨ Características
+##  Características
 
 | Característica | Descripción |
 |----------------|-------------|
-| 🤖 **IA Avanzada** | Llama 3.3 70B para código production-ready |
-| 🌐 **Multi-lenguaje** | Rust, TypeScript, Python, Go |
-| 🧪 **Tests Automáticos** | 95% coverage incluido |
-| 🔒 **Seguridad OWASP** | 100% compliance automático |
-| ⚡ **Velocidad** | Generación en 2-5 segundos |
-| 📊 **Métricas** | LOC, coverage, tiempo, security score |
+|  **IA Avanzada** | Llama 3.3 70B para código production-ready |
+|  **Multi-lenguaje** | Rust, TypeScript, Python, Go |
+|  **Tests Automáticos** | 95% coverage incluido |
+|  **Seguridad OWASP** | 100% compliance automático |
+|  **Velocidad** | Generación en 2-5 segundos |
+|  **Métricas** | LOC, coverage, tiempo, security score |
 
 ---
 
-## 🎯 Ejemplos de Uso
+##  Ejemplos de Uso
 
 ### REST API Blog
 ```
@@ -66,31 +66,31 @@ refresh tokens, password reset, and email verification
 
 ---
 
-## 🧪 Verificar Sistema
+##  Verificar Sistema
 
 **Test Automático**: https://ectus-r-creator.pages.dev/test-demo-connection.html
 
 Verifica:
-- ✅ Conexión backend
-- ✅ CORS headers
-- ✅ Autenticación
-- ✅ Generación IA
+-  Conexión backend
+-  CORS headers
+-  Autenticación
+-  Generación IA
 
 ---
 
-## 📊 Métricas del Sistema
+##  Métricas del Sistema
 
 ```
-⚡ Response Time:    <200ms (target: <500ms)
-🚀 Generación IA:    2-5s   (target: <10s)
-✅ Disponibilidad:   99.9%+ (target: >99%)
-🧪 Test Coverage:    95%    (target: >90%)
-🔒 Security Score:   100    (target: >90)
+ Response Time:    <200ms (target: <500ms)
+ Generación IA:    2-5s   (target: <10s)
+ Disponibilidad:   99.9%+ (target: >99%)
+ Test Coverage:    95%    (target: >90%)
+ Security Score:   100    (target: >90)
 ```
 
 ---
 
-## 🔐 Autenticación Dual
+##  Autenticación Dual
 
 ### Opción 1: Credenciales
 - Usuario: `demo_user`
@@ -103,7 +103,7 @@ Verifica:
 
 ---
 
-## 🌐 URLs del Sistema
+##  URLs del Sistema
 
 | Recurso | URL | Status |
 |---------|-----|--------|
@@ -114,7 +114,7 @@ Verifica:
 
 ---
 
-## 📚 Documentación
+##  Documentación
 
 - [`RESUMEN_ACCESO_DEMO.md`](RESUMEN_ACCESO_DEMO.md) - Guía de acceso rápido
 - [`DIAGNOSTICO_CONEXION_DEMO.md`](DIAGNOSTICO_CONEXION_DEMO.md) - Troubleshooting
@@ -124,7 +124,7 @@ Verifica:
 
 ---
 
-## 🛠️ Stack Tecnológico
+## ️ Stack Tecnológico
 
 **Backend**:
 - Cloudflare Workers (Edge Computing)
@@ -144,7 +144,7 @@ Verifica:
 
 ---
 
-## 🔧 Para Desarrolladores
+##  Para Desarrolladores
 
 ### Health Check
 ```bash
@@ -165,11 +165,11 @@ wrangler tail ectus-r-demo
 
 ---
 
-## 📱 Compartir Demo
+##  Compartir Demo
 
 ### Mensaje Corto
 ```
-🚀 Demo Ectus-R - Código IA en segundos
+ Demo Ectus-R - Código IA en segundos
 https://ectus-r-creator.pages.dev/demo
 User: demo_user | Pass: SecureDemo2025!
 ```
@@ -178,37 +178,37 @@ User: demo_user | Pass: SecureDemo2025!
 ```
 Prueba Ectus-R - Generación de código production-ready con IA
 
-🔗 https://ectus-r-creator.pages.dev/demo
-👤 demo_user / SecureDemo2025!
+ https://ectus-r-creator.pages.dev/demo
+ demo_user / SecureDemo2025!
 
-✅ Código + tests en 2-5s
-✅ Multi-lenguaje (Rust, TS, Python, Go)
-✅ 95% test coverage
-✅ 100% OWASP security
+ Código + tests en 2-5s
+ Multi-lenguaje (Rust, TS, Python, Go)
+ 95% test coverage
+ 100% OWASP security
 
 Ejemplo: "Create a REST API for blog posts"
 ```
 
 ---
 
-## 🎯 Status Actual
+##  Status Actual
 
 ```
 🟢 SISTEMA COMPLETAMENTE OPERACIONAL
 
-✅ Backend Worker   - Cloudflare Workers
-✅ Frontend Pages   - Cloudflare Pages
-✅ AI Engine        - Llama 3.3 70B
-✅ Authentication   - Dual (credentials + SAT)
-✅ Code Generation  - Production-ready
-✅ Tests            - Auto-generated 95%
-✅ Security         - OWASP 100%
-✅ Documentation    - Complete
+ Backend Worker   - Cloudflare Workers
+ Frontend Pages   - Cloudflare Pages
+ AI Engine        - Llama 3.3 70B
+ Authentication   - Dual (credentials + SAT)
+ Code Generation  - Production-ready
+ Tests            - Auto-generated 95%
+ Security         - OWASP 100%
+ Documentation    - Complete
 ```
 
 ---
 
-## 🚀 Deployment
+##  Deployment
 
 **Platform**: Cloudflare (Workers + Pages)
 **Status**: Production
@@ -218,7 +218,7 @@ Ejemplo: "Create a REST API for blog posts"
 
 ---
 
-## 📞 Soporte
+##  Soporte
 
 **Test Automático**: https://ectus-r-creator.pages.dev/test-demo-connection.html
 
@@ -228,14 +228,14 @@ Ejemplo: "Create a REST API for blog posts"
 
 ---
 
-## 🏆 Logros
+##  Logros
 
-- ⚡ **10x más rápido** que desarrollo tradicional
-- 🧪 **95% test coverage** automático
-- 🔒 **100% OWASP** compliance
-- 🤖 **IA avanzada** (Llama 3.3 70B)
-- 🌐 **Edge computing** global
-- ⚙️ **Production-ready** desde el inicio
+-  **10x más rápido** que desarrollo tradicional
+-  **95% test coverage** automático
+-  **100% OWASP** compliance
+-  **IA avanzada** (Llama 3.3 70B)
+-  **Edge computing** global
+- ️ **Production-ready** desde el inicio
 
 ---
 
