@@ -14,11 +14,15 @@ pub mod test_integration;
 // Prometheus exporter - ROADMAP Task 1.1
 pub mod prometheus_exporter_v2;
 
+// Distributed tracing - ROADMAP Task 1.5
+pub mod tracing;
+
 // Re-export the main types
 pub use real_time_monitor::{RealTimeMonitor, MetricUpdate, DataPoint, DashboardUpdate, AlertEvent};
 pub use websocket_service::{WebSocketService, WSMessage, ClientType};
 pub use test_integration::*;
 pub use prometheus_exporter_v2::{PrometheusExporter, MetricsRegistry};
+pub use tracing::{TracingConfig, TracingGuard, init_tracing, create_db_span, create_http_span, create_ai_span, create_external_api_span, add_span_event, set_span_error};
 
 /// Main entry point for the monitoring system
 pub struct AionMonitoring {

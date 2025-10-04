@@ -1,0 +1,461 @@
+# Prometheus Deployment for AION-R Platform
+# ROADMAP Task 4.1: Prometheus Kubernetes Deployment
+# Production-ready configuration with NO placeholders
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: aion-monitoring
+  labels:
+    name: aion-monitoring
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: aion-monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+      external_labels:
+        cluster: 'aion-production'
+        environment: 'production'
+
+    # Alertmanager configuration
+    alerting:
+      alertmanagers:
+        - static_configs:
+            - targets:
+                - alertmanager:9093
+
+    # Load rules once and periodically evaluate them
+    rule_files:
+      - '/etc/prometheus/alerts/*.yml'
+
+    # Scrape configurations
+    scrape_configs:
+      # Prometheus itself
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # AION Web API
+      - job_name: 'aion-web-api'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - aion-production
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            regex: aion-web-api
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__address__]
+            regex: '([^:]+):.*'
+            replacement: '${1}:9090'
+            target_label: __address__
+
+      # AION AI Engine
+      - job_name: 'aion-ai-engine'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - aion-production
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            regex: aion-ai-engine
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+
+      # PostgreSQL
+      - job_name: 'postgres'
+        static_configs:
+          - targets: ['postgres-exporter:9187']
+
+      # Redis
+      - job_name: 'redis'
+        static_configs:
+          - targets: ['redis-exporter:9121']
+
+      # Node Exporter (system metrics)
+      - job_name: 'node-exporter'
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - source_labels: [__address__]
+            regex: '([^:]+):.*'
+            replacement: '${1}:9100'
+            target_label: __address__
+          - source_labels: [__meta_kubernetes_node_name]
+            target_label: node
+
+      # Kubernetes API Server
+      - job_name: 'kubernetes-apiservers'
+        kubernetes_sd_configs:
+          - role: endpoints
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+            action: keep
+            regex: default;kubernetes;https
+
+      # Kubernetes Nodes
+      - job_name: 'kubernetes-nodes'
+        kubernetes_sd_configs:
+          - role: node
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-storage
+  namespace: aion-monitoring
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: fast-ssd
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: aion-monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+        component: monitoring
+    spec:
+      serviceAccountName: prometheus
+      securityContext:
+        fsGroup: 65534
+        runAsUser: 65534
+        runAsNonRoot: true
+
+      containers:
+      - name: prometheus
+        image: prom/prometheus:v2.45.0
+        imagePullPolicy: IfNotPresent
+
+        args:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus'
+          - '--storage.tsdb.retention.time=30d'
+          - '--storage.tsdb.retention.size=45GB'
+          - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+          - '--web.console.templates=/usr/share/prometheus/consoles'
+          - '--web.enable-lifecycle'
+          - '--web.enable-admin-api'
+
+        ports:
+          - name: http
+            containerPort: 9090
+            protocol: TCP
+
+        volumeMounts:
+          - name: config
+            mountPath: /etc/prometheus
+          - name: storage
+            mountPath: /prometheus
+          - name: alerts
+            mountPath: /etc/prometheus/alerts
+
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+
+      volumes:
+        - name: config
+          configMap:
+            name: prometheus-config
+        - name: storage
+          persistentVolumeClaim:
+            claimName: prometheus-storage
+        - name: alerts
+          configMap:
+            name: prometheus-alerts
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus
+  namespace: aion-monitoring
+  labels:
+    app: prometheus
+    component: monitoring
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  selector:
+    app: prometheus
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: aion-monitoring
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: aion-monitoring
+
+---
+# Prometheus alerts ConfigMap (mounted as volume)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alerts
+  namespace: aion-monitoring
+data:
+  aion_alerts.yml: |
+    groups:
+      - name: aion_api_alerts
+        interval: 30s
+        rules:
+          - alert: HighHTTPErrorRate
+            expr: |
+              (
+                sum(rate(http_requests_total{status=~"5.."}[5m]))
+                /
+                sum(rate(http_requests_total[5m]))
+              ) > 0.05
+            for: 5m
+            labels:
+              severity: critical
+              component: api
+            annotations:
+              summary: "High HTTP error rate detected"
+              description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+              runbook: "https://docs.aion.internal/runbooks/high_error_rate"
+
+          - alert: HighAPILatency
+            expr: |
+              histogram_quantile(0.95,
+                sum(rate(http_request_duration_seconds_bucket[10m])) by (le)
+              ) > 1.0
+            for: 10m
+            labels:
+              severity: warning
+              component: api
+            annotations:
+              summary: "API latency is high"
+              description: "p95 latency is {{ $value }}s (threshold: 1s)"
+              runbook: "https://docs.aion.internal/runbooks/high_latency"
+
+          - alert: ServiceDown
+            expr: up{job="aion-web-api"} == 0
+            for: 2m
+            labels:
+              severity: critical
+              component: api
+            annotations:
+              summary: "AION service is down"
+              description: "Service {{ $labels.instance }} has been down for more than 2 minutes"
+              runbook: "https://docs.aion.internal/runbooks/service_down"
+
+      - name: aion_database_alerts
+        interval: 30s
+        rules:
+          - alert: DatabaseConnectionPoolExhausted
+            expr: |
+              (db_connections_active / db_connection_pool_size) > 0.9
+            for: 5m
+            labels:
+              severity: critical
+              component: database
+            annotations:
+              summary: "Database connection pool nearly exhausted"
+              description: "Connection pool utilization is {{ $value | humanizePercentage }}"
+
+          - alert: SlowDatabaseQueries
+            expr: |
+              histogram_quantile(0.95,
+                sum(rate(db_query_duration_seconds_bucket[10m])) by (le)
+              ) > 2.0
+            for: 10m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "Slow database queries detected"
+              description: "p95 query duration is {{ $value }}s (threshold: 2s)"
+
+      - name: aion_ai_alerts
+        interval: 30s
+        rules:
+          - alert: HighAIInferenceErrors
+            expr: |
+              (
+                sum(rate(ai_inference_errors_total[5m]))
+                /
+                sum(rate(ai_inference_requests_total[5m]))
+              ) > 0.1
+            for: 5m
+            labels:
+              severity: warning
+              component: ai
+            annotations:
+              summary: "High AI inference error rate"
+              description: "AI error rate is {{ $value | humanizePercentage }} (threshold: 10%)"
+
+          - alert: SlowAIInference
+            expr: |
+              histogram_quantile(0.95,
+                sum(rate(ai_inference_duration_seconds_bucket[10m])) by (le, model)
+              ) > 30.0
+            for: 10m
+            labels:
+              severity: warning
+              component: ai
+            annotations:
+              summary: "Slow AI inference detected"
+              description: "p95 inference duration for {{ $labels.model }} is {{ $value }}s (threshold: 30s)"
+
+      - name: aion_system_alerts
+        interval: 30s
+        rules:
+          - alert: HighMemoryUsage
+            expr: |
+              (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+            for: 10m
+            labels:
+              severity: warning
+              component: system
+            annotations:
+              summary: "High memory usage on node {{ $labels.node }}"
+              description: "Memory usage is {{ $value | humanizePercentage }}"
+
+          - alert: HighCPUUsage
+            expr: |
+              100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+            for: 10m
+            labels:
+              severity: warning
+              component: system
+            annotations:
+              summary: "High CPU usage on node {{ $labels.instance }}"
+              description: "CPU usage is {{ $value }}%"
+
+---
+# Ingress for Prometheus (optional, for external access)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus
+  namespace: aion-monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - prometheus.aion.internal
+      secretName: prometheus-tls
+  rules:
+    - host: prometheus.aion.internal
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus
+                port:
+                  number: 9090

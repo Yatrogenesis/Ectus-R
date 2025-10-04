@@ -39,6 +39,7 @@ pub mod ast_parser;
 pub mod refactoring_operations;
 pub mod llm_providers;
 pub mod locked_files;
+pub mod metrics;
 
 pub use inference::*;
 pub use models::*;
@@ -54,6 +55,7 @@ pub use requirements_analyzer::*;
 pub use autonomous_qa::*;
 pub use template_engine::*;
 pub use project_scaffolding::*;
+pub use metrics::{AIMetrics, InferenceTracker, ModelLoadTracker};
 
 /// AI Engine configuration
 #[derive(Debug, Clone, serde::Deserialize, serde::Serialize)]

@@ -29,11 +29,11 @@ rand = "0.8"
 metrics = "0.22"
 metrics-exporter-prometheus = "0.13"
 
-# OpenTelemetry tracing - ROADMAP Task 1.5 (Phase 2)
-# Note: OpenTelemetry integration deferred to Phase 2
-# opentelemetry = { version = "0.21", features = ["rt-tokio"] }
-# opentelemetry-jaeger = "0.20"
-# tracing-opentelemetry = "0.21"
+# OpenTelemetry tracing - ROADMAP Task 1.5
+opentelemetry = { version = "0.21", features = ["rt-tokio"] }
+opentelemetry-sdk = { version = "0.21", features = ["rt-tokio"] }
+opentelemetry-otlp = { version = "0.14", features = ["http-proto", "reqwest-client"] }
+tracing-opentelemetry = "0.22"
 
 # HTTP client for tests
 reqwest = { version = "0.12", optional = true }

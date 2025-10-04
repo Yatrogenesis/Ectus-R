@@ -27,5 +27,6 @@ thiserror = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.0", features = ["v4", "serde"] }
 
-# Logging
+# Logging and metrics
 tracing = "0.1"
+metrics = "0.22"
