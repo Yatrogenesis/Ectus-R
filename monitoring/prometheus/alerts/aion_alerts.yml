@@ -1,0 +1,239 @@
+# Prometheus Alert Rules for Ectus-R
+# ROADMAP Task: Alerting Rules Implementation
+# Production-ready rules with NO placeholders
+
+groups:
+  - name: aion_api_alerts
+    interval: 30s
+    rules:
+      # HTTP Error Rate Alert
+      - alert: HighHTTPErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "High HTTP 5xx error rate on {{ $labels.service }}"
+          description: "Service {{ $labels.service }} has {{ $value | humanizePercentage }} error rate (threshold: 5%)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/high_error_rate.md"
+
+      # API Latency Alert
+      - alert: HighAPILatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          ) > 1.0
+        for: 10m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API latency on {{ $labels.service }}"
+          description: "95th percentile latency is {{ $value }}s (threshold: 1s)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/high_latency.md"
+
+      # Service Down Alert
+      - alert: ServiceDown
+        expr: up{job="aion-web-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "Service {{ $labels.instance }} is down"
+          description: "AION Web API service has been down for more than 2 minutes"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/service_down.md"
+
+      # High Request Rate
+      - alert: HighRequestRate
+        expr: |
+          sum(rate(http_requests_total[1m])) by (service) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High request rate on {{ $labels.service }}"
+          description: "Request rate is {{ $value }} req/s (threshold: 1000 req/s)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/high_traffic.md"
+
+  - name: aion_database_alerts
+    interval: 30s
+    rules:
+      # Database Connection Pool Exhaustion
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          (db_connections_active / db_connections_max) > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "Connection pool utilization is {{ $value | humanizePercentage }} (threshold: 90%)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/db_connections.md"
+
+      # Slow Database Queries
+      - alert: SlowDatabaseQueries
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(db_query_duration_seconds_bucket[5m])) by (le, query_type)
+          ) > 2.0
+        for: 10m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "95th percentile query duration is {{ $value }}s for {{ $labels.query_type }} (threshold: 2s)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/slow_queries.md"
+
+      # High Database Error Rate
+      - alert: HighDatabaseErrorRate
+        expr: |
+          (
+            sum(rate(db_query_errors_total[5m]))
+            /
+            sum(rate(db_query_duration_seconds_count[5m]))
+          ) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "High database error rate"
+          description: "Database error rate is {{ $value | humanizePercentage }} (threshold: 1%)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/db_errors.md"
+
+  - name: aion_ai_engine_alerts
+    interval: 30s
+    rules:
+      # AI Inference Failures
+      - alert: HighAIInferenceErrorRate
+        expr: |
+          (
+            sum(rate(ai_inference_errors_total[5m])) by (model)
+            /
+            sum(rate(ai_inference_requests_total[5m])) by (model)
+          ) > 0.10
+        for: 5m
+        labels:
+          severity: critical
+          component: ai-engine
+        annotations:
+          summary: "High AI inference error rate for model {{ $labels.model }}"
+          description: "AI inference error rate is {{ $value | humanizePercentage }} (threshold: 10%)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/ai_errors.md"
+
+      # Slow AI Inference
+      - alert: SlowAIInference
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(ai_inference_duration_seconds_bucket[5m])) by (le, model)
+          ) > 30.0
+        for: 10m
+        labels:
+          severity: warning
+          component: ai-engine
+        annotations:
+          summary: "Slow AI inference for model {{ $labels.model }}"
+          description: "95th percentile inference time is {{ $value }}s (threshold: 30s)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/slow_ai.md"
+
+      # Too Many Active AI Sessions
+      - alert: HighActiveAISessions
+        expr: ai_active_sessions > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: ai-engine
+        annotations:
+          summary: "High number of active AI sessions"
+          description: "Active AI sessions: {{ $value }} (threshold: 100)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/ai_sessions.md"
+
+  - name: aion_system_alerts
+    interval: 30s
+    rules:
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          (memory_usage_bytes / (1024^3)) > 8
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value }}GB (threshold: 8GB)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/high_memory.md"
+
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: cpu_usage_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/high_cpu.md"
+
+      # Disk Space Low
+      - alert: DiskSpaceLow
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.10
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "Low disk space on root partition"
+          description: "Available disk space is {{ $value | humanizePercentage }} (threshold: 10%)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/disk_space.md"
+
+  - name: aion_sla_alerts
+    interval: 1m
+    rules:
+      # SLA Violation - Availability
+      - alert: SLAAvailabilityViolation
+        expr: |
+          (
+            sum(up{job="aion-web-api"})
+            /
+            count(up{job="aion-web-api"})
+          ) < 0.999
+        for: 5m
+        labels:
+          severity: critical
+          component: sla
+          sla_type: availability
+        annotations:
+          summary: "SLA availability violation"
+          description: "Service availability is {{ $value | humanizePercentage }} (SLA: 99.9%)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/sla_violation.md"
+
+      # SLA Violation - Error Rate
+      - alert: SLAErrorRateViolation
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[30m]))
+            /
+            sum(rate(http_requests_total[30m]))
+          ) > 0.001
+        for: 10m
+        labels:
+          severity: critical
+          component: sla
+          sla_type: error_rate
+        annotations:
+          summary: "SLA error rate violation"
+          description: "Error rate is {{ $value | humanizePercentage }} (SLA: 0.1%)"
+          runbook: "https://github.com/Yatrogenesis/Ectus-R/blob/master/docs/runbooks/sla_violation.md"

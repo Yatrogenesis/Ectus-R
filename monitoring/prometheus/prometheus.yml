@@ -1,0 +1,82 @@
+# Prometheus Configuration for Ectus-R
+# ROADMAP Task: Monitoring & Observability - Prometheus Configuration
+# Production-ready configuration with NO placeholders
+
+global:
+  scrape_interval: 15s # Scrape targets every 15 seconds
+  evaluation_interval: 15s # Evaluate rules every 15 seconds
+  external_labels:
+    cluster: 'ectus-r-production'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'localhost:9093' # Alertmanager address
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - 'alerts/*.yml'
+  - 'recording_rules/*.yml'
+
+# Scrape configurations
+scrape_configs:
+  # AION Web API metrics
+  - job_name: 'aion-web-api'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'web-api'
+          tier: 'frontend'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9091']
+        labels:
+          service: 'prometheus'
+          tier: 'monitoring'
+
+  # Node exporter for system metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+        labels:
+          service: 'node-exporter'
+          tier: 'infrastructure'
+
+  # PostgreSQL exporter for database metrics
+  - job_name: 'postgres-exporter'
+    static_configs:
+      - targets: ['localhost:9187']
+        labels:
+          service: 'postgres'
+          tier: 'database'
+
+  # Redis exporter for cache metrics
+  - job_name: 'redis-exporter'
+    static_configs:
+      - targets: ['localhost:9121']
+        labels:
+          service: 'redis'
+          tier: 'cache'
+
+# Remote write configuration for long-term storage (optional)
+# Uncomment if using Grafana Cloud or similar
+# remote_write:
+#   - url: 'https://prometheus-remote-write-endpoint/api/v1/write'
+#     basic_auth:
+#       username: 'your-username'
+#       password: 'your-password'
+
+# Remote read configuration for querying historical data
+# remote_read:
+#   - url: 'https://prometheus-remote-read-endpoint/api/v1/read'
+#     basic_auth:
+#       username: 'your-username'
+#       password: 'your-password'
