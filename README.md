@@ -284,3 +284,36 @@ We are building the future of software engineering and want to do it with the co
 ---
 
 © 2025-Present, Yatrogenesis. All rights reserved.
+## Monitoring & Observability
+
+Ectus-R includes production-ready monitoring with Prometheus, Jaeger, and Grafana.
+
+### Endpoints
+
+- **Metrics:** `http://localhost:9091/metrics` (Prometheus format)
+- **Traces:** `http://localhost:16686` (Jaeger UI)
+- **Dashboards:** `http://localhost:3000` (Grafana, admin/admin)
+- **Prometheus:** `http://localhost:9090`
+
+### Metrics Tracked
+
+```
+# HTTP: requests_total, request_duration_seconds, active_requests
+# Database: query_duration, connections_active, slow_queries_total  
+# AI: inference_requests_total, inference_duration, token_usage_total
+# System: memory_usage_bytes, cpu_usage_percent
+```
+
+### Quick Start
+
+```bash
+cd monitoring && docker-compose up -d
+curl http://localhost:9091/metrics  # View metrics
+```
+
+### Documentation
+
+- [MONITORING.md](docs/MONITORING.md) - Complete monitoring guide
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture with monitoring flow
+- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment with monitoring stack
+
