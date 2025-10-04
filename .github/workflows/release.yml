@@ -547,3 +547,73 @@ jobs:
           asset_path: install.sh
           asset_name: install.sh
           asset_content_type: text/plain
+
+  sign-and-publish:
+    name: Sign Release and Publish Install Script
+    needs: [create-release, build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: dist
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd dist
+          find . -type f \( -name "*.tar.gz" -o -name "*.zip" -o -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" \) -exec sha256sum {} \; > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Sign checksums with GPG
+        if: ${{ secrets.GPG_PRIVATE_KEY != '' }}
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --batch --yes 2>/dev/null || true
+          cd dist
+          gpg --batch --yes --detach-sign --armor SHA256SUMS.txt
+          ls -la SHA256SUMS.txt*
+
+      - name: Create verification script
+        run: |
+          cp scripts/install.sh dist/install.sh
+          chmod +x dist/install.sh
+
+      - name: Upload SHA256SUMS
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/SHA256SUMS.txt
+          asset_name: SHA256SUMS.txt
+          asset_content_type: text/plain
+
+      - name: Upload GPG signature
+        if: ${{ secrets.GPG_PRIVATE_KEY != '' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/SHA256SUMS.txt.asc
+          asset_name: SHA256SUMS.txt.asc
+          asset_content_type: text/plain
+
+      - name: Upload install script
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/install.sh
+          asset_name: install.sh
+          asset_content_type: application/x-sh
+
+      - name: Announce release
+        run: |
+          echo "✅ Release ${{ needs.create-release.outputs.version }} published successfully!"
+          echo ""
+          echo "Download: https://github.com/${{ github.repository }}/releases/tag/${{ needs.create-release.outputs.version }}"
+          echo "Install: curl -sSL https://install.ectus-r.com | sh"
