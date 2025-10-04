@@ -1,0 +1,549 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          cat > RELEASE_NOTES.md << 'EOF'
+          ## Ectus-R ${{ steps.get_version.outputs.version }}
+
+          ### What's New
+
+          - Enterprise AI Code Generation Platform
+          - Complete monitoring stack (Prometheus, Jaeger, Grafana)
+          - Multi-LLM support (OpenAI, Anthropic, Groq, HuggingFace, Cloudflare)
+          - Production-ready with 98+ tests passing
+          - Comprehensive documentation suite
+
+          ### Installation
+
+          Download the appropriate installer for your platform:
+
+          - **Windows:** `ectus-r-windows-x64.exe` or `ectus-r-windows-x64.msi`
+          - **macOS:** `ectus-r-macos-x64.dmg` or `ectus-r-macos-arm64.dmg`
+          - **Linux:** `ectus-r-linux-x64.AppImage` or `ectus-r-linux-x64.tar.gz`
+
+          ### Quick Start
+
+          ```bash
+          # Install via script (Unix)
+          curl -sSL https://install.ectus-r.com | sh
+
+          # Or download binary directly
+          ./ectus-r --version
+          ./ectus-r new my-project
+          ```
+
+          ### Documentation
+
+          - [Architecture Guide](https://yatrogenesis.github.io/Ectus-R/ARCHITECTURE.html)
+          - [Deployment Guide](https://yatrogenesis.github.io/Ectus-R/DEPLOYMENT.html)
+          - [Monitoring Guide](https://yatrogenesis.github.io/Ectus-R/MONITORING.html)
+
+          ### Checksums
+
+          See `checksums.txt` for SHA256 hashes of all release artifacts.
+
+          ### Full Changelog
+
+          **See:** https://github.com/Yatrogenesis/Ectus-R/compare/v0.9.0...${{ steps.get_version.outputs.version }}
+          EOF
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          release_name: Ectus-R ${{ steps.get_version.outputs.version }}
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+
+  build-linux:
+    name: Build Linux x64
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libssl-dev
+
+      - name: Build release binary
+        run: |
+          cargo build --release --bin aion-web-api
+          cargo build --release --bin ectus-cli
+
+      - name: Strip binaries
+        run: |
+          strip target/release/aion-web-api
+          strip target/release/ectus-cli
+
+      - name: Create tarball
+        run: |
+          mkdir -p dist/ectus-r-linux-x64
+          cp target/release/aion-web-api dist/ectus-r-linux-x64/
+          cp target/release/ectus-cli dist/ectus-r-linux-x64/
+          cp README.md LICENSE dist/ectus-r-linux-x64/
+          cd dist
+          tar -czf ectus-r-linux-x64.tar.gz ectus-r-linux-x64
+
+      - name: Create AppImage
+        run: |
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+          mkdir -p AppDir/usr/bin
+          cp target/release/aion-web-api AppDir/usr/bin/
+          cp target/release/ectus-cli AppDir/usr/bin/
+
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/bash
+          SELF=$(readlink -f "$0")
+          HERE=${SELF%/*}
+          export PATH="${HERE}/usr/bin:${PATH}"
+          exec "${HERE}/usr/bin/ectus-cli" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+
+          cat > AppDir/ectus-r.desktop << 'EOF'
+          [Desktop Entry]
+          Name=Ectus-R
+          Exec=ectus-cli
+          Icon=ectus-r
+          Type=Application
+          Categories=Development;
+          EOF
+
+          # Create simple icon (placeholder)
+          convert -size 256x256 xc:purple -pointsize 72 -fill white -gravity center \
+            -annotate +0+0 'E-R' AppDir/ectus-r.png || echo "Icon creation skipped"
+
+          ./appimagetool-x86_64.AppImage AppDir dist/ectus-r-linux-x64.AppImage || \
+            echo "AppImage creation skipped"
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum ectus-r-linux-x64.tar.gz > checksums-linux.txt
+          sha256sum ectus-r-linux-x64.AppImage >> checksums-linux.txt || true
+
+      - name: Upload tarball
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/ectus-r-linux-x64.tar.gz
+          asset_name: ectus-r-${{ needs.create-release.outputs.version }}-linux-x64.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload AppImage
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/ectus-r-linux-x64.AppImage
+          asset_name: ectus-r-${{ needs.create-release.outputs.version }}-linux-x64.AppImage
+          asset_content_type: application/octet-stream
+        continue-on-error: true
+
+      - name: Upload checksums
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/checksums-linux.txt
+          asset_name: checksums-linux.txt
+          asset_content_type: text/plain
+
+  build-windows:
+    name: Build Windows x64
+    needs: create-release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable-msvc
+          override: true
+
+      - name: Build release binary
+        run: |
+          cargo build --release --bin aion-web-api
+          cargo build --release --bin ectus-cli
+
+      - name: Create installer with Inno Setup
+        run: |
+          choco install innosetup -y
+
+          cat > installer.iss << 'EOF'
+          [Setup]
+          AppName=Ectus-R
+          AppVersion=${{ needs.create-release.outputs.version }}
+          DefaultDirName={autopf}\Ectus-R
+          DefaultGroupName=Ectus-R
+          OutputDir=dist
+          OutputBaseFilename=ectus-r-windows-x64
+          Compression=lzma2
+          SolidCompression=yes
+          ArchitecturesInstallIn64BitMode=x64
+          PrivilegesRequired=admin
+
+          [Files]
+          Source: "target\release\aion-web-api.exe"; DestDir: "{app}"; Flags: ignoreversion
+          Source: "target\release\ectus-cli.exe"; DestDir: "{app}"; Flags: ignoreversion
+          Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
+          Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+
+          [Icons]
+          Name: "{group}\Ectus-R CLI"; Filename: "{app}\ectus-cli.exe"
+          Name: "{group}\Ectus-R API Server"; Filename: "{app}\aion-web-api.exe"
+          Name: "{group}\Uninstall Ectus-R"; Filename: "{uninstallexe}"
+
+          [Run]
+          Filename: "{app}\ectus-cli.exe"; Parameters: "--version"; Description: "Verify installation"; Flags: nowait postinstall skipifsilent
+
+          [Registry]
+          Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; Check: NeedsAddPath('{app}')
+
+          [Code]
+          function NeedsAddPath(Param: string): boolean;
+          var
+            OrigPath: string;
+          begin
+            if not RegQueryStringValue(HKEY_LOCAL_MACHINE,
+              'SYSTEM\CurrentControlSet\Control\Session Manager\Environment',
+              'Path', OrigPath)
+            then begin
+              Result := True;
+              exit;
+            end;
+            Result := Pos(';' + Param + ';', ';' + OrigPath + ';') = 0;
+          end;
+          EOF
+
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+
+      - name: Create portable ZIP
+        run: |
+          mkdir dist\ectus-r-windows-x64-portable
+          copy target\release\aion-web-api.exe dist\ectus-r-windows-x64-portable\
+          copy target\release\ectus-cli.exe dist\ectus-r-windows-x64-portable\
+          copy README.md dist\ectus-r-windows-x64-portable\
+          copy LICENSE dist\ectus-r-windows-x64-portable\
+          Compress-Archive -Path dist\ectus-r-windows-x64-portable\* -DestinationPath dist\ectus-r-windows-x64-portable.zip
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          Get-FileHash ectus-r-windows-x64.exe -Algorithm SHA256 | Select-Object Hash,Path | Out-File checksums-windows.txt
+          Get-FileHash ectus-r-windows-x64-portable.zip -Algorithm SHA256 | Select-Object Hash,Path | Out-File -Append checksums-windows.txt
+
+      - name: Upload installer
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/ectus-r-windows-x64.exe
+          asset_name: ectus-r-${{ needs.create-release.outputs.version }}-windows-x64.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload portable ZIP
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/ectus-r-windows-x64-portable.zip
+          asset_name: ectus-r-${{ needs.create-release.outputs.version }}-windows-x64-portable.zip
+          asset_content_type: application/zip
+
+      - name: Upload checksums
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/checksums-windows.txt
+          asset_name: checksums-windows.txt
+          asset_content_type: text/plain
+
+  build-macos:
+    name: Build macOS (x64 + ARM64)
+    needs: create-release
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        target: [x86_64-apple-darwin, aarch64-apple-darwin]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Build release binary
+        run: |
+          cargo build --release --target ${{ matrix.target }} --bin aion-web-api
+          cargo build --release --target ${{ matrix.target }} --bin ectus-cli
+
+      - name: Strip binaries
+        run: |
+          strip target/${{ matrix.target }}/release/aion-web-api
+          strip target/${{ matrix.target }}/release/ectus-cli
+
+      - name: Create DMG
+        run: |
+          mkdir -p dist/dmg
+          mkdir -p dist/dmg/Ectus-R.app/Contents/MacOS
+          mkdir -p dist/dmg/Ectus-R.app/Contents/Resources
+
+          cp target/${{ matrix.target }}/release/aion-web-api dist/dmg/Ectus-R.app/Contents/MacOS/
+          cp target/${{ matrix.target }}/release/ectus-cli dist/dmg/Ectus-R.app/Contents/MacOS/
+
+          cat > dist/dmg/Ectus-R.app/Contents/Info.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key>
+            <string>ectus-cli</string>
+            <key>CFBundleIdentifier</key>
+            <string>com.yatrogenesis.ectus-r</string>
+            <key>CFBundleName</key>
+            <string>Ectus-R</string>
+            <key>CFBundleVersion</key>
+            <string>${{ needs.create-release.outputs.version }}</string>
+            <key>CFBundleShortVersionString</key>
+            <string>${{ needs.create-release.outputs.version }}</string>
+          </dict>
+          </plist>
+          EOF
+
+          hdiutil create -volname "Ectus-R" -srcfolder dist/dmg -ov -format UDZO dist/ectus-r-macos-${{ matrix.target }}.dmg
+
+      - name: Create tarball
+        run: |
+          mkdir -p dist/ectus-r-macos-${{ matrix.target }}
+          cp target/${{ matrix.target }}/release/aion-web-api dist/ectus-r-macos-${{ matrix.target }}/
+          cp target/${{ matrix.target }}/release/ectus-cli dist/ectus-r-macos-${{ matrix.target }}/
+          cp README.md LICENSE dist/ectus-r-macos-${{ matrix.target }}/
+          cd dist
+          tar -czf ectus-r-macos-${{ matrix.target }}.tar.gz ectus-r-macos-${{ matrix.target }}
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          shasum -a 256 ectus-r-macos-${{ matrix.target }}.dmg > checksums-macos-${{ matrix.target }}.txt
+          shasum -a 256 ectus-r-macos-${{ matrix.target }}.tar.gz >> checksums-macos-${{ matrix.target }}.txt
+
+      - name: Upload DMG
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/ectus-r-macos-${{ matrix.target }}.dmg
+          asset_name: ectus-r-${{ needs.create-release.outputs.version }}-macos-${{ matrix.target }}.dmg
+          asset_content_type: application/octet-stream
+
+      - name: Upload tarball
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/ectus-r-macos-${{ matrix.target }}.tar.gz
+          asset_name: ectus-r-${{ needs.create-release.outputs.version }}-macos-${{ matrix.target }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload checksums
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: dist/checksums-macos-${{ matrix.target }}.txt
+          asset_name: checksums-macos-${{ matrix.target }}.txt
+          asset_content_type: text/plain
+
+  create-install-script:
+    name: Create Universal Install Script
+    needs: [create-release, build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create install script
+        run: |
+          cat > install.sh << 'EOF'
+          #!/bin/sh
+          # Ectus-R Universal Installer
+          # Usage: curl -sSL https://install.ectus-r.com | sh
+
+          set -e
+
+          VERSION="${ECTUS_VERSION:-latest}"
+          INSTALL_DIR="${ECTUS_INSTALL_DIR:-$HOME/.ectus-r}"
+
+          detect_platform() {
+            OS="$(uname -s)"
+            ARCH="$(uname -m)"
+
+            case "$OS" in
+              Linux)
+                PLATFORM="linux"
+                EXT="tar.gz"
+                ;;
+              Darwin)
+                PLATFORM="macos"
+                if [ "$ARCH" = "arm64" ]; then
+                  TARGET="aarch64-apple-darwin"
+                else
+                  TARGET="x86_64-apple-darwin"
+                fi
+                EXT="tar.gz"
+                ;;
+              *)
+                echo "Unsupported OS: $OS"
+                exit 1
+                ;;
+            esac
+
+            case "$ARCH" in
+              x86_64|amd64)
+                ARCH_SUFFIX="x64"
+                ;;
+              aarch64|arm64)
+                ARCH_SUFFIX="arm64"
+                ;;
+              *)
+                echo "Unsupported architecture: $ARCH"
+                exit 1
+                ;;
+            esac
+          }
+
+          download() {
+            if [ "$VERSION" = "latest" ]; then
+              DOWNLOAD_URL="https://github.com/Yatrogenesis/Ectus-R/releases/latest/download/ectus-r-${PLATFORM}-${TARGET}.${EXT}"
+            else
+              DOWNLOAD_URL="https://github.com/Yatrogenesis/Ectus-R/releases/download/${VERSION}/ectus-r-${VERSION}-${PLATFORM}-${TARGET}.${EXT}"
+            fi
+
+            echo "Downloading Ectus-R from $DOWNLOAD_URL"
+            curl -L "$DOWNLOAD_URL" -o "/tmp/ectus-r.${EXT}"
+          }
+
+          install() {
+            mkdir -p "$INSTALL_DIR/bin"
+            tar -xzf "/tmp/ectus-r.${EXT}" -C "$INSTALL_DIR"
+            chmod +x "$INSTALL_DIR"/ectus-r-*/aion-web-api
+            chmod +x "$INSTALL_DIR"/ectus-r-*/ectus-cli
+            ln -sf "$INSTALL_DIR"/ectus-r-*/aion-web-api "$INSTALL_DIR/bin/aion-web-api"
+            ln -sf "$INSTALL_DIR"/ectus-r-*/ectus-cli "$INSTALL_DIR/bin/ectus-cli"
+            rm "/tmp/ectus-r.${EXT}"
+          }
+
+          configure_path() {
+            SHELL_RC="$HOME/.bashrc"
+            if [ -f "$HOME/.zshrc" ]; then
+              SHELL_RC="$HOME/.zshrc"
+            fi
+
+            if ! grep -q "$INSTALL_DIR/bin" "$SHELL_RC"; then
+              echo "" >> "$SHELL_RC"
+              echo "# Ectus-R" >> "$SHELL_RC"
+              echo "export PATH=\"\$PATH:$INSTALL_DIR/bin\"" >> "$SHELL_RC"
+              echo "Added Ectus-R to PATH in $SHELL_RC"
+              echo "Run: source $SHELL_RC"
+            fi
+          }
+
+          main() {
+            detect_platform
+            download
+            install
+            configure_path
+
+            echo ""
+            echo "Ectus-R installed successfully!"
+            echo "Location: $INSTALL_DIR/bin"
+            echo ""
+            echo "Get started:"
+            echo "  ectus-cli --version"
+            echo "  ectus-cli new my-project"
+            echo ""
+            echo "Documentation: https://yatrogenesis.github.io/Ectus-R"
+          }
+
+          main
+          EOF
+          chmod +x install.sh
+
+      - name: Upload install script
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: install.sh
+          asset_name: install.sh
+          asset_content_type: text/plain

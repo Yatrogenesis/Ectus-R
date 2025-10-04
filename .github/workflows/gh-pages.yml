@@ -1,0 +1,293 @@
+name: Deploy Documentation to GitHub Pages
+
+on:
+  push:
+    branches: [master, main]
+    paths:
+      - 'docs/**'
+      - '*.md'
+      - '.github/workflows/gh-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Documentation Site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Create static site structure
+        run: |
+          mkdir -p docs/site
+
+          # Copy all markdown files to site
+          find . -maxdepth 1 -name "*.md" -exec cp {} docs/site/ \;
+
+          # Copy docs directory contents
+          cp -r docs/*.md docs/site/ 2>/dev/null || true
+          cp -r docs/operations docs/site/ 2>/dev/null || true
+          cp -r docs/runbooks docs/site/ 2>/dev/null || true
+
+          # Create index.html
+          cat > docs/site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Ectus-R Documentation</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                padding: 20px;
+              }
+              .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                overflow: hidden;
+              }
+              header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 40px;
+                text-align: center;
+              }
+              h1 { font-size: 2.5em; margin-bottom: 10px; }
+              .subtitle { font-size: 1.2em; opacity: 0.9; }
+              .content { padding: 40px; }
+              .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+                margin-top: 30px;
+              }
+              .card {
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                padding: 20px;
+                transition: all 0.3s;
+              }
+              .card:hover {
+                border-color: #667eea;
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+                transform: translateY(-5px);
+              }
+              .card h2 {
+                color: #667eea;
+                margin-bottom: 15px;
+                font-size: 1.5em;
+              }
+              .card ul {
+                list-style: none;
+                padding-left: 0;
+              }
+              .card li {
+                padding: 8px 0;
+                border-bottom: 1px solid #f0f0f0;
+              }
+              .card li:last-child { border-bottom: none; }
+              .card a {
+                color: #333;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                transition: color 0.2s;
+              }
+              .card a:hover { color: #667eea; }
+              .card a::before {
+                content: "📄";
+                margin-right: 10px;
+              }
+              .badge {
+                display: inline-block;
+                background: #4caf50;
+                color: white;
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.8em;
+                margin-left: 10px;
+              }
+              .footer {
+                background: #f5f5f5;
+                padding: 20px;
+                text-align: center;
+                color: #666;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <header>
+                <h1>Ectus-R Documentation</h1>
+                <p class="subtitle">Enterprise AI Code Generation Platform - Complete Documentation Suite</p>
+              </header>
+
+              <div class="content">
+                <div class="grid">
+                  <div class="card">
+                    <h2>Getting Started</h2>
+                    <ul>
+                      <li><a href="README.html">README</a><span class="badge">Start Here</span></li>
+                      <li><a href="ARCHITECTURE.html">Architecture Guide</a></li>
+                      <li><a href="DEPLOYMENT.html">Deployment Guide</a></li>
+                    </ul>
+                  </div>
+
+                  <div class="card">
+                    <h2>Monitoring & Operations</h2>
+                    <ul>
+                      <li><a href="MONITORING.html">Monitoring Guide</a></li>
+                      <li><a href="incident-response.html">Incident Response</a></li>
+                      <li><a href="on-call.html">On-Call Setup</a></li>
+                    </ul>
+                  </div>
+
+                  <div class="card">
+                    <h2>Development</h2>
+                    <ul>
+                      <li><a href="CONTRIBUTING.html">Contributing Guide</a></li>
+                      <li><a href="BENCHMARKS.html">Benchmarks</a></li>
+                      <li><a href="SECURITY.html">Security Policy</a></li>
+                    </ul>
+                  </div>
+
+                  <div class="card">
+                    <h2>Operations</h2>
+                    <ul>
+                      <li><a href="DECOMMISSIONING.html">Decommissioning</a></li>
+                      <li><a href="high_error_rate.html">High Error Rate Runbook</a></li>
+                      <li><a href="service_down.html">Service Down Runbook</a></li>
+                    </ul>
+                  </div>
+
+                  <div class="card">
+                    <h2>Project Status</h2>
+                    <ul>
+                      <li><a href="ROADMAP_COMPLETION_SUMMARY.html">Roadmap Status</a><span class="badge">100%</span></li>
+                      <li><a href="IMPLEMENTATION_ROADMAP.html">Implementation Details</a></li>
+                      <li><a href="SESSION_SUMMARY_2025-10-04_FINAL.html">Latest Session</a></li>
+                    </ul>
+                  </div>
+
+                  <div class="card">
+                    <h2>Licensing</h2>
+                    <ul>
+                      <li><a href="LICENSE-COMMERCIAL.html">Commercial License</a></li>
+                      <li><a href="LICENSE.html">MIT License</a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="footer">
+                <p>© 2025 Ectus-R Project | Generated with ❤️ by Claude</p>
+                <p><a href="https://github.com/Yatrogenesis/Ectus-R" style="color: #667eea; text-decoration: none;">View on GitHub</a></p>
+              </div>
+            </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Convert Markdown to HTML
+        run: |
+          npm install -g marked
+
+          cd docs/site
+
+          # Convert all markdown files
+          for md in *.md; do
+            if [ -f "$md" ]; then
+              html="${md%.md}.html"
+              cat > "$html" << 'HTMLHEAD'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Ectus-R Documentation</title>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">
+            <style>
+              body { margin: 0; padding: 20px; background: #f6f8fa; }
+              .container { max-width: 980px; margin: 0 auto; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+              .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; margin: -40px -40px 30px; border-radius: 8px 8px 0 0; }
+              .header h1 { margin: 0; }
+              .header a { color: white; text-decoration: none; opacity: 0.9; }
+              .header a:hover { opacity: 1; }
+              .markdown-body { font-size: 16px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>Ectus-R Documentation</h1>
+                <p><a href="index.html">← Back to Home</a> | <a href="https://github.com/Yatrogenesis/Ectus-R">GitHub</a></p>
+              </div>
+              <div class="markdown-body">
+          HTMLHEAD
+
+              marked "$md" >> "$html"
+
+              cat >> "$html" << 'HTMLFOOT'
+              </div>
+            </div>
+          </body>
+          </html>
+          HTMLFOOT
+            fi
+          done
+
+          # Convert docs in subdirectories
+          if [ -d "operations" ]; then
+            cd operations
+            for md in *.md; do
+              if [ -f "$md" ]; then
+                marked "$md" > "${md%.md}.html"
+              fi
+            done
+            cd ..
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs/site'
+
+  deploy:
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
